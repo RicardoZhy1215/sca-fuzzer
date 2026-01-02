@@ -13,6 +13,73 @@ FILE_DIR = pathlib.Path(__file__).parent.resolve()
 DOC_DIR = FILE_DIR.parent / "docs"
 
 
+def parse_config_options_from_docs(doc_lines: List[str]) -> Dict[str, List[Union[str, List[str]]]]:
+    """
+    Parse configuration options from the documentation.
+
+    :param doc_lines: Lines from the config.md file
+    :return: Dictionary mapping option names to [default_value, [available_options]]
+    """
+    doc_options: Dict[str, List[Union[str, List[str]]]] = {}
+    curr_name: str = ""
+    in_actor_section: bool = False
+    in_available_options: bool = False
+
+    for line in doc_lines:
+        # Detect actor section
+        if "## <a name=\"actor\"></a> Actor Configuration" in line:
+            in_actor_section = True
+        elif line.startswith("## "):
+            in_actor_section = False
+
+        # Parse option name from heading (e.g., #### `option_name`)
+        if line.startswith("#### `") and "`" in line[6:]:
+            end_idx = line.index("`", 6)
+            option_name = line[6:end_idx]
+
+            # Add actor_ prefix if in actor section
+            if in_actor_section:
+                curr_name = f"actor_{option_name}"
+            else:
+                curr_name = option_name
+
+            doc_options[curr_name] = ["", []]
+            in_available_options = False
+
+        # Parse default value (e.g., :material-water: `value`)
+        elif curr_name and doc_options[curr_name][0] == "":
+            if ":material-water:" in line and "`" in line:
+                # Find backtick-quoted value after :material-water:
+                parts = line.split("`")
+                for j in range(1, len(parts), 2):
+                    if j > 0 and ":material-water:" in parts[j-1]:
+                        doc_options[curr_name][0] = parts[j]
+                        break
+            elif ":octicons-cpu-24:" in line:
+                # Auto-detected default value
+                doc_options[curr_name][0] = "(auto-detected)"
+
+        # Detect Available Options section
+        elif '=== "Available Options"' in line:
+            in_available_options = True
+
+        # Parse available options (e.g., `opt1` | `opt2` | `opt3`)
+        elif in_available_options and curr_name and "`" in line and "|" in line:
+            options_line = line.strip()
+            if options_line.startswith("`"):
+                # Split by | and extract values between backticks
+                parts = options_line.split("|")
+                options = []
+                for part in parts:
+                    part = part.strip()
+                    if part.startswith("`") and part.endswith("`"):
+                        options.append(part.strip("`"))
+                doc_options[curr_name][1] = options
+            in_available_options = False
+
+    return doc_options
+
+
 class DocumentationTest(unittest.TestCase):
     """
     A class for testing if the documentation is up to date.
@@ -23,7 +90,7 @@ class DocumentationTest(unittest.TestCase):
         # Test if the documentation contains all the config options.
 
         # get the text of the config documentation
-        with open(DOC_DIR / "user/config.md", "r") as f:
+        with open(DOC_DIR / "ref/config.md", "r") as f:
             doc_text = f.read()
 
         # get a list of config options
@@ -41,29 +108,11 @@ class DocumentationTest(unittest.TestCase):
         # Test if the documentation contains all possible values for the config options.
 
         # get the text of the config documentation
-        with open(DOC_DIR / "user/config.md", "r") as f:
+        with open(DOC_DIR / "ref/config.md", "r") as f:
             doc_text = f.readlines()
 
         # build a map of config options to their possible values in the doc
-        doc_options: Dict[str, List[Union[str, List[str]]]] = {}
-        curr_name: str = ""
-        for line in doc_text:
-            if line.startswith("Name"):
-                curr_name = line.split(":")[1].strip()
-                doc_options[curr_name] = ["", []]
-            elif line.startswith("Actor Option:"):
-                curr_name = f"actor_{line.split(':')[1].strip()}"
-                doc_options[curr_name] = ["", []]
-            elif line.startswith("Default:"):
-                doc_options[curr_name][0] = line.split(":")[1].strip().strip("'")
-            elif line.startswith("Options:"):
-                if "(" in line:
-                    continue
-                doc_options[curr_name][1] = line.split(":")[1].strip().split("|")
-                for i in range(len(doc_options[curr_name][1])):
-                    element = doc_options[curr_name][1]
-                    assert not isinstance(element, str), f"Element {element} is a string"
-                    element[i] = doc_options[curr_name][1][i].strip().strip("'")
+        doc_options = parse_config_options_from_docs(doc_text)
 
         # get a list of config options
         options = [
@@ -74,8 +123,6 @@ class DocumentationTest(unittest.TestCase):
 
         # check if all alternatives and defaults are documented
         for name, default_ in options:
-            if name not in doc_options:
-                continue
             doc_default = doc_options[name][0]
             assert isinstance(doc_default, str)
             if not doc_default.startswith("("):

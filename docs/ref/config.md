@@ -96,7 +96,7 @@ This option is helps a lot with readability, but may produce corrupted output wh
 
 #### `logging_modes`
 
-:   <span class="inline-box" title="Default Value">:material-water: `[info, stat]`</span> Control the information logged by Revizor.
+:   <span class="inline-box" title="Default Value">:material-water: `['info', 'stat']`</span> Control the information logged by Revizor.
 
     === "Syntax"
         ```yaml
@@ -134,6 +134,19 @@ This option is helps a lot with readability, but may produce corrupted output wh
         ```
 
 ## <a name="code-generator"></a> Program Generator Configuration
+
+#### `generator`
+
+:   <span class="inline-box" title="Default Value">:material-water: `random`</span> Select the type of program generator to be used.
+
+    === "Syntax"
+        ```yaml
+        generator: <type>
+        ```
+    === "Available Options"
+        `random`
+    === "Options Explained"
+        * `random` - generate random assembly programs. This is the only supported option at the moment.
 
 #### `instruction_set`
 
@@ -276,7 +289,7 @@ This option is helps a lot with readability, but may produce corrupted output wh
 
 #### `min_successors_per_bb`
 
-:   <span class="inline-box" title="Default Value">:material-water: `1`</span> Minimal number of successors for each basic block in generated programs.
+:   <span class="inline-box" title="Default Value">:material-water: `2`</span> Minimal number of successors for each basic block in generated programs.
 
     !!! note "Hint, not a rule"
         This option is a *hint*; it could be overwritten
@@ -292,7 +305,7 @@ This option is helps a lot with readability, but may produce corrupted output wh
 
 #### `max_successors_per_bb`
 
-:   <span class="inline-box" title="Default Value">:material-water: `1`</span> Maximal number of successors for each basic block in generated programs.
+:   <span class="inline-box" title="Default Value">:material-water: `2`</span> Maximal number of successors for each basic block in generated programs.
 
     !!! note "Hint, not a rule"
         This option is a *hint*; it could be overwritten
@@ -354,7 +367,7 @@ This option is helps a lot with readability, but may produce corrupted output wh
           ...
         ```
     === "Available Options"
-        `div-by-zero` | `div-overflow` | `opcode-undefined` | `bounds-range-exceeded` | `breakpoint` | `debug-register` | `non-canonical-access` | `user-to-kernel-access`
+        `div-by-zero` | `div-overflow` | `opcode-undefined` | `breakpoint` | `debug-register` | `non-canonical-access` | `user-to-kernel-access`
     === "Options Explained"
         * `div-by-zero` - generate divisions with unmasked divisor, which can cause a division by zero exception.
         * `div-overflow` - generate divisions with unmasked dividend, which can cause an overflow exception.
