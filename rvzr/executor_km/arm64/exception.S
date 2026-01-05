@@ -263,7 +263,9 @@ run_experiment_outer:
 
 .run_experiment_normal_exit:
     // Restore the original vector table
+    stp x0, x1, [sp, -16]!
     bl unset_outer_fault_handlers
+    ldp x0, x1, [sp], 16
 
     // Restore the CPU state in case run_experiment has corrupted it
     ldp x29, x30, [sp], 16
