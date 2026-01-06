@@ -539,6 +539,7 @@ class _SharedX86Model(unittest.TestCase):
         expected_trace.append(test_case[0].pc_offset)
         expected_trace.append(test_case[0].mem_address)
         expected_trace.append(RSP_DEFAULT_VALUE)
+        expected_trace.append(test_case[1].pc_offset)
         expected_trace.append(test_case[2].pc_offset)
         expected_trace.append(test_case[2].mem_address)
         expected_trace.append(test_case[3].pc_offset)
