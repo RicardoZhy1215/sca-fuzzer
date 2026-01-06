@@ -8,11 +8,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Set, Tuple, List, Optional
+from typing import TYPE_CHECKING, Set, Tuple, List
 from copy import copy
 import re
 
 from unicorn import UC_MEM_WRITE
+import unicorn.x86_const as ucc  # type: ignore # no type hints for this library
 
 from .speculator_abc import UnicornSpeculator
 from ..tc_components.instruction import Instruction, RegisterOp, FlagsOp, MemoryOp, ImmediateOp
@@ -106,7 +107,6 @@ class UnicornDEH(FaultSpeculator, ABC):
     _dependencies: Set[str]
     _dependency_checkpoints: List[Set[str]]
     _next_instruction_addr: int = 0
-    _prev_tracing_state: Optional[bool] = None
 
     def __init__(self, target_desc: TargetDesc, model: UnicornModel,
                  taint_tracker: UnicornTaintTracker) -> None:
@@ -156,11 +156,6 @@ class UnicornDEH(FaultSpeculator, ABC):
         # FIXME: refactor this method to reduce complexity;
         # for now, it's left as is, because this contract is not a priority
         super()._speculate_instruction(address, size)
-
-        # reset the tracing state if it was changed in the previous instruction
-        if self._prev_tracing_state is not None:
-            self._model.tracer.enable_tracing = self._prev_tracing_state
-            self._prev_tracing_state = None
 
         # check that the instruction size is correct (may be wrong for invalid instructions)
         if self._model.state.current_instruction.size() not in [0, size]:
@@ -227,9 +222,7 @@ class UnicornDEH(FaultSpeculator, ABC):
             return
 
         # this instruction is dependent on a faulting instruction -> skip it
-        # (i.e., do not trace it)
-        self._prev_tracing_state = self._model.tracer.enable_tracing
-        self._model.tracer.enable_tracing = False
+        self._emulator.reg_write(ucc.UC_X86_REG_RIP, address + size)
 
     @abstractmethod
     def _handle_isa_specific_corner_cases(self, instruction: Instruction,

@@ -97,8 +97,8 @@ class _Dispatcher:
 
         # NOTE: the order of the following calls is important
         self._taint_tracker.track_instruction(state.current_instruction)
-        self._speculator.handle_instruction(address, size)
         self._tracer.observe_instruction(address, size)
+        self._speculator.handle_instruction(address, size)
         self._interpreter.interpret_instruction(address, state)
         self.coverage.add_instruction(state.current_instruction)
 
