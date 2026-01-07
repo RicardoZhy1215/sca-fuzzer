@@ -1,0 +1,21 @@
+# contract
+contract_observation_clause: ct
+contract_execution_clause:
+  - seq
+
+# tested instructions
+instruction_categories:
+  - BASE-BITBYTE
+  - BASE-BINARY
+  - BASE-CMOV
+  - BASE-LOGICAL
+
+# fuzzing configuration
+enable_speculation_filter: true
+enable_observation_filter: true
+program_size: 64
+avg_mem_accesses: 24
+inputs_per_class: 2
+
+program_generator_seed: 252633
+x86_disable_div64: false

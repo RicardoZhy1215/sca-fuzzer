@@ -17,7 +17,7 @@ instruction_categories:
   - BASE-WIDENOP
 
 
-generator_faults_allowlist:
+faults_allowlist:
   - user-to-kernel-access
 
 actors:
@@ -33,9 +33,7 @@ actors:
     - data_properties:
       - present: true
 
-contract_observation_clause: ct
-contract_execution_clause:
-  - noninterference
+contract_observation_clause: ct-ni
 
 max_bb_per_function: 1
 
@@ -50,10 +48,10 @@ executor_filtering_repetitions: 5
 x86_enable_hpa_gpa_collisions: true
 
 program_generator_seed: 20000000
-input_gen_seed: 1000000
+data_generator_seed: 1000000
 inputs_per_class: 2
 
-analyser_stat_threshold: 0.05
+analyser_stat_threshold: 0.2
 
 # enable_speculation_filter: true
 enable_observation_filter: true
