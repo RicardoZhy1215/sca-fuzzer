@@ -571,7 +571,7 @@ The following options are available for each actor:
 
 #### `data_generator_entropy_bits`
 
-:   <span class="inline-box" title="Default Value">:material-water: `16`</span> Entropy of the random values created by the data generator.
+:   <span class="inline-box" title="Default Value">:material-water: `31`</span> Entropy of the random values created by the data generator.
 
     === "Syntax"
         ```yaml
