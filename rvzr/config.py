@@ -154,6 +154,11 @@ class Conf:
     for all inputs in the same taint-based input class """
 
     # ==============================================================================================
+    # Execution Environment
+    permitted_faults: List[str] = []
+    """ permitted_faults: a list of faults that are permitted to happen during testing """
+
+    # ==============================================================================================
     # Program Generator
     generator: str = "random"
     """ generator: type of the program generator """
