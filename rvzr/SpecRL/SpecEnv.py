@@ -121,7 +121,6 @@ class SpecEnv(gym.Env):
     step(action):
     
     returns a 5 element tuple (observation, reward, terminated, truncated, info)
-
     how stepping works:
     action = index of instruction to append
     note that the max index is the terminate run instruction
@@ -141,7 +140,7 @@ class SpecEnv(gym.Env):
             # run checks / instrument
             target_desc = X86TargetDesc()
             #stop workinng here
-            #passed_inst = X86CheckAll(self.program, inst_action, target_desc)
+            passed_inst = X86CheckAll(self.program, inst_action, target_desc)
 
             passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
             if (not passed_inst):
