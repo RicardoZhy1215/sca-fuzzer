@@ -6,6 +6,7 @@ from gymnasium import spaces
 from typing import List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
+from rvzr.arch.x86.generator import newPrinter
 from ..tc_components.test_case_code import Program, TestCaseProgram
 from ..tc_components.test_case_data import InputData
 from ..executor import Executor
@@ -22,6 +23,7 @@ from rvzr.traces import CTrace
 from rvzr.traces import HTrace
 from .interfaces import Measurement, EquivalenceClass
 import copy
+
 
 from rvzr.arch.x86.generator import _X86NonCanonicalAddressPass,_X86PatchOpcodesPass, \
 _X86SandboxPass,_X86PatchUndefinedFlagsPass,_X86PatchUndefinedResultPass,_X86U2KAccessPass
@@ -113,7 +115,7 @@ class SpecEnv(gym.Env):
         print(f"observation space: {self.observation_space}")
 
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
-        self.printer = _X86Printer() # using x86 printer for now, may need to change later
+        self.printer = newPrinter() # using x86 printer for now, may need to change later
         self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
@@ -123,7 +125,7 @@ class SpecEnv(gym.Env):
         self.model = factory.get_model(self.executor.read_base_addresses())
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
         self.analyser = factory.get_analyser()
-        self.input_gen = factory.get_data_generator(CONF.input_gen_seed)
+        self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs) # at some point would like these inputs to fall under action space
 
     """

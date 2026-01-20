@@ -13,7 +13,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, Dict, Set, TYPE_CHECKING, Union, Final, Tuple, Callable, Literal
 from typing_extensions import assert_never
-
+from subprocess import run
 from rvzr.code_generator import CodeGenerator, Pass, Printer
 from rvzr.config import CONF
 from rvzr.sandbox import SandboxLayout, DataArea, PAGE_SIZE
@@ -23,6 +23,7 @@ from rvzr.tc_components.instruction import Instruction, Operand, RegisterOp, Fla
     MemoryOp, ImmediateOp, AgenOp, copy_op_with_flow_modification, \
     copy_inst_with_modification
 from rvzr.tc_components.test_case_code import TestCaseProgram, BasicBlock, InstructionNode
+from rvzr.tc_components.test_case_code import Program
 
 from .target_desc import X86TargetDesc
 
@@ -45,6 +46,121 @@ class _FaultFilter:
         self.div_overflow: bool = 'div-overflow' in CONF.faults_allowlist
         self.non_canonical_access: bool = 'non-canonical-access' in CONF.faults_allowlist
         self.u2k_access: bool = 'user-to-kernel-access' in CONF.faults_allowlist
+
+
+class newPrinter(Printer):
+    memory_prefixes = {
+        8: "byte ptr",
+        16: "word ptr",
+        32: "dword ptr",
+        64: "qword ptr",
+        128: "xmmword ptr",
+        256: "ymmword ptr",
+        512: "zmmword ptr"
+    }
+    prologue_template = [
+        ".intel_syntax noprefix\n",
+        "MFENCE # instrumentation\n",
+        ".test_case_enter:\n",
+    ]
+    epilogue_template = [
+        ".test_case_exit:\n",
+        "MFENCE # instrumentation\n",
+    ]
+
+    def print(self, prg: Program, outfile: str, lines = 15) -> None:
+        with open (outfile, "w") as f:
+            # print prologue
+            for line in self.prologue_template:
+                f.write(line)
+            line_number = 1
+            # print program
+            toggle = -1 # toggle = -1 means not instrumenting, toggle = 1 means instrumenting
+            for inst in prg:
+                # label printing logic
+                if toggle == -1:
+                    if inst.is_instrumentation:
+                        f.write(f".line_{line_number}:\n")
+                        line_number += 1
+                        toggle *= -1
+                    else:
+                        f.write(f".line_{line_number}:\n")
+                        line_number += 1
+                elif not inst.is_instrumentation: # end of instrumentation for that instruction, reset toggle
+                    toggle *= -1
+                f.write(self.instruction_to_str(inst) + "\n")
+            while (line_number <= lines):
+                f.write(f".line_{line_number}:\n")
+                line_number += 1
+            # print epilogue
+            for line in self.epilogue_template:
+                f.write(line)
+
+    def instruction_to_str(self, inst: Instruction):
+        operands = ", ".join([self.operand_to_str(op) for op in inst.operands])
+        comment = "# instrumentation" if inst.is_instrumentation else ""
+        return f"{inst.name} {operands} {comment}"
+
+    def operand_to_str(self, op: Operand) -> str:
+        if isinstance(op, MemoryOp) or isinstance(op, AgenOp):
+            prefix = self.memory_prefixes[op.width]
+            return f"{prefix} [{op.value}]"
+
+        return op.value
+    
+    def map_addresses(self, program: Program, bin_file: str) -> None:
+        # get a list of relative instruction addresses
+        dump = run(
+            f"objdump --no-show-raw-insn -D -M intel -b binary -m i386:x86-64 {bin_file} "
+            "| awk '/ [0-9a-f]+:/{print $1}'",
+            shell=True,
+            check=True,
+            capture_output=True)
+        address_list = [int(addr[:-1], 16) for addr in dump.stdout.decode().split("\n") if addr]
+
+        # connect them with instructions in the test case
+        address_map: Dict[int, Instruction] = {}
+        counter = program.num_prologue_instructions
+        for inst in program:
+            address = address_list[counter]
+            address_map[address] = inst
+            counter += 1
+
+        # map prologue and epilogue to dummy instructions
+        for address in address_list:
+            if address not in address_map:
+                address_map[address] = Instruction("UNMAPPED", True)
+
+        program.address_map = address_map
+
+    def create_pte(self, prog: Program):
+        """
+        Pick a random PTE bit (among the permitted ones) and set/reset it
+        """
+        target_desc = X86TargetDesc()
+        
+        pte_bit_choices: List[Tuple[int, bool]] = []
+        if 'assist-accessed' in CONF.permitted_faults:
+            pte_bit_choices.append(target_desc.pte_bits["ACCESSED"])
+        if 'assist-dirty' in CONF.permitted_faults:
+            pte_bit_choices.append(target_desc.pte_bits["DIRTY"])
+        if 'PF-present' in CONF.permitted_faults:
+            pte_bit_choices.append(target_desc.pte_bits["PRESENT"])
+        if 'PF-writable' in CONF.permitted_faults:
+            pte_bit_choices.append(target_desc.pte_bits["RW"])
+        if 'PF-smap' in CONF.permitted_faults:
+            pte_bit_choices.append(target_desc.pte_bits["USER"])
+        if not pte_bit_choices:  # no choices, so PTE should stay intact
+            return
+
+        pte_bit = random.choice(pte_bit_choices)
+        if pte_bit[1]:
+            mask_clear = 0xffffffffffffffff ^ (1 << pte_bit[0])
+            mask_set = 0x0
+        else:
+            mask_clear = 0xffffffffffffffff
+            mask_set = 0x0 | (1 << pte_bit[0])
+        #prog.faulty_pte = PageTableModifier(mask_set, mask_clear)
 
 
 # ==================================================================================================

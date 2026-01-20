@@ -283,6 +283,8 @@ class Instruction:
     """ category: The category of the instruction, e.g., BASE-BINARY. The keyword matches
     the category in the instruction set description file (typically called base.json)"""
 
+    instrumented = False
+
     is_control_flow: Final[bool]
     """ _control_flow: If True, the instruction is a control flow instruction
     (branch, call, return, etc.) """
@@ -442,6 +444,13 @@ class Instruction:
             for o in self.implicit_operands:
                 if o.src:
                     res.append(o)
+        return res
+    
+    def get_implicit_mem_operands(self):
+        res = []
+        for o in self.implicit_operands:
+            if isinstance(o, MemoryOp):
+                res.append(o)
         return res
 
     def get_dest_operands(self, include_implicit: bool = False) -> List[AnyOperand]:
