@@ -228,6 +228,14 @@ class Conf:
     """ input_gen_probability_of_special_value: probability of generating a special value
     (zero or maximum value) when setting a register value in the input generator. This is used
     to test fast paths in the microarchitecture """
+    """ inputs_per_class: number of inputs per input class """
+    memory_access_zeroed_bits: int = 0
+    input_main_region_size: int = 4096
+    """ input_main_region_size: """
+    input_faulty_region_size: int = 4096
+    """ input_faulty_region_size: """
+    input_register_region_size: int = 64
+    """ input_register_region_size: """
 
     # ==============================================================================================
     # Contract Model

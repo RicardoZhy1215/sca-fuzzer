@@ -37,8 +37,8 @@ def X86NonCanonicalAddressCheck(prog: Program, instr: Instruction) -> bool:
         for operands in src_operands:
             op_regs = re.split(r'\+|-|\*| ', operands.value)
             for reg in op_regs:
-                if X86TargetDesc.gpr_normalized[mask_reg] == \
-                    X86TargetDesc.gpr_normalized[reg]:
+                if X86TargetDesc.reg_normalized[mask_reg] == \
+                    X86TargetDesc.reg_normalized[reg]:
                     mask_reg = masks_list[1]
 
         offset_list = ["RCX", "RDX"]
@@ -47,8 +47,8 @@ def X86NonCanonicalAddressCheck(prog: Program, instr: Instruction) -> bool:
         for op in instr.get_all_operands():
             if not isinstance(op, RegisterOp):
                 continue
-            if X86TargetDesc.gpr_normalized[offset_reg] == \
-                X86TargetDesc.gpr_normalized[op.value]:
+            if X86TargetDesc.reg_normalized[offset_reg] == \
+                X86TargetDesc.reg_normalized[op.value]:
                 offset_reg = offset_list[1]
 
         mask = hex((random.getrandbits(16) << 48))
@@ -112,7 +112,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
             # instrument each operand to sandbox the memory accesses
             for address_reg, mem_operand in uniq_operands.items():
                 imm_width = mem_operand.width if mem_operand.width <= 32 else 32
-                assert address_reg in target_desc.registers[64], \
+                assert address_reg in target_desc.registers_by_size[64], \
                     f"Unexpected address register {address_reg} used in {instr}"
                 apply_mask = Instruction("AND", True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
