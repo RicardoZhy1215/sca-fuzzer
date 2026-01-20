@@ -12,6 +12,7 @@ from typing import List, Tuple, TYPE_CHECKING, Any
 
 from .traces import CTrace
 from .tc_components.test_case_data import InputData, InputTaint
+from rvzr.tc_components.test_case_code import Program
 
 if TYPE_CHECKING:
     from .sandbox import SandboxLayout, BaseAddrTuple
@@ -49,6 +50,11 @@ class Model(ABC):
 
         This method *must* be called before calling `trace_test_case`.
         """
+
+    @abstractmethod
+    def load_program(self, program: Program):
+        pass
+
 
     @abstractmethod
     def trace_test_case(self, inputs: List[InputData], nesting: int) -> List[CTrace]:

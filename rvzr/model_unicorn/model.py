@@ -22,7 +22,7 @@ from ..sandbox import SandboxLayout, DataArea
 from ..config import CONF
 from ..logs import ModelLogger, BLUE, COL_RESET, error
 from ..traces import CTraceEntry
-
+from rvzr.tc_components.test_case_code import Program
 from .taint_tracker import UnicornTaintTracker
 from .coverage import InstructionCoverage
 from .execution_context import ModelExecutionState
@@ -276,6 +276,40 @@ class UnicornModel(Model, ABC):
             self.emulator.hook_add(UC_HOOK_CODE, _instruction_hook, self)
         except UcError as e:
             error(f"[UnicornModel:load_test_case] {e}")
+
+    def load_program(self, program: Program) -> None:
+        """
+        Instantiate emulator and load input in registers
+        """
+        self.test_case = program
+
+        # create and read a binary
+        with open(program.bin_path, 'rb') as f:
+            code = f.read()
+        self.code_end = self.code_start + len(code)
+
+        # initialize emulator in x86-64 mode
+        emulator = Uc(*self.architecture)
+
+        try:
+            # allocate memory
+            emulator.mem_map(self.code_start, self.CODE_SIZE)
+            sandbox_size = \
+                self.OVERFLOW_REGION_SIZE * 2 + self.MAIN_REGION_SIZE + self.FAULTY_REGION_SIZE
+            emulator.mem_map(self.sandbox_base - self.OVERFLOW_REGION_SIZE, sandbox_size)
+
+            # write machine code to be emulated to memory
+            emulator.mem_write(self.code_start, code)
+
+            # set up callbacks
+            emulator.hook_add(UC_HOOK_MEM_READ | UC_HOOK_MEM_WRITE, self.trace_mem_access, self)
+            emulator.hook_add(UC_HOOK_MEM_UNMAPPED, self.trace_mem_access, self)
+            emulator.hook_add(UC_HOOK_CODE, self.instruction_hook, self)
+
+            self.emulator = emulator
+
+        except UcError as e:
+            self.LOG.error("[UnicornModel:load_program] %s" % e)
 
     def trace_test_case(self, inputs: List[InputData], nesting: int) -> List[CTrace]:
         """
