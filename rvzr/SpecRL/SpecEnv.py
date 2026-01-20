@@ -6,7 +6,8 @@ from gymnasium import spaces
 from typing import List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
-from ..tc_components.test_case_code import TestCaseProgram
+from ..tc_components.test_case_code import Program, TestCaseProgram
+from ..tc_components.test_case_data import InputData
 from ..executor import Executor
 from ..model import Model
 from ..analyser import Analyser
@@ -16,6 +17,11 @@ from ..tc_components.instruction import Instruction
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.arch.x86.target_desc import X86TargetDesc
+from .check import X86CheckAll
+from rvzr.traces import CTrace
+from rvzr.traces import HTrace
+from .interfaces import Measurement, EquivalenceClass
+import copy
 
 from rvzr.arch.x86.generator import _X86NonCanonicalAddressPass,_X86PatchOpcodesPass, \
 _X86SandboxPass,_X86PatchUndefinedFlagsPass,_X86PatchUndefinedResultPass,_X86U2KAccessPass
@@ -26,10 +32,13 @@ import os
 import shutil
 from subprocess import run
 
+
+
+
 class SpecEnv(gym.Env):
     metadata = {}
     printer: Printer
-    testcaseprogram: TestCaseProgram
+    program: Program
     executor: Executor
     model: Model
     input_gen: DataGenerator   
@@ -105,7 +114,7 @@ class SpecEnv(gym.Env):
 
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         self.printer = _X86Printer() # using x86 printer for now, may need to change later
-        self.program = TestCaseProgram(self.asm_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
+        self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -167,7 +176,304 @@ class SpecEnv(gym.Env):
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         return (step_obs, step_reward, end, truncate, {"program": self.program})
+    
 
+    """    
+    reset():
+    returns an "initial observation", which in this case is blank
+
+    clears program, resets num_steps
+    note that resetting uarch state is done at observation in _get_obs
+    """
+    def reset(self, seed, options):
+        print("#=======================================================#")
+        print("#                     RESETTING                         #")
+        print("#=======================================================#")
+        super().reset(seed=seed)
+        self.counter += 1
+        print(f"NUMBER OF TEST CASES: {self.counter}")
+        self.num_steps = 0
+        self.bad_case = False
+        self.program = Program(self.seq_size, self.asm_path, self.bin_path)
+        return (self._get_obs(), {"program": self.program})
+    
+    # extra functions that could be used down the line to visualize the env
+    def render(self):
+        return
+    
+    def close(self):
+        return
+
+
+    """
+    _get_obs():
+    returns observation, a dictionary of nparrays
+
+    _get_obs breaks the program down into inst_1, inst_1 + inst_2, inst_1 + inst_2 + inst_3...
+    in order to discern impact of each instruction
+    calls _obs_program to get the actual observation for each iteration 
+    """
+    def _get_obs(self):
+        obs = {
+            "instruction": np.full((self.seq_size,), -1, dtype=np.int64),
+            "htrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
+            "ctrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
+            "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
+            "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64)
+        } # filled with -1's as filler
+
+        # temp file management
+        cwd = os.getcwd()
+        with tempfile.TemporaryDirectory() as temp_path:
+
+            os.chdir(temp_path)
+            count = 0 # iteration counter, necessary as some instructions in are instrumentation
+            for i in range(self.program.length):
+                # check if program[i] is instrumentation. If so, skip
+                if (self.program.getInd(i).is_instrumentation):
+                    continue
+                count += 1
+                
+                # temp program / file creation
+                temp_asm_path = f"temp_obs_{i}.asm"
+                temp_bin_path = f"temp_obs_{i}.o"
+                temp = Program(i + 1, temp_asm_path, temp_bin_path)
+                curr = self.program.start
+                for _ in range(i + 1):
+                    temp.append(curr)
+                    curr = curr.next
+                self.printer.print(temp, temp_asm_path)
+                self.printer.assemble(temp_asm_path, temp_bin_path)
+                self.printer.map_addresses(temp, temp_bin_path)
+                self.printer.create_pte(temp)
+                
+                #subprocess.run("/home/laievan/specenv/SpecRL/src/reset_branch") # want to run reset_branch between iterations but not between inputs
+                temp_obs = self._obs_program(temp)
+                
+                print(f"\niteration {count} observations: ")
+                print(temp_obs)
+                
+                # fill appropriate observation row in
+                obs["instruction"][count - 1] = temp_obs[0]
+                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
+                padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
+                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
+                obs["htrace"][count - 1] = padded_htrace
+                temp_ctrace = np.array(temp_obs[2])
+                padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
+                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
+                obs["ctrace"][count - 1] = padded_ctrace
+                obs["recovery_cycles"][count - 1] = temp_obs[3]
+                obs["transient_uops"][count - 1] = temp_obs[4]
+
+        # temp file cleanup
+        os.chdir(cwd)
+        return obs
+
+
+    """
+    _obs_program(program):
+    returns (instruction index, htrace, ctrace, max recovery cycles, max transient uoperations)
+
+    _obs_program is the function that actually executes the program
+    uses revizor's executor and model code to observe the program
+    """
+    def _obs_program(self, program: Program):
+        self.executor.load_program(program)
+        self.model.load_program(program)
+
+        # could boost inputs here?
+        ctraces = self.model.trace_test_case(self.inputs, 1)
+        # clamp memory operands to safe region
+        self.executor.valid_mem_base = 0x0
+        self.executor.valid_mem_limit = 0x100000
+
+        htraces = self.executor.trace_test_case(self.inputs, repetitions=1)
+
+        pfc_feedback = self.executor.get_last_feedback()
+        recovery = []
+        transient = []
+        for _, pfc_values in enumerate(pfc_feedback):
+            recovery.append(pfc_values[2])
+            if (pfc_values[0] > pfc_values[1]):
+                transient.append(pfc_values[0] - pfc_values[1])
+            else: transient.append(0)
+        
+        return (program.end.id, htraces, ctraces, recovery, transient)
+    
+
+    """
+    reward():
+    returns a reward for the agent
+
+    Positive Rewards:
+    -Speculative Leak
+    -Misspeculation
+    -Observable misspeculation
+    Negative Rewards:
+    -# of instructions
+    -diverseness of instruction sequence (not implemented)  
+    
+    rewards are calculated by calling _full_obs_program
+    """
+    def _reward(self):
+        reward = 0
+        self._full_obs_program(self.program, self.inputs) # this is where the analyzer, observation filter, etc... are called
+        if self.leak: 
+            print("\n!!! LEAK OCCURED !!!\n")
+            exit()
+            reward += 9999 # reward for leak
+        reward = reward + 30 if self.misspec else reward - 30 # reward/punish for passing/failing misspeculative filters
+        reward = reward + 50 if self.observable else reward - 50 # reward/punish for passing/failing observation filters
+        reward -= 1 # negative reward for each additional step
+
+        return reward
+    
+
+    """
+    _full_obs_program(program, inputs)
+    sets speculative leak, misspeculation, observable speculation flags
+
+    essentially has the same functionality as _obs_program except it it checks for a leak and observable speculation
+    pulled from revizor code
+    """
+    def _full_obs_program(self, program: Program, inputs: List[InputData]) -> Optional[EquivalenceClass]:
+        self.leak = False
+        self.misspec = False
+        self.observable = False
+
+        from fuzzer import Fuzzer
+
+        fuzzer = Fuzzer("/home/hz25d/SpecRL/src/base.json", os.getcwd(), inputs=inputs)
+        fuzzer.model = self.model
+        fuzzer.input_gen = self.input_gen
+        fuzzer.analyser = self.analyser
+        fuzzer.executor = self.executor
+
+        asm = tempfile.NamedTemporaryFile(delete=False)
+        bin = tempfile.NamedTemporaryFile(delete=False)
+        curr = program.start
+        while curr is not None:
+            if hasattr(curr, "category") and curr.category == "mem":
+                curr.offset = curr.offset & self.addr_mask
+            curr = curr.next
+        self.printer.print(program, program.asm_path)
+        self.printer.assemble(program.asm_path, program.bin_path)
+        self.printer.map_addresses(program, program.bin_path)
+        self.executor.load_program(program)
+        self.model.load_program(program)
+        ctraces: List[CTrace]
+        htraces: List[HTrace]
+
+        # at this point we need to increase the effectiveness of inputs
+        # so that we can detect contract violations (note that it wasn't necessary
+        # up to this point because we weren't testing against a contract)
+        boosted_inputs: List[InputData] = fuzzer.boost_inputs(inputs, 1)
+
+        # check for violations
+        ctraces = self.model.trace_test_case(boosted_inputs, 1)
+        htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
+
+        # check if misspec occurs, updates flag
+        pfc_feedback = self.executor.get_last_feedback()
+        for i, pfc_values in enumerate(pfc_feedback):
+            if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
+                self.misspec = True
+        
+        # check if it's observable, updates flag
+        fenced = tempfile.NamedTemporaryFile(delete=False)
+        fenced_obj = tempfile.NamedTemporaryFile(delete=False)
+        run('awk \'//{print $0, "\\nlfence"}\' ' + program.asm_path + '>' + fenced.name,
+            shell=True)
+        self.printer.assemble(fenced.name, fenced_obj.name)
+        fenced_test_case = Program(0, "", "")
+        fenced_test_case.bin_path = fenced_obj.name
+        self.executor.load_program(fenced_test_case)
+        self.executor.valid_mem_base = 0x0
+        self.executor.valid_mem_limit = 0x100000
+        fenced_htraces = self.executor.trace_test_case(inputs, repetitions=1)
+        os.remove(fenced.name)
+        os.remove(fenced_obj.name)
+        os.remove(asm.name)
+        os.remove(bin.name)
+
+        program.asm_path = self.asm_path
+        program.bin_path = self.bin_path
+
+        if fenced_htraces != htraces:
+            self.observable = True
+
+        # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
+        #                                 self.executor.get_last_feedback())
+        violations = fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+        if not violations:  # nothing detected? -> we are done here, move to next test case
+            return None
+
+        print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+        exit(1)
+
+        # 2. Repeat with with max nesting
+        if 'seq' not in CONF.contract_execution_clause:
+            # self.LOG.fuzzer_nesting_increased()
+            boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
+            ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
+            htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
+            violations = fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+            if not violations:
+                print("\n\n\n FAILED MAX NESTING \n\n\n")
+                return None
+
+        # 3. Check if the violation is reproducible
+        if fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
+            # STAT.flaky_violations += 1
+            if CONF.ignore_flaky_violations:
+                print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
+                return None
+
+        # 4. Check if the violation survives priming
+        if not CONF.enable_priming:
+            return violations[-1]
+        # STAT.required_priming += 1
+
+        violation_stack = list(violations)  # make a copy
+        while violation_stack:
+            # self.LOG.fuzzer_priming(len(violation_stack))
+            violation: EquivalenceClass = violation_stack.pop()
+            if fuzzer.priming(violation, boosted_inputs):
+                break
+        else:
+            # All violations were cleared by priming.
+            print("\n\n\n FAILED PRIMING \n\n\n")
+            return None
+
+        print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+        exit(1)
+
+        # Violation survived priming. Report it
+        self.leak = True
+        return violation
+    
+    def _infiniteLoopCheck(self, prog: Program, instr: Instruction, timeout: int) -> bool:
+        prog_ = copy.deepcopy(prog)
+        unique = uuid.uuid4().hex
+        prog_.asm_path = f"/tmp/test_case_{unique}.s"
+        prog_.bin_path = f"/tmp/test_case_{unique}.o"
+        prog_.append(instr)
+        curr = prog_.start
+        while curr is not None:
+    # memory instructions in Revizor fall under category "mem"
+            if hasattr(curr, "category") and curr.category == "mem":
+                curr.offset = curr.offset & self.addr_mask
+
+            curr = curr.next
+
+
+        self.printer.print(prog_, prog_.asm_path)
+        self.printer.assemble(prog_.asm_path, prog_.bin_path)
+        self.printer.map_addresses(prog_, prog_.bin_path)
+        self.model.load_program(prog_)
+
+        return self.model.check_inf_loop(self.inputs, 1, timeout)
 
 
 

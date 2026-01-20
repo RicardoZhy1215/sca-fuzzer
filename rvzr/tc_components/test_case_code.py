@@ -13,6 +13,7 @@ import shutil
 from .actor import Actor, ActorID, ActorName, ActorPL, ActorMode
 from .instruction import Instruction
 from .test_case_binary import TestCaseBinary
+import copy
 
 
 # ==================================================================================================
@@ -387,6 +388,73 @@ class CodeSection:
 # All Program Information Combined
 # ==================================================================================================
 TC_EXIT_LABEL = ".test_case_exit"
+
+
+class Program:
+    asm_path: str = ''
+    bin_path: str = ''
+    #faulty_pte: PageTableModifier
+    start: Optional[Instruction] = None
+    end: Optional[Instruction] = None
+    length: int
+    count: int
+    maxCount: int
+    address_map: Dict[int, Instruction]
+    num_prologue_instructions: int = 1
+
+    def __init__(self, maxCount, asm_path, bin_path):
+        self.length = 0
+        self.count = 0
+        self.maxCount = maxCount
+        #self.faulty_pte = PageTableModifier()
+        self.address_map = {}
+        self.asm_path = asm_path
+        self.bin_path = bin_path
+
+    def __iter__(self):
+        current_instruction = self.start
+        while current_instruction:
+            if (current_instruction == self.end):
+                yield current_instruction
+                current_instruction = None
+                continue
+            yield current_instruction
+            current_instruction = current_instruction.next
+
+    def __len__(self):
+        return self.length
+    
+    def append(self, inst: Instruction):
+        insert = copy.deepcopy(inst)
+        if (self.count >= self.maxCount):
+            return 
+        if not self.start:
+            self.start = insert
+            self.end = insert
+            self.length += 1
+            if not inst.is_instrumentation: self.count += 1
+            return
+        curr_end = self.end
+        curr_end.next = insert
+        insert.previous = curr_end
+        self.end = insert
+        if not inst.is_instrumentation: self.count += 1
+        self.length += 1
+
+    def getInd(self, ind):
+        i = 0
+        curr = self.start
+        while (i < ind):
+            curr = curr.next
+            i += 1
+        return curr
+
+    def print(self):
+        curr = self.start
+        while(curr != self.end):
+            print(curr)
+            curr = curr.next
+        print(curr)
 
 
 class TestCaseProgram:
