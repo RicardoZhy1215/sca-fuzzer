@@ -21,6 +21,7 @@ from rvzr.sandbox import BaseAddrTuple
 from rvzr.stats import FuzzingStats
 from rvzr.traces import HTrace, RawHTraceSample, HTraceType
 from rvzr.tc_components.test_case_data import save_input_sequence_as_rdbf
+from rvzr.tc_components.test_case_code import Program
 
 if TYPE_CHECKING:
     from rvzr.tc_components.test_case_code import TestCaseProgram
@@ -278,6 +279,14 @@ class Executor(ABC):
         # reset the ignore list; as we are testing a new program now, the old ignore list is not
         # relevant anymore
         self._ignore_list = set()
+
+    def load_program(self, program: Program):
+        # masks = f"{program.faulty_pte.mask_set} {program.faulty_pte.mask_clear}"
+        # write_to_sysfs_file(masks, "/sys/x86_executor/faulty_pte_mask")
+        # with open(program.bin_path, "rb") as f:
+        #     write_to_sysfs_file_bytes(f.read(), "/sys/x86_executor/test_case")
+        with open(program.bin_path, "rb") as f:
+            km_write(f.read(), "/sys/rvzr_executor/test_case")
 
     def trace_test_case(self, inputs: List[InputData], n_reps: int) -> List[HTrace]:
         """ Call the executor kernel module to collect the hardware traces for
