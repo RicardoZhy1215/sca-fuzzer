@@ -91,9 +91,9 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
             if instr.instrumented: address_reg = address_reg[6:]
             imm_width = mem_operand.width if mem_operand.width <= 32 else 32
             apply_mask = Instruction("AND", True) \
-                .add_op(RegisterOperand(address_reg, mem_operand.width, True, True)) \
-                .add_op(ImmediateOperand(sandbox_address_mask, imm_width)) \
-                .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+                .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
+                .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
+                .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
             prog.append(apply_mask)
             # prevent double adding R14
             if not instr.instrumented:
@@ -104,7 +104,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         mem_operands = implicit_mem_operands
         if mem_operands:
             # deduplicate operands
-            uniq_operands: Dict[str, MemoryOperand] = {}
+            uniq_operands: Dict[str, MemoryOp] = {}
             for o in mem_operands:
                 if o.value not in uniq_operands:
                     uniq_operands[o.value] = o
@@ -115,13 +115,13 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
                 assert address_reg in target_desc.registers[64], \
                     f"Unexpected address register {address_reg} used in {instr}"
                 apply_mask = Instruction("AND", True) \
-                    .add_op(RegisterOperand(address_reg, mem_operand.width, True, True)) \
-                    .add_op(ImmediateOperand(sandbox_address_mask, imm_width)) \
-                    .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+                    .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
+                    .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
+                    .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
                 add_base = Instruction("ADD", True) \
-                    .add_op(RegisterOperand(address_reg, mem_operand.width, True, True)) \
-                    .add_op(RegisterOperand("R14", 64, True, False)) \
-                    .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+                    .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
+                    .add_op(RegisterOp("R14", 64, True, False)) \
+                    .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
                 prog.append(apply_mask)
                 prog.append(add_base)
             return True
@@ -151,8 +151,8 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
             # Prevent div by zero
             instrumentation = Instruction("OR", True) \
                 .add_op(divisor) \
-                .add_op(ImmediateOperand("1", 8)) \
-                .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+                .add_op(ImmediateOp("1", 8)) \
+                .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
             prog.append(instrumentation)
 
         if 'DE-overflow' in CONF.permitted_faults:
@@ -166,8 +166,8 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         if divisor.width == 8:
             if "RAX" not in divisor.value:
                 instrumentation = Instruction("MOV", True).\
-                    add_op(RegisterOperand("AX", 16, False, True)).\
-                    add_op(ImmediateOperand("1", 16))
+                    add_op(RegisterOp("AX", 16, False, True)).\
+                    add_op(ImmediateOp("1", 16))
                 prog.append(instrumentation)
                 return True
             else:
@@ -179,14 +179,14 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         # D = (D & divisor) >> 1
         d_register = {64: "RDX", 32: "EDX", 16: "DX"}[divisor.width]
         instrumentation = Instruction("AND", True) \
-            .add_op(RegisterOperand(d_register, divisor.width, False, True)) \
+            .add_op(RegisterOp(d_register, divisor.width, False, True)) \
             .add_op(divisor) \
-            .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+            .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
         prog.append(instrumentation)
         instrumentation = Instruction("SHR", True) \
-            .add_op(RegisterOperand(d_register, divisor.width, False, True)) \
-            .add_op(ImmediateOperand("1", 8)) \
-            .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "undef"]), True)
+            .add_op(RegisterOp(d_register, divisor.width, False, True)) \
+            .add_op(ImmediateOp("1", 8)) \
+            .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "undef"]), True)
         prog.append(instrumentation)
 
         return True
@@ -198,13 +198,13 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         This function ensures that the offset is always within a byte.
         """
         address = instr.operands[0]
-        if isinstance(address, RegisterOperand):
+        if isinstance(address, RegisterOp):
             # this is a version that does not access memory
             # no need for sandboxing
             return True
 
         offset = instr.operands[1]
-        if isinstance(offset, ImmediateOperand):
+        if isinstance(offset, ImmediateOp):
             # The offset is an immediate
             # Simply replace it with a smaller value
             offset.value = str(random.randint(0, 7))
@@ -215,8 +215,8 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         if address.value != offset.value:
             apply_mask = Instruction("AND", True) \
                 .add_op(offset) \
-                .add_op(ImmediateOperand(mask_3bits, 8)) \
-                .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+                .add_op(ImmediateOp(mask_3bits, 8)) \
+                .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
             prog.append(apply_mask)
             return True
 
@@ -226,13 +226,13 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
     
     def sandbox_repeated_instruction(instr: Instruction, prog: Program) -> bool:
         apply_mask = Instruction("AND", True) \
-            .add_op(RegisterOperand("RCX", 64, True, True)) \
-            .add_op(ImmediateOperand("0xff", 8)) \
-            .add_op(FlagsOperand(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
+            .add_op(RegisterOp("RCX", 64, True, True)) \
+            .add_op(ImmediateOp("0xff", 8)) \
+            .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
         add_base = Instruction("ADD", True) \
-            .add_op(RegisterOperand("RCX", 64, True, True)) \
-            .add_op(ImmediateOperand("1", 1)) \
-            .add_op(FlagsOperand(["w", "w", "w", "w", "w", "", "", "", "w"]), True)
+            .add_op(RegisterOp("RCX", 64, True, True)) \
+            .add_op(ImmediateOp("1", 1)) \
+            .add_op(FlagsOp(["w", "w", "w", "w", "w", "", "", "", "w"]), True)
         prog.append(apply_mask)
         prog.append(add_base)
 
@@ -240,7 +240,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
 
     def sandbox_corrupted_cf(instr: Instruction, prog: Program) -> bool:
         set_cf = Instruction("STC", True) \
-            .add_op(FlagsOperand(["w", "", "", "", "", "", "", "", ""]), True)
+            .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True)
         prog.append(set_cf)
 
         return True
@@ -255,8 +255,8 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
             "7",  # eacceptcopy
         ]
         set_rax = Instruction("MOV", True) \
-            .add_op(RegisterOperand("EAX", 32, True, True)) \
-            .add_op(ImmediateOperand(random.choice(options), 1))
+            .add_op(RegisterOp("EAX", 32, True, True)) \
+            .add_op(ImmediateOp(random.choice(options), 1))
         prog.append(set_rax)
 
         return True
