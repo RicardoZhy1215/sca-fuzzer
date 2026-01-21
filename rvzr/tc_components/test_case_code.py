@@ -13,6 +13,7 @@ import shutil
 from .actor import Actor, ActorID, ActorName, ActorPL, ActorMode
 from .instruction import Instruction
 from .test_case_binary import TestCaseBinary
+from .test_case_binary import SymbolTableEntry, InstructionMap
 import copy
 
 
@@ -391,8 +392,8 @@ TC_EXIT_LABEL = ".test_case_exit"
 
 
 class Program:
-    asm_path: str = ''
-    bin_path: str = ''
+    asm_path: str = 'test_case_.asm'
+    bin_path: str = 'test_case.o'
     #faulty_pte: PageTableModifier
     start: Optional[Instruction] = None
     end: Optional[Instruction] = None
@@ -401,6 +402,7 @@ class Program:
     maxCount: int
     address_map: Dict[int, Instruction]
     num_prologue_instructions: int = 1
+    _obj: Optional[TestCaseBinary] = None # Representation of the assembled test case program
 
     def __init__(self, maxCount, asm_path, bin_path):
         self.length = 0
@@ -455,6 +457,14 @@ class Program:
             print(curr)
             curr = curr.next
         print(curr)
+
+    def get_obj(self) -> TestCaseBinary:
+        """
+        Get assigned TestCaseBinary, the container of the object file
+        generated from the test case program
+        """
+        assert self._obj is not None, "Object file is not assigned"
+        return self._obj   
 
 
 class TestCaseProgram:

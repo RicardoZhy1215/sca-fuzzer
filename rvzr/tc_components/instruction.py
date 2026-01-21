@@ -277,6 +277,8 @@ class Instruction:
     # NOTE: This contains separate accessors for each operand type,
     # so it is expected to have many methods
 
+    next: Optional[Instruction] = None
+
     name: Final[str]
     """ name: The name of the instruction without any operands """
     category: Final[str]
