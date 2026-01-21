@@ -35,6 +35,8 @@ class Model(ABC):
     """ mismatch_check_mode: If True, the model will return GPR values instead of
     contract traces, which is used to check for mismatches between the model and the executor """
 
+    sandbox_base: int = 0
+
     @abstractmethod
     def __init__(self,
                  bases: BaseAddrTuple,

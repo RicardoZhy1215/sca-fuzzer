@@ -4,11 +4,11 @@ import random
 from typing import List, Dict, Set, Optional, Tuple
 
 
-from SpecRL.src.interfaces import Program
+from rvzr.tc_components.test_case_code import Program
 from rvzr.tc_components.instruction import Instruction
 from rvzr.tc_components.instruction import Operand,RegisterOp, MemoryOp, ImmediateOp, FlagsOp
 
-from config import CONF
+from rvzr.config import CONF
 from rvzr.arch.x86.target_desc import X86TargetDesc
 import copy
 
