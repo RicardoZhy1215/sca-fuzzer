@@ -22,6 +22,7 @@ from rvzr.stats import FuzzingStats
 from rvzr.traces import HTrace, RawHTraceSample, HTraceType
 from rvzr.tc_components.test_case_data import save_input_sequence_as_rdbf
 from rvzr.tc_components.test_case_code import Program
+from rvzr.tc_components.test_case_binary import TestCaseBinary
 
 if TYPE_CHECKING:
     from rvzr.tc_components.test_case_code import TestCaseProgram
@@ -280,13 +281,18 @@ class Executor(ABC):
         # relevant anymore
         self._ignore_list = set()
 
-    def load_program(self, program: Program):
+    def load_program(self, program: Program) -> None:
+        km_write("1" if self._enable_mismatch_check_mode else "0", "/sys/rvzr_executor/enable_dbg_gpr_mode")
+        # bin_path = "/home/hz25d/sca-fuzzer/test_case.o" 
+
+        # program._obj = TestCaseBinary(bin_path, parent=program)
+        # program.get_obj().save_rcbf('/sys/rvzr_executor/test_case')
         # masks = f"{program.faulty_pte.mask_set} {program.faulty_pte.mask_clear}"
         # write_to_sysfs_file(masks, "/sys/x86_executor/faulty_pte_mask")
         # with open(program.bin_path, "rb") as f:
         #     write_to_sysfs_file_bytes(f.read(), "/sys/x86_executor/test_case")
-        with open(program.bin_path, "rb") as f:
-            km_write(f.read(), "/sys/rvzr_executor/test_case")
+        # with open(program.bin_path, "rb") as f:
+        #     km_write(f.read(), "/sys/rvzr_executor/test_case")
 
     def trace_test_case(self, inputs: List[InputData], n_reps: int) -> List[HTrace]:
         """ Call the executor kernel module to collect the hardware traces for

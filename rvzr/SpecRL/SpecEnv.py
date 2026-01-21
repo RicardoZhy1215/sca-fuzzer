@@ -21,6 +21,8 @@ from rvzr.arch.x86.target_desc import X86TargetDesc
 from check import X86CheckAll
 from rvzr.traces import CTrace
 from rvzr.traces import HTrace
+from rvzr import factory
+from rvzr.fuzzer import Fuzzer, _RoundManager
 from interfaces import Measurement, EquivalenceClass
 import copy
 
@@ -60,8 +62,9 @@ class SpecEnv(gym.Env):
     step_counter: int
     succ_step_counter: int
 
-    asm_path = ""
-    bin_path = ""
+    bin_path = "test_case.o"
+    asm_path = "test_case_.asm"
+    
 
     def __init__(self,env_config):
         self.instruction_space = env_config['instruction_space']
@@ -115,18 +118,19 @@ class SpecEnv(gym.Env):
         print(f"observation space: {self.observation_space}")
 
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
-        self.printer = newPrinter() # using x86 printer for now, may need to change later
+        target_desc = X86TargetDesc()
+        self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
         self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
         self.addr_mask = self.executor.valid_mem_limit - 1
-        import factory
+
         self.model = factory.get_model(self.executor.read_base_addresses())
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
-        self.inputs = self.input_gen.generate(self.num_inputs) # at some point would like these inputs to fall under action space
+        self.inputs = self.input_gen.generate(self.num_inputs, 1) # at some point would like these inputs to fall under action space
 
     """
     step(action):
@@ -198,6 +202,7 @@ class SpecEnv(gym.Env):
         self.num_steps = 0
         self.bad_case = False
         self.program = Program(self.seq_size, self.asm_path, self.bin_path)
+        # print(f"bin path: {self.program.bin_path}")
         return (self._get_obs(), {"program": self.program})
     
     # extra functions that could be used down the line to visualize the env
@@ -345,9 +350,9 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        from fuzzer import Fuzzer, _RoundManager
 
-        fuzzer = Fuzzer("/home/hz25d/SpecRL/src/base.json", os.getcwd(), inputs=inputs)
+
+        fuzzer = Fuzzer("/home/hz25d/SpecRL/src/base.json", os.getcwd(), inputs_path=inputs)
         fuzzer.model = self.model
         fuzzer.data_gen = self.input_gen
         fuzzer.analyser = self.analyser
