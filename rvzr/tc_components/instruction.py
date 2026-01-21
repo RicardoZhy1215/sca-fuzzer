@@ -321,12 +321,14 @@ class Instruction:
                  category: str = "",
                  is_control_flow: bool = False,
                  is_instrumentation: bool = False,
-                 is_noremove: bool = False) -> None:
+                 is_noremove: bool = False,
+                 _section_id: int = -1) -> None:
         self.name = name
         self.category = category
         self.is_control_flow = is_control_flow
         self.is_instrumentation = is_instrumentation
         self.is_noremove = is_noremove
+        self._section_id = _section_id
 
         self.operands = []
         self.implicit_operands = []

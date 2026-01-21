@@ -68,6 +68,16 @@ class newPrinter(Printer):
         "MFENCE # instrumentation\n",
     ]
 
+    def _instruction_to_str(self, *args, **kwargs):
+        pass  # 或者 return ""
+        
+    def _macro_to_str(self, *args, **kwargs):
+        pass
+        
+    def _operand_to_str(self, *args, **kwargs):
+        pass
+
+    
     def print(self, prg: Program, outfile: str, lines = 15) -> None:
         with open (outfile, "w") as f:
             # print prologue
@@ -176,6 +186,12 @@ class _X86Printer(Printer):
             ".section .data.main\n",
             ".test_case_exit:nop\n",
         ]
+        
+    def create_pte(self, *args, **kwargs):
+        raise NotImplementedError("create_pte not implemented for x86 printer yet")
+
+    def map_addresses(self, *args, **kwargs):
+        raise NotImplementedError("map_addresses not implemented for x86 printer yet")
 
     def _instruction_to_str(self, inst: Instruction) -> str:
         if inst.name == "macro":

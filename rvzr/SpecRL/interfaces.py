@@ -1,7 +1,7 @@
 
 from rvzr.traces import CTrace
 from rvzr.traces import HTrace
-from ..tc_components.test_case_data import InputData
+from rvzr.tc_components.test_case_data import InputData
 from typing import List, Dict, Tuple, Optional, NamedTuple
 from collections import defaultdict
 

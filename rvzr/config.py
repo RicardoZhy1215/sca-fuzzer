@@ -261,6 +261,7 @@ class Conf:
     executor_warmups: int = 5
     """ executor_warmups: number of warmup rounds executed before starting to collect
     hardware traces """
+    executor_repetitions: int = 10
     executor_sample_sizes: List[int] = [10, 50, 100, 500]
     """ executor_sample_sizes: a list of sample sizes to be used during the measurements;
     the executor will first collect the hardware traces with the first sample size in the list,

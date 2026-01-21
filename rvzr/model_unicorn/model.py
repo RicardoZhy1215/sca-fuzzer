@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional, Set, TYPE_CHECKING, Final, Dict, Type
 
@@ -26,6 +27,9 @@ from rvzr.tc_components.test_case_code import Program
 from .taint_tracker import UnicornTaintTracker
 from .coverage import InstructionCoverage
 from .execution_context import ModelExecutionState
+
+from .util import Logger, NotSupportedException
+
 
 if TYPE_CHECKING:
     from ..tc_components.test_case_data import InputData
@@ -178,6 +182,13 @@ class UnicornModel(Model, ABC):
     # This is a management class that connects many services together, so having many attributes
     # is a necessary evil
 
+    LOG = Logger
+
+    CODE_SIZE = 4 * 1024
+    MAIN_REGION_SIZE = CONF.input_main_region_size
+    FAULTY_REGION_SIZE = CONF.input_faulty_region_size
+    OVERFLOW_REGION_SIZE = 4096
+
     # Service objects
     emulator: Uc
     tracer: Final[UnicornTracer]
@@ -286,25 +297,24 @@ class UnicornModel(Model, ABC):
         # create and read a binary
         with open(program.bin_path, 'rb') as f:
             code = f.read()
-        self.code_end = self.code_start + len(code)
+        self.code_end = self.layout.code_start() + len(code)
 
         # initialize emulator in x86-64 mode
-        emulator = Uc(*self.architecture)
+        emulator = Uc(*self._architecture)
 
         try:
             # allocate memory
-            emulator.mem_map(self.code_start, self.CODE_SIZE)
-            sandbox_size = \
-                self.OVERFLOW_REGION_SIZE * 2 + self.MAIN_REGION_SIZE + self.FAULTY_REGION_SIZE
+            emulator.mem_map(self.layout.code_start(), self.layout.code_size)
+            sandbox_size = self.OVERFLOW_REGION_SIZE * 2 + self.MAIN_REGION_SIZE + self.FAULTY_REGION_SIZE
             emulator.mem_map(self.sandbox_base - self.OVERFLOW_REGION_SIZE, sandbox_size)
 
             # write machine code to be emulated to memory
-            emulator.mem_write(self.code_start, code)
+            emulator.mem_write(self.layout.code_start(), code)
 
             # set up callbacks
-            emulator.hook_add(UC_HOOK_MEM_READ | UC_HOOK_MEM_WRITE, self.trace_mem_access, self)
-            emulator.hook_add(UC_HOOK_MEM_UNMAPPED, self.trace_mem_access, self)
-            emulator.hook_add(UC_HOOK_CODE, self.instruction_hook, self)
+            emulator.hook_add(UC_HOOK_MEM_READ | UC_HOOK_MEM_WRITE, _mem_unmapped_hook, self)
+            emulator.hook_add(UC_HOOK_MEM_UNMAPPED, _mem_unmapped_hook, self)
+            emulator.hook_add(UC_HOOK_CODE, _instruction_hook, self)
 
             self.emulator = emulator
 

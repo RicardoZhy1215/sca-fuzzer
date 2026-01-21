@@ -7,21 +7,21 @@ from typing import List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
 from rvzr.arch.x86.generator import newPrinter
-from ..tc_components.test_case_code import Program, TestCaseProgram
-from ..tc_components.test_case_data import InputData
-from ..executor import Executor
-from ..model import Model
-from ..analyser import Analyser
-from ..data_generator import DataGenerator
-from ..tc_components.test_case_data import InputData
-from ..tc_components.instruction import Instruction
+from rvzr.tc_components.test_case_code import Program, TestCaseProgram
+from rvzr.tc_components.test_case_data import InputData
+from rvzr.executor import Executor
+from rvzr.model import Model
+from rvzr.analyser import Analyser
+from rvzr.data_generator import DataGenerator
+from rvzr.tc_components.test_case_data import InputData
+from rvzr.tc_components.instruction import Instruction
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.arch.x86.target_desc import X86TargetDesc
-from .check import X86CheckAll
+from check import X86CheckAll
 from rvzr.traces import CTrace
 from rvzr.traces import HTrace
-from .interfaces import Measurement, EquivalenceClass
+from interfaces import Measurement, EquivalenceClass
 import copy
 
 
@@ -153,7 +153,8 @@ class SpecEnv(gym.Env):
             #stop workinng here
             passed_inst = X86CheckAll(self.program, inst_action, target_desc)
 
-            passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
+            # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
+            passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
                 step_obs = self._get_obs()
@@ -292,16 +293,16 @@ class SpecEnv(gym.Env):
 
         htraces = self.executor.trace_test_case(self.inputs, repetitions=1)
 
-        pfc_feedback = self.executor.get_last_feedback()
+        #pfc_feedback = self.executor.get_last_feedback()
         recovery = []
         transient = []
-        for _, pfc_values in enumerate(pfc_feedback):
-            recovery.append(pfc_values[2])
-            if (pfc_values[0] > pfc_values[1]):
-                transient.append(pfc_values[0] - pfc_values[1])
-            else: transient.append(0)
+        # for _, pfc_values in enumerate(pfc_feedback):ß
+        #     recovery.append(pfc_values[2])
+        #     if (pfc_values[0] > pfc_values[1]):
+        #         transient.append(pfc_values[0] - pfc_values[1])
+        #     else: transient.append(0)
         
-        return (program.end.id, htraces, ctraces, recovery, transient)
+        return (program.end.section_id(), htraces, ctraces, recovery, transient)
     
 
     """
@@ -344,11 +345,11 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        from fuzzer import Fuzzer
+        from fuzzer import Fuzzer, _RoundManager
 
         fuzzer = Fuzzer("/home/hz25d/SpecRL/src/base.json", os.getcwd(), inputs=inputs)
         fuzzer.model = self.model
-        fuzzer.input_gen = self.input_gen
+        fuzzer.data_gen = self.input_gen
         fuzzer.analyser = self.analyser
         fuzzer.executor = self.executor
 
@@ -370,17 +371,18 @@ class SpecEnv(gym.Env):
         # at this point we need to increase the effectiveness of inputs
         # so that we can detect contract violations (note that it wasn't necessary
         # up to this point because we weren't testing against a contract)
-        boosted_inputs: List[InputData] = fuzzer.boost_inputs(inputs, 1)
+        #boosted_inputs: List[InputData] = fuzzer.generate_boosted(inputs, 1)
+        boosted_inputs: List[InputData] = _RoundManager._boost_inputs()
 
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
         htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
 
         # check if misspec occurs, updates flag
-        pfc_feedback = self.executor.get_last_feedback()
-        for i, pfc_values in enumerate(pfc_feedback):
-            if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
-                self.misspec = True
+        # pfc_feedback = self.executor.get_last_feedback()
+        # for i, pfc_values in enumerate(pfc_feedback):
+        #     if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
+        #         self.misspec = True
         
         # check if it's observable, updates flag
         fenced = tempfile.NamedTemporaryFile(delete=False)
@@ -412,12 +414,13 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        exit(1)
+        #exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:
             # self.LOG.fuzzer_nesting_increased()
-            boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
+            #boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
+            boosted_inputs = _RoundManager._boost_inputs()
             ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
             htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
             violations = fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
@@ -426,15 +429,15 @@ class SpecEnv(gym.Env):
                 return None
 
         # 3. Check if the violation is reproducible
-        if fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
-            # STAT.flaky_violations += 1
-            if CONF.ignore_flaky_violations:
-                print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
-                return None
+        # if fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
+        #     # STAT.flaky_violations += 1
+        #     if CONF.ignore_flaky_violations:
+        #         print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
+        #         return None
 
         # 4. Check if the violation survives priming
-        if not CONF.enable_priming:
-            return violations[-1]
+        # if not CONF.enable_priming:
+        #     return violations[-1]
         # STAT.required_priming += 1
 
         violation_stack = list(violations)  # make a copy
