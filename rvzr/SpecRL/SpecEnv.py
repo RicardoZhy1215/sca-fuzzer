@@ -246,6 +246,7 @@ class SpecEnv(gym.Env):
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
                 temp = Program(i + 1, temp_asm_path, temp_bin_path)
+                temp.assign_obj(temp_bin_path)
                 curr = self.program.start
                 for _ in range(i + 1):
                     temp.append(curr)
@@ -254,6 +255,8 @@ class SpecEnv(gym.Env):
                 self.printer.assemble(temp_asm_path, temp_bin_path)
                 self.printer.map_addresses(temp, temp_bin_path)
                 self.printer.create_pte(temp)
+
+
                 
                 #subprocess.run("/home/laievan/specenv/SpecRL/src/reset_branch") # want to run reset_branch between iterations but not between inputs
                 temp_obs = self._obs_program(temp)

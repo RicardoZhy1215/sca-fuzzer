@@ -119,6 +119,7 @@ class newPrinter(Printer):
         return op.value
     
     def map_addresses(self, program: Program, bin_file: str) -> None:
+
         # get a list of relative instruction addresses
         dump = run(
             f"objdump --no-show-raw-insn -D -M intel -b binary -m i386:x86-64 {bin_file} "

@@ -22,6 +22,7 @@ from rvzr.stats import FuzzingStats
 from rvzr.traces import HTrace, RawHTraceSample, HTraceType
 from rvzr.tc_components.test_case_data import save_input_sequence_as_rdbf
 from rvzr.tc_components.test_case_code import Program
+from rvzr.tc_components.test_case_code import ProgramBinary
 from rvzr.tc_components.test_case_binary import TestCaseBinary
 
 if TYPE_CHECKING:
@@ -286,7 +287,7 @@ class Executor(ABC):
         # bin_path = "/home/hz25d/sca-fuzzer/test_case.o" 
 
         # program._obj = TestCaseBinary(bin_path, parent=program)
-        # program.get_obj().save_rcbf('/sys/rvzr_executor/test_case')
+        program.get_obj().save_rcbf_program_binary('/sys/rvzr_executor/test_case')
         # masks = f"{program.faulty_pte.mask_set} {program.faulty_pte.mask_clear}"
         # write_to_sysfs_file(masks, "/sys/x86_executor/faulty_pte_mask")
         # with open(program.bin_path, "rb") as f:
