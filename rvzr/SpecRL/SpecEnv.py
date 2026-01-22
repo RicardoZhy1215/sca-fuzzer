@@ -13,6 +13,14 @@ from rvzr.executor import Executor
 from rvzr.model import Model
 from rvzr.analyser import Analyser
 from rvzr.data_generator import DataGenerator
+from rvzr.code_generator import CodeGenerator
+from rvzr.code_generator import assemble
+from rvzr.arch.x86.generator import X86Generator
+from rvzr.asm_parser import AsmParser
+from rvzr.elf_parser import ELFParser
+from rvzr.arch.x86.asm_parser import X86AsmParser
+from rvzr.elf_parser import ELFParser
+from rvzr.isa_spec import InstructionSet
 from rvzr.tc_components.test_case_data import InputData
 from rvzr.tc_components.instruction import Instruction
 from rvzr.arch.x86.executor import X86IntelExecutor
@@ -43,6 +51,10 @@ class SpecEnv(gym.Env):
     metadata = {}
     printer: Printer
     program: Program
+    generator: X86Generator
+    new_program: TestCaseProgram
+    asm_parser: AsmParser
+    elf_parser: ELFParser
     executor: Executor
     model: Model
     input_gen: DataGenerator   
@@ -121,6 +133,12 @@ class SpecEnv(gym.Env):
         target_desc = X86TargetDesc()
         self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
         self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
+        # Todo: Need to use code_generator to generate program.
+        instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
+        self.asm_parser = X86AsmParser(instruction_set, target_desc)
+        self.elf_parser = ELFParser(target_desc)
+        self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, elf_parser=self.elf_parser)
+        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm")
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -236,25 +254,29 @@ class SpecEnv(gym.Env):
 
             os.chdir(temp_path)
             count = 0 # iteration counter, necessary as some instructions in are instrumentation
-            for i in range(self.program.length):
+
+            total_instructions_num = sum(len(bb) for bb in self.new_program.iter_basic_blocks())
+            # for i in range(self.program.length):
+            for i in range(total_instructions_num):
                 # check if program[i] is instrumentation. If so, skip
-                if (self.program.getInd(i).is_instrumentation):
-                    continue
+                # if (self.program.getInd(i).is_instrumentation):
+                #     continue
                 count += 1
                 
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
-                temp = Program(i + 1, temp_asm_path, temp_bin_path)
-                temp.assign_obj(temp_bin_path)
-                curr = self.program.start
-                for _ in range(i + 1):
-                    temp.append(curr)
-                    curr = curr.next
-                self.printer.print(temp, temp_asm_path)
-                self.printer.assemble(temp_asm_path, temp_bin_path)
-                self.printer.map_addresses(temp, temp_bin_path)
-                self.printer.create_pte(temp)
+                # temp = Program(i + 1, temp_asm_path, temp_bin_path)
+                # temp.assign_obj(temp_bin_path)
+                temp = self.new_program
+                # curr = self.program.start
+                # for _ in range(i + 1):
+                #     temp.append(curr)
+                #     curr = curr.next
+                # self.printer.print(temp, temp_asm_path)
+                # self.printer.assemble(temp_asm_path, temp_bin_path)
+                # self.printer.map_addresses(temp, temp_bin_path)
+                # self.printer.create_pte(temp)
 
 
                 
@@ -289,9 +311,11 @@ class SpecEnv(gym.Env):
     _obs_program is the function that actually executes the program
     uses revizor's executor and model code to observe the program
     """
-    def _obs_program(self, program: Program):
-        self.executor.load_program(program)
-        self.model.load_program(program)
+    def _obs_program(self, program: TestCaseProgram):
+        # self.executor.load_program(program)
+        # self.model.load_program(program)
+        self.executor.load_test_case(program)
+        self.model.load_test_case(program)
 
         # could boost inputs here?
         ctraces = self.model.trace_test_case(self.inputs, 1)
@@ -299,12 +323,12 @@ class SpecEnv(gym.Env):
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
 
-        htraces = self.executor.trace_test_case(self.inputs, repetitions=1)
+        htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
 
         #pfc_feedback = self.executor.get_last_feedback()
         recovery = []
         transient = []
-        # for _, pfc_values in enumerate(pfc_feedback):ß
+        # for _, pfc_values in enumerate(pfc_feedback):
         #     recovery.append(pfc_values[2])
         #     if (pfc_values[0] > pfc_values[1]):
         #         transient.append(pfc_values[0] - pfc_values[1])

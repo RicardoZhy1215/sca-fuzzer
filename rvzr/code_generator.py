@@ -209,7 +209,7 @@ class CodeGenerator(ABC):
         if not asm_file:
             asm_file = 'generated.asm'
         test_case = TestCaseProgram(asm_file, seed=self._state)
-
+        print(f"test_case", test_case)
         # create actors and their corresponding sections
         actors_config: ActorsConf = CONF.get_actors_conf()
         if len(actors_config) != 1:
