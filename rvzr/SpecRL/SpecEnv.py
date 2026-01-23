@@ -288,7 +288,7 @@ class SpecEnv(gym.Env):
                 
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
-                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
+                temp_htrace = np.array(temp_obs[1]._raw) # some extra work needed to pad in order to fit the shape
                 padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
                 padded_htrace[:temp_htrace.shape[0]] = temp_htrace
                 obs["htrace"][count - 1] = padded_htrace
@@ -334,7 +334,7 @@ class SpecEnv(gym.Env):
         #         transient.append(pfc_values[0] - pfc_values[1])
         #     else: transient.append(0)
         
-        return (program.end.section_id(), htraces, ctraces, recovery, transient)
+        return (program, htraces, ctraces, recovery, transient)
     
 
     """
