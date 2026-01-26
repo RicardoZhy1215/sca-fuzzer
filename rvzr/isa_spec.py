@@ -90,8 +90,7 @@ def _read_json_spec(isa: InstructionSet, filename: str) -> None:
     with open(filename, "r") as f:
         root = json.load(f)
     for instruction_node in root:
-        instruction = InstructionSpec(instruction_node["name"], instruction_node["category"],
-                                      instruction_node["is_control_flow"])
+        instruction = InstructionSpec(instruction_node["name"], instruction_node["category"], instruction_node["is_control_flow"])
 
         for op_node in instruction_node["operands"]:
             op = _parse_json_operand(op_node, instruction)

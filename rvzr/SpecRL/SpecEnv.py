@@ -25,6 +25,7 @@ from rvzr.tc_components.test_case_data import InputData
 from rvzr.tc_components.instruction import Instruction
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
+from rvzr.code_generator import assemble
 from rvzr.arch.x86.target_desc import X86TargetDesc
 from check import X86CheckAll
 from rvzr.traces import CTrace
@@ -74,9 +75,8 @@ class SpecEnv(gym.Env):
     step_counter: int
     succ_step_counter: int
 
-    bin_path = "test_case.o"
-    asm_path = "test_case_.asm"
-    
+    bin_path = "my_test_case.o"
+    asm_path = "my_test_case.asm"
 
     def __init__(self,env_config):
         self.instruction_space = env_config['instruction_space']
@@ -288,11 +288,11 @@ class SpecEnv(gym.Env):
                 
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
-                temp_htrace = np.array(temp_obs[1]._raw) # some extra work needed to pad in order to fit the shape
+                temp_htrace = np.array(temp_obs[1][0].get_raw_traces()) # some extra work needed to pad in order to fit the shape
                 padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
                 padded_htrace[:temp_htrace.shape[0]] = temp_htrace
                 obs["htrace"][count - 1] = padded_htrace
-                temp_ctrace = np.array(temp_obs[2])
+                temp_ctrace = np.array(temp_obs[2][0].get_untyped())
                 padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
                 padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
                 obs["ctrace"][count - 1] = padded_ctrace
@@ -326,15 +326,17 @@ class SpecEnv(gym.Env):
         htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
 
         #pfc_feedback = self.executor.get_last_feedback()
-        recovery = []
-        transient = []
+        #recovery = []
+        #transient = []
+        recovery = np.full(20, -1, dtype=np.int64)
+        transient = np.full(20, -1, dtype=np.int64)
         # for _, pfc_values in enumerate(pfc_feedback):
         #     recovery.append(pfc_values[2])
         #     if (pfc_values[0] > pfc_values[1]):
         #         transient.append(pfc_values[0] - pfc_values[1])
         #     else: transient.append(0)
-        
-        return (program, htraces, ctraces, recovery, transient)
+        return (program.__len__(), htraces, ctraces, recovery, transient)
+        #return (program, htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
     
 
     """
@@ -372,19 +374,18 @@ class SpecEnv(gym.Env):
     essentially has the same functionality as _obs_program except it it checks for a leak and observable speculation
     pulled from revizor code
     """
-    def _full_obs_program(self, program: Program, inputs: List[InputData]) -> Optional[EquivalenceClass]:
+    def _full_obs_program(self, program: TestCaseProgram, inputs: List[InputData]) -> Optional[EquivalenceClass]:
         self.leak = False
         self.misspec = False
         self.observable = False
 
 
 
-        fuzzer = Fuzzer("/home/hz25d/SpecRL/src/base.json", os.getcwd(), inputs_path=inputs)
-        fuzzer.model = self.model
-        fuzzer.data_gen = self.input_gen
-        fuzzer.analyser = self.analyser
-        fuzzer.executor = self.executor
-
+        self.fuzzer = Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), input_paths=inputs)
+        self.fuzzer.model = self.model
+        self.fuzzer.data_gen = self.input_gen
+        self.fuzzer.analyser = self.analyser
+        self.fuzzer.executor = self.executor
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
         curr = program.start
@@ -392,11 +393,12 @@ class SpecEnv(gym.Env):
             if hasattr(curr, "category") and curr.category == "mem":
                 curr.offset = curr.offset & self.addr_mask
             curr = curr.next
-        self.printer.print(program, program.asm_path)
-        self.printer.assemble(program.asm_path, program.bin_path)
-        self.printer.map_addresses(program, program.bin_path)
-        self.executor.load_program(program)
-        self.model.load_program(program)
+        # self.printer.print(program, program.asm_path)
+        # self.printer.assemble(program.asm_path, program.bin_path)
+        # self.printer.map_addresses(program, program.bin_path)
+        program = self.new_program
+        self.executor.load_test_case(program)
+        self.model.load_test_case(program)
         ctraces: List[CTrace]
         htraces: List[HTrace]
 
@@ -404,7 +406,9 @@ class SpecEnv(gym.Env):
         # so that we can detect contract violations (note that it wasn't necessary
         # up to this point because we weren't testing against a contract)
         #boosted_inputs: List[InputData] = fuzzer.generate_boosted(inputs, 1)
-        boosted_inputs: List[InputData] = _RoundManager._boost_inputs()
+        manager = _RoundManager(self.fuzzer, program, self.inputs)
+        manager._boost_inputs()
+        boosted_inputs = manager.boosted_inputs
 
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
@@ -418,35 +422,34 @@ class SpecEnv(gym.Env):
         
         # check if it's observable, updates flag
         fenced = tempfile.NamedTemporaryFile(delete=False)
-        fenced_obj = tempfile.NamedTemporaryFile(delete=False)
-        run('awk \'//{print $0, "\\nlfence"}\' ' + program.asm_path + '>' + fenced.name,
-            shell=True)
-        self.printer.assemble(fenced.name, fenced_obj.name)
-        fenced_test_case = Program(0, "", "")
-        fenced_test_case.bin_path = fenced_obj.name
-        self.executor.load_program(fenced_test_case)
+        # fenced_obj = tempfile.NamedTemporaryFile(delete=False)
+        run('awk \'//{print $0, "\\nlfence"}\' ' + program.asm_path() + '>' + fenced.name, shell=True)
+        fenced_test_case = self.generator.create_test_case(fenced.name)
+        # fenced_test_case._obj = fenced_obj.name
+        self.executor.load_test_case(fenced_test_case)
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
-        fenced_htraces = self.executor.trace_test_case(inputs, repetitions=1)
+        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
         os.remove(fenced.name)
-        os.remove(fenced_obj.name)
-        os.remove(asm.name)
-        os.remove(bin.name)
+        # os.remove(fenced_obj)
+        # os.remove(asm.name)
+        # os.remove(bin.name)
 
-        program.asm_path = self.asm_path
-        program.bin_path = self.bin_path
+        program._asm_path = self.asm_path
+        program._obj = self.bin_path
 
         if fenced_htraces != htraces:
             self.observable = True
 
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
-        violations = fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+        # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, self.new_program, boosted_inputs, True)
         if not violations:  # nothing detected? -> we are done here, move to next test case
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        #exit(1)
+        exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:
@@ -455,7 +458,7 @@ class SpecEnv(gym.Env):
             boosted_inputs = _RoundManager._boost_inputs()
             ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
             htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
-            violations = fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+            violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
             if not violations:
                 print("\n\n\n FAILED MAX NESTING \n\n\n")
                 return None
@@ -476,7 +479,7 @@ class SpecEnv(gym.Env):
         while violation_stack:
             # self.LOG.fuzzer_priming(len(violation_stack))
             violation: EquivalenceClass = violation_stack.pop()
-            if fuzzer.priming(violation, boosted_inputs):
+            if self.fuzzer.priming(violation, boosted_inputs):
                 break
         else:
             # All violations were cleared by priming.
