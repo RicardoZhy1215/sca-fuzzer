@@ -200,7 +200,7 @@ class CodeGenerator(ABC):
 
     # ----------------------------------------------------------------------------------------------
     # Public Interface
-    def create_test_case(self, asm_file: str, disable_assembler: bool = False) -> TestCaseProgram:
+    def create_test_case(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True) -> TestCaseProgram:
         """
         Generate a random test case, write its assembly code to a file,
         and assemble it into an object (unless disabled).
@@ -224,7 +224,9 @@ class CodeGenerator(ABC):
         default_actor = main_section.owner
         assert default_actor.is_main
         main_func = self._function_generator.generate_empty(".function_0", main_section)
-        self._function_generator.fill_function(main_func)
+
+        if not generate_empty_case:
+            self._function_generator.fill_function(main_func)
 
         # add it to the test case, in the first section
         test_case[0].append(main_func)
