@@ -171,12 +171,11 @@ if __name__ == "__main__":
     )
     .environment(SpecEnv, env_config=env_config)
     .env_runners(num_env_runners=0)
-    #.rollouts(num_rollout_workers=0)    # 旧栈用这个
+    #.rollouts(num_rollout_workers=0)  
 )
     
-
     run_rllib_example_script_experiment(base_config, args) 
-    exit()
+    exit(0)
 
     config = (
         PPOConfig()
@@ -199,7 +198,7 @@ if __name__ == "__main__":
             checkpoint_dir = algo.save_to_path()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
 
-    exit()
+    #exit()
 
 
 

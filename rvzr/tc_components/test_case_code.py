@@ -740,6 +740,7 @@ class TestCaseProgram:
     _sections: Final[List[CodeSection]]  # List of sections in the test case program
     _actors: Dict[ActorName, Actor]  # Dictionary of actors in the test case program
     _tc_exit_bb: Final[BasicBlock]  # Special basic block labeled that terminates the test case
+    index: int = 0
 
     def __init__(self, asm_path: str, seed: int = 0):
         self.generator_seed = seed
@@ -944,3 +945,66 @@ class TestCaseProgram:
                 if func.name == name:
                     return func
         raise KeyError(f"Function {name} does not exist in the test case")
+
+
+    def get_program_subset(self, n: int, new_asm_path: str) -> "TestCaseProgram":
+
+        if n < 0:
+            raise ValueError("n must be >= 0")
+
+        new_tc = copy.deepcopy(self)
+        new_tc._asm_path = new_asm_path
+
+        if n == 0:
+            for bb in new_tc.iter_basic_blocks():
+                self._clear_bb(bb)
+            return new_tc
+        current = 0
+        truncated = False
+
+        for bb in new_tc.iter_basic_blocks():
+            if truncated:
+                self._clear_bb(bb)
+                continue
+
+            node = bb._start
+            while node is not None:
+                current += 1
+
+                if current == n:
+
+                    next_node = node.next
+                    node.next = None
+                    bb._end = node
+                    if next_node is not None:
+                        next_node.previous = None  
+
+                    bb.terminators = []
+                    truncated = True
+                    break
+
+                node = node.next
+
+            if truncated:
+                continue
+
+            if bb.terminators:
+                remaining = n - current
+                if remaining <= 0:
+                    bb.terminators = []
+                    truncated = True
+                elif len(bb.terminators) > remaining:
+                    bb.terminators = bb.terminators[:remaining]
+                    current += remaining
+                    truncated = True
+                else:
+                    current += len(bb.terminators)
+                    if current == n:
+                        truncated = True
+        return new_tc
+
+
+    def _clear_bb(self, bb: "BasicBlock") -> None:
+        bb._start = None
+        bb._end = None
+        bb.terminators = []

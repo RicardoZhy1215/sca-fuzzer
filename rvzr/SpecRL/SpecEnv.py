@@ -138,7 +138,8 @@ class SpecEnv(gym.Env):
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
         self.elf_parser = ELFParser(target_desc)
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, elf_parser=self.elf_parser)
-        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm")
+        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True)
+
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -146,9 +147,10 @@ class SpecEnv(gym.Env):
 
         self.model = factory.get_model(self.executor.read_base_addresses())
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
+
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
-        self.inputs = self.input_gen.generate(self.num_inputs, 1) # at some point would like these inputs to fall under action space
+        self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
 
     """
     step(action):
@@ -172,7 +174,6 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
-            #stop workinng here
             passed_inst = X86CheckAll(self.program, inst_action, target_desc)
 
             # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
@@ -188,7 +189,8 @@ class SpecEnv(gym.Env):
                 step_reward = -20
                 return (step_obs, step_reward, end, truncate, {"program": self.program})
             else:
-                self.program.append(self.instruction_space[action])
+                # self.program.append(self.instruction_space[action])
+                self.new_program = self.generator.insert_instruction_in_test_case(self.new_program, self.instruction_space[action])
                 print(f"adding step {self.instruction_space[action]}")
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
@@ -449,7 +451,7 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        exit(1)
+        #exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:
