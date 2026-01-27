@@ -138,8 +138,7 @@ class SpecEnv(gym.Env):
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
         self.elf_parser = ELFParser(target_desc)
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, elf_parser=self.elf_parser)
-        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True)
-
+        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=False)
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -197,7 +196,7 @@ class SpecEnv(gym.Env):
         print()
         print("#=======================================================#")
         print("program: ")
-        self.program.print()
+        # self.program.print()
         step_obs = self._get_obs()
         step_reward = self._reward()
         print(f"reward: {step_reward}")
@@ -257,26 +256,38 @@ class SpecEnv(gym.Env):
             os.chdir(temp_path)
             count = 0 # iteration counter, necessary as some instructions in are instrumentation
 
-            total_instructions_num = sum(len(bb) for bb in self.new_program.iter_basic_blocks())
+            all_instructions = []
+            for bb in self.new_program.iter_basic_blocks():
+                for instr in bb:
+                    all_instructions.append(instr)
+            total_instructions_num = len(all_instructions)
             # for i in range(self.program.length):
             for i in range(total_instructions_num):
+                target_inst = all_instructions[i]
                 # check if program[i] is instrumentation. If so, skip
                 # if (self.program.getInd(i).is_instrumentation):
                 #     continue
+                if target_inst.is_instrumentation:
+                    continue
+
                 count += 1
                 
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
-                # temp.assign_obj(temp_bin_path)
-                temp = self.new_program
-                # curr = self.program.start
+                temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True)
+                for _ in range(i + 1):
+                    curr =  all_instructions[i]
+                    temp_program = self.generator.insert_instruction_in_test_case(temp_program, curr)
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
                 # self.printer.print(temp, temp_asm_path)
-                # self.printer.assemble(temp_asm_path, temp_bin_path)
+                temp_program.assign_obj(temp_bin_path)
+                assemble(temp_program)
+                self.elf_parser.populate_elf_data(temp_program.get_obj(),temp_program)
+
                 # self.printer.map_addresses(temp, temp_bin_path)
                 # self.printer.create_pte(temp)
 
