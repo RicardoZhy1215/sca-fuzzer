@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 """
 from __future__ import annotations
 
+from email.mime import base
+import os
 import random
 import re
 from typing import TYPE_CHECKING, List, Tuple, Optional, Final, Callable, Dict, TextIO, Iterable
@@ -214,6 +216,7 @@ class CodeGenerator(ABC):
         actors_config: ActorsConf = CONF.get_actors_conf()
         if len(actors_config) != 1:
             error("Generation of test cases with multiple actors is not yet supported")
+        print("actors_config", actors_config)
         self.generate_actors_with_sections(test_case, actors_config)
 
         # create empty main function and fill it with random instructions
@@ -244,6 +247,15 @@ class CodeGenerator(ABC):
 
         self._update_state()
         return test_case
+    
+    def insert_instruction_in_test_case(self, test_case: TestCaseProgram, inst: Instruction) -> None:
+        # currently, we only support inserting into the main function of the main section
+        main_section = test_case[0]
+        default_actor = main_section.owner
+        assert default_actor.is_main
+        main_func = main_section[0]
+        self._function_generator._insert_instruction_in_function(main_func, inst)
+        
 
     def create_test_case_from_template(self, template_file: str) -> TestCaseProgram:
         """
@@ -589,6 +601,16 @@ class _FunctionGenerator:
                 self._isa_spec.non_memory_access_specs, self._isa_spec.store_instructions,
                 self._isa_spec.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
             bb.insert_after(bb.get_last(), inst)
+    
+    def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
+        # bb_list: List[BasicBlock] = list(func)
+        # bb = random.choice(bb_list)
+        # bb.insert_after(bb.get_last(), inst)
+        bb_list: List[BasicBlock] = list(func)
+        if not bb_list:
+            return 
+        last_bb = bb_list[-1]
+        last_bb.insert_after(last_bb.get_last(), inst)
 
 
 class _InstructionGenerator:
