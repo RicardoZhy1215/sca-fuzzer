@@ -101,7 +101,7 @@ for line in lines:
     instruction_space.append(JNS)
     instruction_space.append(JMP)
 
-for instr in instruction_space: print(instr)
+
 
 SBB_RBX = Instruction("SBB", False, "",  False, _section_id=0) \
     .add_op(MemoryOp("RBX", 64, True, True)) \
@@ -123,6 +123,10 @@ env_config = {"instruction_space": instruction_space,
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    for instr in instruction_space: 
+            print(instr)
+
+
     """
     test = SpecEnv(env_config)
     print("STEP 1: \n")

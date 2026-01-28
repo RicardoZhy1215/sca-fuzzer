@@ -200,7 +200,7 @@ class CodeGenerator(ABC):
 
     # ----------------------------------------------------------------------------------------------
     # Public Interface
-    def create_test_case(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True) -> TestCaseProgram:
+    def create_test_case(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True, instruction_space: List[Instruction] = None) -> TestCaseProgram:
         """
         Generate a random test case, write its assembly code to a file,
         and assemble it into an object (unless disabled).
@@ -224,9 +224,13 @@ class CodeGenerator(ABC):
         default_actor = main_section.owner
         assert default_actor.is_main
         main_func = self._function_generator.generate_empty(".function_0", main_section)
+        # self._function_generator.fill_function(main_func)
 
+        self._function_generator._add_terminators_in_function(main_func)
         if not generate_empty_case:
-            self._function_generator.fill_function(main_func)
+            self._function_generator._add_instructions_in_function(main_func, instruction_space)
+            
+    
 
         # add it to the test case, in the first section
         test_case[0].append(main_func)
@@ -251,12 +255,16 @@ class CodeGenerator(ABC):
         return test_case
     
     def insert_instruction_in_test_case(self, test_case: TestCaseProgram, inst: Instruction) -> None:
-        # currently, we only support inserting into the main function of the main section
         main_section = test_case[0]
-        default_actor = main_section.owner
-        assert default_actor.is_main
         main_func = main_section[0]
         self._function_generator._insert_instruction_in_function(main_func, inst)
+        # for p in self._passes:
+        #     p.run_on_test_case(test_case)
+
+        # add symbols to test case
+        # self._add_required_symbols(test_case)
+
+        self._printer.print(test_case)
         
 
     def create_test_case_from_template(self, template_file: str) -> TestCaseProgram:
@@ -588,7 +596,7 @@ class _FunctionGenerator:
             # > 2 successors
             raise NotImplementedError("Indirect jumps/calls are not yet supported")
 
-    def _add_instructions_in_function(self, func: Function) -> None:
+    def _add_instructions_in_function(self, func: Function, instruction_space: List[Instruction]) -> None:
         """
         Fill the function with random instructions.
         Ensures that all basic blocks are filled with roughly the same number of instructions
@@ -599,20 +607,18 @@ class _FunctionGenerator:
         assert all(len(bb) == 0 for bb in bb_list), "Basic blocks are not empty"
         for _ in range(0, CONF.program_size):
             bb = random.choice(bb_list)
+            # inst = random.choice(instruction_space)
+            # inst._section_id = 0
             inst = self._instruction_generator.generate_from_random_spec(
                 self._isa_spec.non_memory_access_specs, self._isa_spec.store_instructions,
                 self._isa_spec.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
             bb.insert_after(bb.get_last(), inst)
     
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
-        # bb_list: List[BasicBlock] = list(func)
-        # bb = random.choice(bb_list)
-        # bb.insert_after(bb.get_last(), inst)
-        bb_list: List[BasicBlock] = list(func)
-        if not bb_list:
-            return 
-        last_bb = bb_list[-1]
-        last_bb.insert_after(last_bb.get_last(), inst)
+        bb_list = list(func)
+        bb = bb_list[0]
+        bb.insert_after(bb.get_last(), inst)
+        
 
 
 class _InstructionGenerator:
