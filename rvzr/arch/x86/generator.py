@@ -1116,3 +1116,4 @@ class X86Generator(CodeGenerator):
             self._passes.append(_X86U2KAccessPass())  # must be after X86SandboxPass
         self._passes.append(_X86PatchOpcodesPass())
         self._printer = _X86Printer(self._target_desc)
+        self.instruction_space = []

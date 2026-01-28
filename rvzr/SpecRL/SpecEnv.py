@@ -137,7 +137,9 @@ class SpecEnv(gym.Env):
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
         self.elf_parser = ELFParser(target_desc)
-        self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, elf_parser=self.elf_parser)
+        self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
+                                      elf_parser=self.elf_parser)
+        self.generator.instruction_space = self.instruction_space
         # self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=False)
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
@@ -221,7 +223,14 @@ class SpecEnv(gym.Env):
         self.num_steps = 0
         self.bad_case = False
         # self.program = Program(self.seq_size, self.asm_path, self.bin_path)
-        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm")
+        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
+                                                           instruction_space=self.generator.instruction_space)
+        all_instructions = []
+        for bb in self.new_program.iter_basic_blocks():
+            for instr in bb:
+                all_instructions.append(instr)
+        total_instructions_num = len(all_instructions)
+        print("new_program after reset: ", total_instructions_num)
 
         # print(f"bin path: {self.program.bin_path}")
         return (self._get_obs(), {"program": self.new_program})
@@ -279,12 +288,23 @@ class SpecEnv(gym.Env):
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
+
+                os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
+                import shutil
+
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
-                temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True)
+                temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+
+                print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
 
-                for _ in range(i + 1):
-                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[i])
+                for j in range(i + 1):
+                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j+1])
+                    print("i=", i, "j=", j)
+                    shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
+                
+
+                
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
@@ -292,6 +312,10 @@ class SpecEnv(gym.Env):
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
+
+
+
+
 
                 print(f"Checking object file: {temp_program.get_obj().obj_path}")
                 if not os.path.exists(temp_program.get_obj().obj_path) or os.path.getsize(temp_program.get_obj().obj_path) == 0:
