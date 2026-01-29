@@ -59,7 +59,7 @@ class SpecEnv(gym.Env):
     elf_parser: ELFParser
     executor: Executor
     model: Model
-    input_gen: DataGenerator   
+    input_gen: DataGenerator
     inputs: List[InputData]
     instruction_space: List[Instruction]
     misspec: bool
@@ -90,12 +90,12 @@ class SpecEnv(gym.Env):
 
         """
         ACTION SPACE:
-        for now, basic action space. Simply just the subset of the ISA + an "end game" instruction 
+        for now, basic action space. Simply just the subset of the ISA + an "end game" instruction
         """
         self.action_space = spaces.Discrete(len(self.instruction_space) + 1)
         self.end_game = len(self.instruction_space)
         self.num_steps = 0
-        self.max_steps = self.seq_size        
+        self.max_steps = self.seq_size
 
         """
         OBSERVATION SPACE:
@@ -105,13 +105,13 @@ class SpecEnv(gym.Env):
         2. HTrace
         3. CTrace
         4. INT_MISC.RECOVERY_CYCLES (counts recovery cycles for machine clears and branch mispredictions)
-        5. UOPS_ISSUED.ANY - UOPS.RETIRED.ANY (# of transient micro-operations) 
-        Instruction - is an integer 
+        5. UOPS_ISSUED.ANY - UOPS.RETIRED.ANY (# of transient micro-operations)
+        Instruction - is an integer
         HTrace - is a sequence of observations, or an array of integers
         CTrace - is a sequence of observations, or an array of integers
-        Recovery Cycles - is an integer 
-        Transient uops - is an integer 
-        implemented as such - Spaces.Dict, can't do variable length so just have a max instruction sequence length 
+        Recovery Cycles - is an integer
+        Transient uops - is an integer
+        implemented as such - Spaces.Dict, can't do variable length so just have a max instruction sequence length
         (HTrace, CTrace can't go past this length)
         note: -1 is a filler number for padding
         """
@@ -156,7 +156,7 @@ class SpecEnv(gym.Env):
 
     """
     step(action):
-    
+
     returns a 5 element tuple (observation, reward, terminated, truncated, info)
     how stepping works:
     action = index of instruction to append
@@ -205,9 +205,9 @@ class SpecEnv(gym.Env):
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         return (step_obs, step_reward, end, truncate, {"program": self.program})
-    
 
-    """    
+
+    """
     reset():
     returns an "initial observation", which in this case is blank
 
@@ -235,11 +235,11 @@ class SpecEnv(gym.Env):
 
         # print(f"bin path: {self.program.bin_path}")
         return (self._get_obs(), {"program": self.new_program})
-    
+
     # extra functions that could be used down the line to visualize the env
     def render(self):
         return
-    
+
     def close(self):
         return
 
@@ -250,7 +250,7 @@ class SpecEnv(gym.Env):
 
     _get_obs breaks the program down into inst_1, inst_1 + inst_2, inst_1 + inst_2 + inst_3...
     in order to discern impact of each instruction
-    calls _obs_program to get the actual observation for each iteration 
+    calls _obs_program to get the actual observation for each iteration
     """
     def _get_obs(self):
         obs = {
@@ -286,7 +286,7 @@ class SpecEnv(gym.Env):
                     continue
 
                 count += 1
-                
+
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i + 1}.asm"
                 temp_bin_path = f"temp_obs_{i + 1}.o"
@@ -297,11 +297,9 @@ class SpecEnv(gym.Env):
 
                 for j in range(i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j + 1])
+                    all_instructions[j + 1]._section_id = -1
                     print("i=", i, "j=", j)
                     shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
-                
-
-                
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
@@ -309,10 +307,6 @@ class SpecEnv(gym.Env):
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
-
-
-
-
 
                 print(f"Checking object file: {temp_program.get_obj().obj_path}")
                 if not os.path.exists(temp_program.get_obj().obj_path) or os.path.getsize(temp_program.get_obj().obj_path) == 0:
@@ -324,13 +318,13 @@ class SpecEnv(gym.Env):
                 # self.printer.create_pte(temp)
 
 
-                
+
                 #subprocess.run("/home/laievan/specenv/SpecRL/src/reset_branch") # want to run reset_branch between iterations but not between inputs
                 temp_obs = self._obs_program(temp_program)
-                
+
                 print(f"\niteration {count} observations: ")
                 print(temp_obs)
-                
+
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
                 temp_htrace = np.array(temp_obs[1][0].get_raw_traces()) # some extra work needed to pad in order to fit the shape
@@ -382,7 +376,7 @@ class SpecEnv(gym.Env):
         #     else: transient.append(0)
         return (program.__len__(), htraces, ctraces, recovery, transient)
         #return (program, htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
-    
+
 
     """
     reward():
@@ -394,14 +388,14 @@ class SpecEnv(gym.Env):
     -Observable misspeculation
     Negative Rewards:
     -# of instructions
-    -diverseness of instruction sequence (not implemented)  
-    
+    -diverseness of instruction sequence (not implemented)
+
     rewards are calculated by calling _full_obs_program
     """
     def _reward(self):
         reward = 0
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
-        if self.leak: 
+        if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             exit()
             reward += 9999 # reward for leak
@@ -410,7 +404,7 @@ class SpecEnv(gym.Env):
         reward -= 1 # negative reward for each additional step
 
         return reward
-    
+
 
     """
     _full_obs_program(program, inputs)
@@ -433,15 +427,22 @@ class SpecEnv(gym.Env):
         self.fuzzer.executor = self.executor
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
-        curr = program.start
-        while curr is not None:
-            if hasattr(curr, "category") and curr.category == "mem":
-                curr.offset = curr.offset & self.addr_mask
-            curr = curr.next
+        # curr = program.start
+        # while curr is not None:
+        #     if hasattr(curr, "category") and curr.category == "mem":
+        #         curr.offset = curr.offset & self.addr_mask
+        #     curr = curr.next
         # self.printer.print(program, program.asm_path)
-        # self.printer.assemble(program.asm_path, program.bin_path)
-        # self.printer.map_addresses(program, program.bin_path)
-        program = self.new_program
+        program.assign_obj(bin.name)
+        assemble(program)
+        for bb in program.iter_basic_blocks():
+            for instr in bb:
+                instr._section_id = -1
+
+
+        self.elf_parser.populate_elf_data(program.get_obj(), program)
+        #self.printer.map_addresses(program, program.bin_path)
+
         self.executor.load_test_case(program)
         self.model.load_test_case(program)
         ctraces: List[CTrace]
@@ -451,7 +452,7 @@ class SpecEnv(gym.Env):
         # so that we can detect contract violations (note that it wasn't necessary
         # up to this point because we weren't testing against a contract)
         #boosted_inputs: List[InputData] = fuzzer.generate_boosted(inputs, 1)
-        manager = _RoundManager(self.fuzzer, program, self.inputs)
+        manager = _RoundManager(self.fuzzer, self.new_program, self.inputs)
         manager._boost_inputs()
         boosted_inputs = manager.boosted_inputs
 
@@ -464,7 +465,7 @@ class SpecEnv(gym.Env):
         # for i, pfc_values in enumerate(pfc_feedback):
         #     if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
         #         self.misspec = True
-        
+
         # check if it's observable, updates flag
         fenced = tempfile.NamedTemporaryFile(delete=False)
         # fenced_obj = tempfile.NamedTemporaryFile(delete=False)
@@ -537,7 +538,7 @@ class SpecEnv(gym.Env):
         # Violation survived priming. Report it
         self.leak = True
         return violation
-    
+
     def _infiniteLoopCheck(self, prog: Program, instr: Instruction, timeout: int) -> bool:
         prog_ = copy.deepcopy(prog)
         unique = uuid.uuid4().hex
