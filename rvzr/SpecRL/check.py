@@ -15,10 +15,10 @@ import copy
 def X86NonCanonicalAddressCheck(prog: Program, instr: Instruction) -> bool:
     if 'GP-noncanonical' not in CONF.permitted_faults:
         return True
-    
+
     if not instr.has_mem_operand(True):
         return True
-    
+
     src_operands = []
     for o in instr.get_src_operands():
         if isinstance(o, RegisterOp):
@@ -190,7 +190,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         prog.append(instrumentation)
 
         return True
-    
+
     def sandbox_bit_test(instr: Instruction, prog: Program) -> bool:
         """
         The address accessed by a BT* instruction is based on both of its operands.
@@ -223,7 +223,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         # Special case: offset and address use the same register
         # Sandboxing is impossible. Give up
         return False
-    
+
     def sandbox_repeated_instruction(instr: Instruction, prog: Program) -> bool:
         apply_mask = Instruction("AND", True) \
             .add_op(RegisterOp("RCX", 64, True, True)) \
@@ -260,7 +260,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         prog.append(set_rax)
 
         return True
-    
+
     passed = True
 
     if instr.has_mem_operand(True):
@@ -275,7 +275,7 @@ def X86SandboxCheck(prog: Program, instr: Instruction, target_desc: X86TargetDes
         passed = sandbox_corrupted_cf(instr, prog)
     elif instr.name == "ENCLU":
         passed = sandbox_enclu(instr, prog)
-    
+
     return passed
 
 def X86PatchOpcodesCheck(prog: Program, instr: Instruction) -> bool:
@@ -322,7 +322,7 @@ def X86PatchOpcodesCheck(prog: Program, instr: Instruction) -> bool:
         opcode_options = opcodes[instr.name]
         opcode = random.choice(opcode_options)
         instr.name = ".byte " + opcode
-    
+
     return True
 
 def X86CheckAll(prog: Program, instr: Instruction, target_desc: X86TargetDesc) -> bool:
