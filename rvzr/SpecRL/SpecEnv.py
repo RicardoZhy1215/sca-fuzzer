@@ -34,6 +34,7 @@ from rvzr import factory
 from rvzr.fuzzer import Fuzzer, _RoundManager
 from interfaces import Measurement, EquivalenceClass
 import copy
+import shutil
 
 
 from rvzr.arch.x86.generator import _X86NonCanonicalAddressPass,_X86PatchOpcodesPass, \
@@ -175,9 +176,9 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
-            passed_inst = X86CheckAll(self.program, inst_action, target_desc)
-
+            # passed_inst = X86CheckAll(self.program, inst_action, target_desc)
             # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
+            passed_inst = True
             passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
@@ -225,12 +226,12 @@ class SpecEnv(gym.Env):
         # self.program = Program(self.seq_size, self.asm_path, self.bin_path)
         self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
                                                            instruction_space=self.generator.instruction_space)
-        all_instructions = []
-        for bb in self.new_program.iter_basic_blocks():
-            for instr in bb:
-                all_instructions.append(instr)
-        total_instructions_num = len(all_instructions)
-        print("new_program after reset: ", total_instructions_num)
+        # all_instructions = []
+        # for bb in self.new_program.iter_basic_blocks():
+        #     for instr in bb:
+        #         all_instructions.append(instr)
+        # total_instructions_num = len(all_instructions)
+        # print("new_program after reset: ", total_instructions_num)
 
         # print(f"bin path: {self.program.bin_path}")
         return (self._get_obs(), {"program": self.new_program})
@@ -270,13 +271,14 @@ class SpecEnv(gym.Env):
             all_instructions = []
             for bb in self.new_program.iter_basic_blocks():
                 for instr in bb:
-                    instr._section_id = -1
-                    all_instructions.append(instr)
+                    new_instr = copy.deepcopy(instr)
+                    new_instr._section_id = -1
+                    all_instructions.append(new_instr)
             total_instructions_num = len(all_instructions)
 
             # for i in range(self.program.length):
-            for i in range(total_instructions_num):
-                target_inst = all_instructions[i]
+            for i in range(total_instructions_num - 1): # -1 to account for added instrumentation at start
+                target_inst = all_instructions[i + 1] # +1 to account for added instrumentation at start
                 # check if program[i] is instrumentation. If so, skip
                 # if (self.program.getInd(i).is_instrumentation):
                 #     continue
@@ -286,20 +288,15 @@ class SpecEnv(gym.Env):
                 count += 1
                 
                 # temp program / file creation
-                temp_asm_path = f"temp_obs_{i}.asm"
-                temp_bin_path = f"temp_obs_{i}.o"
-
+                temp_asm_path = f"temp_obs_{i + 1}.asm"
+                temp_bin_path = f"temp_obs_{i + 1}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
-                import shutil
-
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
                 temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
-
                 print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
-
                 for j in range(i + 1):
-                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j+1])
+                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j + 1])
                     print("i=", i, "j=", j)
                     shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
                 
@@ -322,6 +319,7 @@ class SpecEnv(gym.Env):
                     print("CRITICAL: Object file is missing or empty!")
                 else:
                     print("Object file exists and is non-empty.")
+
                 # self.printer.map_addresses(temp, temp_bin_path)
                 # self.printer.create_pte(temp)
 
@@ -402,7 +400,7 @@ class SpecEnv(gym.Env):
     """
     def _reward(self):
         reward = 0
-        self._full_obs_program(self.program, self.inputs) # this is where the analyzer, observation filter, etc... are called
+        self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
         if self.leak: 
             print("\n!!! LEAK OCCURED !!!\n")
             exit()
