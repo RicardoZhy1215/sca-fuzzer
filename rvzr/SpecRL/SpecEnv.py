@@ -418,8 +418,6 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-
-
         self.fuzzer = Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), input_paths=inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
@@ -433,18 +431,19 @@ class SpecEnv(gym.Env):
         #         curr.offset = curr.offset & self.addr_mask
         #     curr = curr.next
         # self.printer.print(program, program.asm_path)
-        program.assign_obj(bin.name)
-        assemble(program)
-        for bb in program.iter_basic_blocks():
+        temp = copy.deepcopy(program)
+        temp.assign_obj(bin.name)
+        assemble(temp)
+        
+        for bb in temp.iter_basic_blocks():
             for instr in bb:
                 instr._section_id = -1
 
+        self.elf_parser.populate_elf_data(temp.get_obj(), temp)
+        #self.printer.map_addresses(temp, temp.bin_path)
 
-        self.elf_parser.populate_elf_data(program.get_obj(), program)
-        #self.printer.map_addresses(program, program.bin_path)
-
-        self.executor.load_test_case(program)
-        self.model.load_test_case(program)
+        self.executor.load_test_case(temp)
+        self.model.load_test_case(temp)
         ctraces: List[CTrace]
         htraces: List[HTrace]
 
@@ -452,7 +451,7 @@ class SpecEnv(gym.Env):
         # so that we can detect contract violations (note that it wasn't necessary
         # up to this point because we weren't testing against a contract)
         #boosted_inputs: List[InputData] = fuzzer.generate_boosted(inputs, 1)
-        manager = _RoundManager(self.fuzzer, self.new_program, self.inputs)
+        manager = _RoundManager(self.fuzzer, temp, self.inputs)
         manager._boost_inputs()
         boosted_inputs = manager.boosted_inputs
 
@@ -467,30 +466,30 @@ class SpecEnv(gym.Env):
         #         self.misspec = True
 
         # check if it's observable, updates flag
-        fenced = tempfile.NamedTemporaryFile(delete=False)
+        # fenced = tempfile.NamedTemporaryFile(delete=False)
         # fenced_obj = tempfile.NamedTemporaryFile(delete=False)
-        run('awk \'//{print $0, "\\nlfence"}\' ' + program.asm_path() + '>' + fenced.name, shell=True)
-        fenced_test_case = self.generator.create_test_case(fenced.name)
+        # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
+        # fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=False, generate_empty_case=False, instruction_space=self.generator.instruction_space)
         # fenced_test_case._obj = fenced_obj.name
-        self.executor.load_test_case(fenced_test_case)
-        self.executor.valid_mem_base = 0x0
-        self.executor.valid_mem_limit = 0x100000
-        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
-        os.remove(fenced.name)
+        # self.executor.load_test_case(fenced_test_case)
+        # self.executor.valid_mem_base = 0x0
+        # self.executor.valid_mem_limit = 0x100000
+        # fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
+        # os.remove(fenced.name)
         # os.remove(fenced_obj)
-        # os.remove(asm.name)
-        # os.remove(bin.name)
+        os.remove(asm.name)
+        os.remove(bin.name)
 
-        program._asm_path = self.asm_path
-        program._obj = self.bin_path
+        # program._asm_path = self.asm_path
+        # program._obj = self.bin_path
 
-        if fenced_htraces != htraces:
-            self.observable = True
+        # if fenced_htraces != htraces:
+        #     self.observable = True
 
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
         # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
-        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, self.new_program, boosted_inputs, True)
+        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, temp, boosted_inputs, True)
         if not violations:  # nothing detected? -> we are done here, move to next test case
             return None
 

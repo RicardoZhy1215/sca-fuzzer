@@ -3,8 +3,8 @@
 .function_0:
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-XOR rdx, rcx 
-XOR rdx, rax 
+JNS .line_4 # instrumentation
+ADD rdx, 5 
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 
