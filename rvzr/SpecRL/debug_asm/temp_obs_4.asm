@@ -7,7 +7,6 @@ JNS .line_4 # instrumentation
 ADD rdx, 5 
 MOV rdx, qword ptr [r14] 
 CMP rcx, rax 
-IMUL byte ptr [rdx] 
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 
