@@ -26,6 +26,7 @@ from rvzr.tc_components.instruction import Instruction
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.code_generator import assemble
+from rvzr.code_generator import map_address
 from rvzr.arch.x86.target_desc import X86TargetDesc
 from check import X86CheckAll
 from rvzr.traces import CTrace
@@ -133,7 +134,7 @@ class SpecEnv(gym.Env):
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
         self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
-        self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
+        #self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         # Todo: Need to use code_generator to generate program.
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
@@ -149,7 +150,6 @@ class SpecEnv(gym.Env):
 
         self.model = factory.get_model(self.executor.read_base_addresses())
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
-
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
@@ -176,20 +176,20 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
-            # passed_inst = X86CheckAll(self.program, inst_action, target_desc)
+            passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
-            passed_inst = True
+            # passed_inst = True
             passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
                 step_obs = self._get_obs()
                 step_reward = -20
-                return (step_obs, step_reward, end, truncate, {"program": self.program})
+                return (step_obs, step_reward, end, truncate, {"program": self.new_program})
             elif (not passed_loop):
                 print("DIDN'T PASS INFINITE LOOP CHECK, THROWING AWAY STEP")
                 step_obs = self._get_obs()
                 step_reward = -20
-                return (step_obs, step_reward, end, truncate, {"program": self.program})
+                return (step_obs, step_reward, end, truncate, {"program": self.new_program})
             else:
                 # self.program.append(self.instruction_space[action])
                 self.generator.insert_instruction_in_test_case(self.new_program, self.instruction_space[action])
@@ -204,7 +204,7 @@ class SpecEnv(gym.Env):
         step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
-        return (step_obs, step_reward, end, truncate, {"program": self.program})
+        return (step_obs, step_reward, end, truncate, {"program": self.new_program})
 
 
     """
@@ -293,13 +293,13 @@ class SpecEnv(gym.Env):
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
                 temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
-                print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
+                # print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
                 for j in range(i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j + 1])
                     all_instructions[j + 1]._section_id = -1
-                    print("i=", i, "j=", j)
-                    shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
+                    # print("i=", i, "j=", j)
+                    # shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
@@ -307,13 +307,15 @@ class SpecEnv(gym.Env):
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
+                # map_address(temp_program, temp_bin_path)
 
-                print(f"Checking object file: {temp_program.get_obj().obj_path}")
-                if not os.path.exists(temp_program.get_obj().obj_path) or os.path.getsize(temp_program.get_obj().obj_path) == 0:
-                    print("CRITICAL: Object file is missing or empty!")
-                else:
-                    print("Object file exists and is non-empty.")
-
+                # print(f"Checking object file: {temp_program.get_obj().obj_path}")
+                # if not os.path.exists(temp_program.get_obj().obj_path) or os.path.getsize(temp_program.get_obj().obj_path) == 0:
+                #     print("CRITICAL: Object file is missing or empty!")
+                # else:
+                #     print("Object file exists and is non-empty.")
+                
+                # print(f"mapped addresses: {temp_program.address_map}")
                 # self.printer.map_addresses(temp, temp_bin_path)
                 # self.printer.create_pte(temp)
 
@@ -327,14 +329,25 @@ class SpecEnv(gym.Env):
 
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
-                temp_htrace = np.array(temp_obs[1][0].get_raw_traces()) # some extra work needed to pad in order to fit the shape
+                raw_data_list = []
+                for i, raw_trace in enumerate(temp_obs[1]):
+                    raw_data_list.append(raw_trace.get_raw_traces())
+                temp_htrace = np.array(raw_data_list) # some extra work needed to pad in order to fit the shape
                 padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
-                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
+                padded_htrace[:temp_htrace.shape[0]] = temp_htrace.flatten()
                 obs["htrace"][count - 1] = padded_htrace
-                temp_ctrace = np.array(temp_obs[2][0].get_untyped())
+
+                raw_ctrace_list = []
+                for i, raw_trace in enumerate(temp_obs[2]):
+                    raw_ctrace_list.append(raw_trace.get_untyped())
+                temp_ctrace = np.array(raw_ctrace_list)
                 padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
-                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
+
+                limit = min(temp_ctrace.shape[0], padded_ctrace.shape[0])
+                padded_ctrace[:limit] = temp_ctrace.flatten()[:limit]
+                # padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace.flatten()
                 obs["ctrace"][count - 1] = padded_ctrace
+
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
                 obs["transient_uops"][count - 1] = temp_obs[4]
 
@@ -358,24 +371,27 @@ class SpecEnv(gym.Env):
 
         # could boost inputs here?
         ctraces = self.model.trace_test_case(self.inputs, 1)
+        #raw_ctraces = [ct.get_untyped() for ct in ctraces]  
         # clamp memory operands to safe region
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
 
         htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
+        #raw_htraces = [ht.get_raw_traces() for ht in htraces]
 
         #pfc_feedback = self.executor.get_last_feedback()
         #recovery = []
         #transient = []
+        pfc_feedback = [ht.get_max_pfc() for ht in htraces]
         recovery = np.full(20, -1, dtype=np.int64)
         transient = np.full(20, -1, dtype=np.int64)
-        # for _, pfc_values in enumerate(pfc_feedback):
-        #     recovery.append(pfc_values[2])
-        #     if (pfc_values[0] > pfc_values[1]):
-        #         transient.append(pfc_values[0] - pfc_values[1])
-        #     else: transient.append(0)
+        for i, pfc_values in enumerate(pfc_feedback):
+            recovery[i] = pfc_values[2]
+            if (pfc_values[0] > pfc_values[1]):
+                transient[i] = pfc_values[0] - pfc_values[1]
+            else: transient[i] = 0
         return (program.__len__(), htraces, ctraces, recovery, transient)
-        #return (program, htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
+        #return (program.__len__(), htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
 
 
     """
@@ -425,12 +441,6 @@ class SpecEnv(gym.Env):
         self.fuzzer.executor = self.executor
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
-        # curr = program.start
-        # while curr is not None:
-        #     if hasattr(curr, "category") and curr.category == "mem":
-        #         curr.offset = curr.offset & self.addr_mask
-        #     curr = curr.next
-        # self.printer.print(program, program.asm_path)
         temp = copy.deepcopy(program)
         temp.assign_obj(bin.name)
         assemble(temp)
@@ -440,6 +450,7 @@ class SpecEnv(gym.Env):
                 instr._section_id = -1
 
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
+        # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)
 
         self.executor.load_test_case(temp)
@@ -532,7 +543,6 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        exit(1)
 
         # Violation survived priming. Report it
         self.leak = True
