@@ -741,6 +741,8 @@ class TestCaseProgram:
     _actors: Dict[ActorName, Actor]  # Dictionary of actors in the test case program
     _tc_exit_bb: Final[BasicBlock]  # Special basic block labeled that terminates the test case
     index: int = 0
+    num_prologue_instructions: int = 5 # Number of prologue instructions (hardcoded for now)
+    address_map: Dict[int, Instruction]
 
     def __init__(self, asm_path: str, seed: int = 0):
         self.generator_seed = seed

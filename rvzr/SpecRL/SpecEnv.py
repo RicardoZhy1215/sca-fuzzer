@@ -53,7 +53,6 @@ from subprocess import run
 class SpecEnv(gym.Env):
     metadata = {}
     printer: Printer
-    program: Program
     generator: X86Generator
     new_program: TestCaseProgram
     asm_parser: AsmParser
@@ -270,7 +269,7 @@ class SpecEnv(gym.Env):
 
             all_instructions = []
             for bb in self.new_program.iter_basic_blocks():
-                for instr in bb:
+                for instr in list(bb) + bb.terminators:
                     new_instr = copy.deepcopy(instr)
                     new_instr._section_id = -1
                     all_instructions.append(new_instr)
@@ -325,7 +324,7 @@ class SpecEnv(gym.Env):
                 temp_obs = self._obs_program(temp_program)
 
                 print(f"\niteration {count} observations: ")
-                print(temp_obs)
+                #print(temp_obs)
 
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
@@ -342,6 +341,8 @@ class SpecEnv(gym.Env):
                     raw_ctrace_list.append(raw_trace.get_untyped())
                 temp_ctrace = np.array(raw_ctrace_list)
                 padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
+                print("htrace", raw_data_list)
+                print("ctrace", raw_ctrace_list)
 
                 limit = min(temp_ctrace.shape[0], padded_ctrace.shape[0])
                 padded_ctrace[:limit] = temp_ctrace.flatten()[:limit]
@@ -442,13 +443,13 @@ class SpecEnv(gym.Env):
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
         temp = copy.deepcopy(program)
-        temp.assign_obj(bin.name)
-        assemble(temp)
-        
+
         for bb in temp.iter_basic_blocks():
-            for instr in bb:
+            for instr in list(bb) + bb.terminators:
                 instr._section_id = -1
 
+        temp.assign_obj(bin.name)
+        assemble(temp)
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
         # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)

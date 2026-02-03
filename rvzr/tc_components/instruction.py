@@ -33,6 +33,8 @@ class Operand(ABC):
     dest: Final[bool]
     """ If True, the operand is a destination operand """
 
+    width: int = 0
+
     has_magic_value: bool = False
     """
     If True, the operand value has special meaning for the parent instruction.
@@ -45,6 +47,9 @@ class Operand(ABC):
         self.src = src
         self.dest = dest
         super().__init__()
+    
+    def get_width(self) -> int:
+        return self.width
 
     @classmethod
     def from_fixed_spec(cls, spec: OperandSpec) -> AnyOperand:  # pylint: disable=r1710,r0911
