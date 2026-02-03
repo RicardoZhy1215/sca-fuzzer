@@ -54,11 +54,6 @@ class Model(ABC):
         """
 
     @abstractmethod
-    def load_program(self, program: Program):
-        pass
-
-
-    @abstractmethod
     def trace_test_case(self, inputs: List[InputData], nesting: int) -> List[CTrace]:
         """
         Execute a previously loaded test case in the model with the given inputs,

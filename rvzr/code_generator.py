@@ -25,6 +25,7 @@ from .logs import GeneratorLogger, error, inform
 from .config import CONF, ActorsConf
 
 from rvzr.tc_components.test_case_code import Program
+import copy
 
 if TYPE_CHECKING:
     from .tc_components.test_case_code import InstructionNode
@@ -258,12 +259,6 @@ class CodeGenerator(ABC):
         main_section = test_case[0]
         main_func = main_section[0]
         self._function_generator._insert_instruction_in_function(main_func, inst)
-        # for p in self._passes:
-        #     p.run_on_test_case(test_case)
-
-        # add symbols to test case
-        # self._add_required_symbols(test_case)
-
         self._printer.print(test_case)
         
 
@@ -472,6 +467,33 @@ def assemble(test_case: TestCaseProgram) -> None:
     obj_container.mark_as_assembled()
 
 
+def map_address(test_case: TestCaseProgram, bin_file: str) -> None:
+    dump = run(
+            f"objdump --no-show-raw-insn -D -M intel -b binary -m i386:x86-64 {bin_file} "
+            "| awk '/ [0-9a-f]+:/{print $1}'",
+            shell=True,
+            check=True,
+            capture_output=True)
+    address_list = [int(addr[:-1], 16) for addr in dump.stdout.decode().split("\n") if addr]
+
+
+    # connect them with instructions in the test case
+    address_map: Dict[int, Instruction] = {}
+    counter = test_case.num_prologue_instructions
+
+    for bb in test_case.iter_basic_blocks():
+        for inst in list(bb) + bb.terminators:
+            address = address_list[counter]
+            address_map[address] = inst
+            counter += 1
+
+    for address in address_list:
+        if address not in address_map:
+            address_map[address] = Instruction("UNMAPPED", True)
+
+    test_case.address_map = address_map
+
+
 # ==================================================================================================
 # Private Service Classes
 # ==================================================================================================
@@ -617,7 +639,9 @@ class _FunctionGenerator:
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
         bb_list = list(func)
         bb = bb_list[0]
-        bb.insert_after(bb.get_last(), inst)
+        new_inst = copy.copy(inst)
+        new_inst._section_id = -1
+        bb.insert_after(bb.get_last(), new_inst)
         
 
 

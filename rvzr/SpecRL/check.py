@@ -32,7 +32,7 @@ def X86NonCanonicalAddressCheck(testcase: TestCaseProgram, instr: Instruction, g
     mem_operands = instr.get_mem_operands(include_explicit=True)
     implicit_mem_operands = instr.get_implicit_mem_operands(include_explicit=False, include_implicit=True)
 
-    if not mem_operands and not implicit_mem_operands:
+    if mem_operands and not implicit_mem_operands:
         assert len(mem_operands) == 1, f"Unexpected instruction format {instr.name}"
         mem_operand: Operand = mem_operands[0]
         mask_reg = _find_mask_register(src_operands)
@@ -92,73 +92,6 @@ def X86NonCanonicalAddressCheck(testcase: TestCaseProgram, instr: Instruction, g
         return offset_reg
         
 
-
-
-
-
-
-
-    if 'GP-noncanonical' not in CONF.permitted_faults:
-        return True
-
-    if not instr.has_mem_operand(True):
-        return True
-
-    src_operands = []
-    for o in instr.get_src_operands():
-        if isinstance(o, RegisterOp):
-            src_operands.append(o)
-
-    mem_operands = instr.get_mem_operands()
-    implicit_mem_operands = instr.get_implicit_mem_operands()
-    if mem_operands and not implicit_mem_operands:
-        assert len(mem_operands) == 1, f"Unexpected instruction format {instr.name}"
-        mem_operand: Operand = mem_operands[0]
-        registers = mem_operand.value
-
-        masks_list = ["RAX", "RBX"]
-        mask_reg = masks_list[0]
-        # Do not overwrite offset register with mask
-        for operands in src_operands:
-            op_regs = re.split(r'\+|-|\*| ', operands.value)
-            for reg in op_regs:
-                if X86TargetDesc.reg_normalized[mask_reg] == \
-                    X86TargetDesc.reg_normalized[reg]:
-                    mask_reg = masks_list[1]
-
-        offset_list = ["RCX", "RDX"]
-        offset_reg = offset_list[0]
-        # Do not reuse destination register
-        for op in instr.get_all_operands():
-            if not isinstance(op, RegisterOp):
-                continue
-            if X86TargetDesc.reg_normalized[offset_reg] == \
-                X86TargetDesc.reg_normalized[op.value]:
-                offset_reg = offset_list[1]
-
-        mask = hex((random.getrandbits(16) << 48))
-        lea = Instruction("LEA", True) \
-            .add_op(RegisterOp(offset_reg, 64, False, True)) \
-            .add_op(MemoryOp(registers, 64, True, False))
-        generator.insert_instruction_in_test_case(prog, lea)
-        # prog.append(lea)
-        mov = Instruction("MOV", True) \
-            .add_op(RegisterOp(mask_reg, 64, True, True)) \
-            .add_op(ImmediateOp(mask, 64))
-        generator.insert_instruction_in_test_case(prog, mov)
-        # prog.append(mov)
-        mask = Instruction("XOR", True) \
-            .add_op(RegisterOp(offset_reg, 64, True, True)) \
-            .add_op(RegisterOp(mask_reg, 64, True, False))
-        generator.insert_instruction_in_test_case(prog, mask)
-        # prog.append(mask)
-        for idx, op in enumerate(instr.operands):
-            if op == mem_operand:
-                old_op = instr.operands[idx]
-                addr_op = MemoryOp(offset_reg, old_op.get_width(),
-                                        old_op.src, old_op.dest)
-                instr.operands[idx] = addr_op
-    return True
 
 def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86TargetDesc, generator: X86Generator) -> bool:
     mask_3bits = "0b111"
@@ -380,17 +313,17 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
     passed = True
 
     if instr.has_mem_operand(True):
-        passed = sandbox_memory_access(instr, prog)
+        passed = passed and sandbox_memory_access(instr, prog)
     if instr.name in ["DIV", "REX DIV"]:
-        passed = sandbox_division(instr, prog)
+        passed = passed and sandbox_division(instr, prog)
     elif instr.name in bit_test_names:
-        passed = sandbox_bit_test(instr, prog)
+        passed = passed and sandbox_bit_test(instr, prog)
     elif "REP" in instr.name:
-        passed = sandbox_repeated_instruction(instr, prog)
+        passed = passed and sandbox_repeated_instruction(instr, prog)
     elif instr.category == "BASE-ROTATE" or instr.category == "BASE-SHIFT":
-        passed = sandbox_corrupted_cf(instr, prog)
+        passed = passed and sandbox_corrupted_cf(instr, prog)
     elif instr.name == "ENCLU":
-        passed = sandbox_enclu(instr, prog)
+        passed = passed and sandbox_enclu(instr, prog)
 
     return passed
 
