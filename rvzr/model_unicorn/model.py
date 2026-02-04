@@ -407,7 +407,8 @@ class UnicornModel(Model, ABC):
             n_actors = self.state.current_test_case().n_actors()
             taints.append(self._taint_tracker.get_taint(n_actors))
 
-        return traces, taints
+        final_traces = [ct._hash for ct in traces]
+        return final_traces, taints
 
     def _run_state_machine(self) -> None:
         """
