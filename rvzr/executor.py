@@ -24,7 +24,7 @@ from rvzr.tc_components.test_case_data import save_input_sequence_as_rdbf
 from rvzr.tc_components.test_case_code import Program
 from rvzr.tc_components.test_case_code import ProgramBinary
 from rvzr.tc_components.test_case_binary import TestCaseBinary
-from collections import Counter
+
 
 if TYPE_CHECKING:
     from rvzr.tc_components.test_case_code import TestCaseProgram
@@ -320,26 +320,26 @@ class Executor(ABC):
 
         # Call the kernel module and read traces
         all_readings: ReadingsArray = np.ndarray(shape=(n_inputs, n_reps), dtype=RawHTraceSample)
-        for rep_id, input_id, readings in \
-                _read_trace(n_reps, n_inputs, arch_mode=self._enable_mismatch_check_mode):
+        for rep_id, input_id, readings in _read_trace(n_reps, n_inputs, arch_mode=self._enable_mismatch_check_mode):
             all_readings[input_id][rep_id] = readings
 
         # Post-process results and return a list of HTrace objects
         traces = self._raw_readings_to_traces(all_readings, n_inputs)
         self._log.dbg_dump_raw_traces(traces)
+        return traces
 
-        threshold = n_reps // 10 if n_reps >= 10 else 1
-        aggregated_traces = []
-        for htrace in traces:
-            raw_samples = htrace.get_raw_samples()
-            counter = Counter(raw_samples)
-            merged_trace = 0
-            for trace_val, count in counter.items():
-                if count > threshold:
-                    merged_trace |= int(trace_val)
-            aggregated_traces.append(merged_trace)
+        # threshold = n_reps // 10 if n_reps >= 10 else 1
+        # aggregated_traces = []
+        # for htrace in traces:
+        #     raw_samples = htrace.get_raw_traces()
+        #     counter = Counter(raw_samples)
+        #     merged_trace = 0
+        #     for trace_val, count in counter.items():
+        #         if count > threshold:
+        #             merged_trace |= int(trace_val)
+        #     aggregated_traces.append(merged_trace)
 
-        return aggregated_traces
+        # return aggregated_traces
 
     def _identify_trace_type(self) -> HTraceType:
         """ Identify the type of the traces based on the configuration """

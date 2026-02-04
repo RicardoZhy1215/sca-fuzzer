@@ -3,7 +3,7 @@ import subprocess
 import gymnasium as gym
 import uuid
 from gymnasium import spaces
-from typing import List, Optional
+from typing import Counter, List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
 from rvzr.arch.x86.generator import newPrinter
@@ -36,6 +36,7 @@ from rvzr.fuzzer import Fuzzer, _RoundManager
 from interfaces import Measurement, EquivalenceClass
 import copy
 import shutil
+from collections import Counter
 
 
 from rvzr.arch.x86.generator import _X86NonCanonicalAddressPass,_X86PatchOpcodesPass, \
@@ -328,26 +329,19 @@ class SpecEnv(gym.Env):
 
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
-                raw_data_list = []
-                for i, raw_trace in enumerate(temp_obs[1]):
-                    raw_data_list.append(raw_trace.get_raw_traces())
-                temp_htrace = np.array(raw_data_list) # some extra work needed to pad in order to fit the shape
+
+                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
                 padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
-                padded_htrace[:temp_htrace.shape[0]] = temp_htrace.flatten()
+                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
                 obs["htrace"][count - 1] = padded_htrace
 
-                raw_ctrace_list = []
-                for i, raw_trace in enumerate(temp_obs[2]):
-                    raw_ctrace_list.append(raw_trace.get_untyped())
-                temp_ctrace = np.array(raw_ctrace_list)
+                temp_ctrace = np.array(temp_obs[2])
                 padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
-                print("htrace", raw_data_list)
-                print("ctrace", raw_ctrace_list)
-
-                limit = min(temp_ctrace.shape[0], padded_ctrace.shape[0])
-                padded_ctrace[:limit] = temp_ctrace.flatten()[:limit]
-                # padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace.flatten()
+                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
                 obs["ctrace"][count - 1] = padded_ctrace
+
+                print("temp htrace: ", temp_htrace)
+                print("temp ctrace: ", temp_ctrace)
 
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
                 obs["transient_uops"][count - 1] = temp_obs[4]
@@ -378,6 +372,7 @@ class SpecEnv(gym.Env):
         self.executor.valid_mem_limit = 0x100000
 
         htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
+        htraces_int = self.aggregate_htraces(htraces, n_reps=1)
         #raw_htraces = [ht.get_raw_traces() for ht in htraces]
 
         #pfc_feedback = self.executor.get_last_feedback()
@@ -391,7 +386,7 @@ class SpecEnv(gym.Env):
             if (pfc_values[0] > pfc_values[1]):
                 transient[i] = pfc_values[0] - pfc_values[1]
             else: transient[i] = 0
-        return (program.__len__(), htraces, ctraces, recovery, transient)
+        return (program.__len__(), htraces_int, ctraces, recovery, transient)
         #return (program.__len__(), htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
 
 
@@ -570,6 +565,22 @@ class SpecEnv(gym.Env):
         self.model.load_program(prog_)
 
         return self.model.check_inf_loop(self.inputs, 1, timeout)
+    
+    def aggregate_htraces(self, htraces: List[HTrace], n_reps: int) -> List[int]:
+
+        threshold = n_reps // 10 if n_reps >= 10 else 0
+        aggregated_traces = []
+    
+        for htrace in htraces:
+            raw_samples = htrace.get_raw_traces()
+            counter = Counter(raw_samples)
+            merged_trace = 0
+            for trace_val, count in counter.items():
+                if count > threshold:
+                    merged_trace |= int(trace_val)
+            aggregated_traces.append(merged_trace)
+        
+        return aggregated_traces
 
 
 
