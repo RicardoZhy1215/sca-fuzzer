@@ -33,6 +33,8 @@ from rvzr.traces import CTrace
 from rvzr.traces import HTrace
 from rvzr import factory
 from rvzr.fuzzer import Fuzzer, _RoundManager
+from rvzr.arch.x86.fuzzer import X86Fuzzer
+from rvzr.arch.x86.fuzzer import _create_fenced_test_case
 from interfaces import Measurement, EquivalenceClass
 import copy
 import shutil
@@ -430,27 +432,32 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        self.fuzzer = Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), input_paths=inputs)
+        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), input_paths=inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser
         self.fuzzer.executor = self.executor
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
+
         temp = copy.deepcopy(program)
 
-        for bb in temp.iter_basic_blocks():
+        all_instructions = []
+        for bb in temp.iter_basic_blocks(): 
             for instr in list(bb) + bb.terminators:
                 instr._section_id = -1
+                all_instructions.append(instr)
+        total_instructions_num = len(all_instructions)
 
         temp.assign_obj(bin.name)
         assemble(temp)
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
         # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)
-
+        
         self.executor.load_test_case(temp)
         self.model.load_test_case(temp)
+
         ctraces: List[CTrace]
         htraces: List[HTrace]
 
@@ -467,31 +474,59 @@ class SpecEnv(gym.Env):
         htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
 
         # check if misspec occurs, updates flag
+        pfc_feedback = [ht.get_max_pfc() for ht in htraces]
         # pfc_feedback = self.executor.get_last_feedback()
-        # for i, pfc_values in enumerate(pfc_feedback):
-        #     if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
-        #         self.misspec = True
+        for i, pfc_values in enumerate(pfc_feedback):
+            if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
+                self.misspec = True
 
         # check if it's observable, updates flag
-        # fenced = tempfile.NamedTemporaryFile(delete=False)
-        # fenced_obj = tempfile.NamedTemporaryFile(delete=False)
+  
+        fenced = tempfile.NamedTemporaryFile(delete=False)
+        fenced_obj = tempfile.NamedTemporaryFile(delete=False)
+        fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+        
+
+        # debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
+        # os.makedirs(debug_path, exist_ok=True)
+        # dest_path = f"{debug_path}/fenced_obs.asm"
+        for i in range(total_instructions_num - 1):
+            self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i + 1])
+            self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
+
+        # shutil.copyfile(fenced.name, dest_path)
+
+        
+
+        fenced_test_case.assign_obj(fenced_obj.name)
+        assemble(fenced_test_case)
+        self.elf_parser.populate_elf_data(fenced_test_case.get_obj(), fenced_test_case)
+
+
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
+        # assemble(fenced.name)
+        # fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator,self.elf_parser)
+
+        self.executor.load_test_case(fenced_test_case)
+        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
+
+
         # fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=False, generate_empty_case=False, instruction_space=self.generator.instruction_space)
         # fenced_test_case._obj = fenced_obj.name
         # self.executor.load_test_case(fenced_test_case)
         # self.executor.valid_mem_base = 0x0
         # self.executor.valid_mem_limit = 0x100000
         # fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
-        # os.remove(fenced.name)
-        # os.remove(fenced_obj)
+        os.remove(fenced.name)
+        os.remove(fenced_obj.name)
         os.remove(asm.name)
         os.remove(bin.name)
 
         # program._asm_path = self.asm_path
         # program._obj = self.bin_path
 
-        # if fenced_htraces != htraces:
-        #     self.observable = True
+        if fenced_htraces != htraces:
+            self.observable = True
 
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
@@ -501,7 +536,6 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        #exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:
@@ -516,15 +550,15 @@ class SpecEnv(gym.Env):
                 return None
 
         # 3. Check if the violation is reproducible
-        # if fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
+        # if self.fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
         #     # STAT.flaky_violations += 1
         #     if CONF.ignore_flaky_violations:
         #         print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
         #         return None
 
         # 4. Check if the violation survives priming
-        # if not CONF.enable_priming:
-        #     return violations[-1]
+        if not CONF.enable_priming:
+            return violations[-1]
         # STAT.required_priming += 1
 
         violation_stack = list(violations)  # make a copy
