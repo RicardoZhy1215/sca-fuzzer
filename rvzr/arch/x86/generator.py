@@ -78,33 +78,33 @@ class newPrinter(Printer):
         pass
 
     
-    def print(self, prg: Program, outfile: str, lines = 15) -> None:
-        with open (outfile, "w") as f:
-            # print prologue
-            for line in self.prologue_template:
-                f.write(line)
-            line_number = 1
-            # print program
-            toggle = -1 # toggle = -1 means not instrumenting, toggle = 1 means instrumenting
-            for inst in prg:
-                # label printing logic
-                if toggle == -1:
-                    if inst.is_instrumentation:
-                        f.write(f".line_{line_number}:\n")
-                        line_number += 1
-                        toggle *= -1
-                    else:
-                        f.write(f".line_{line_number}:\n")
-                        line_number += 1
-                elif not inst.is_instrumentation: # end of instrumentation for that instruction, reset toggle
-                    toggle *= -1
-                f.write(self.instruction_to_str(inst) + "\n")
-            while (line_number <= lines):
-                f.write(f".line_{line_number}:\n")
-                line_number += 1
-            # print epilogue
-            for line in self.epilogue_template:
-                f.write(line)
+    # def print(self, prg: Program, outfile: str, lines = 15) -> None:
+    #     with open (outfile, "w") as f:
+    #         # print prologue
+    #         for line in self.prologue_template:
+    #             f.write(line)
+    #         line_number = 1
+    #         # print program
+    #         toggle = -1 # toggle = -1 means not instrumenting, toggle = 1 means instrumenting
+    #         for inst in prg:
+    #             # label printing logic
+    #             if toggle == -1:
+    #                 if inst.is_instrumentation:
+    #                     f.write(f".line_{line_number}:\n")
+    #                     line_number += 1
+    #                     toggle *= -1
+    #                 else:
+    #                     f.write(f".line_{line_number}:\n")
+    #                     line_number += 1
+    #             elif not inst.is_instrumentation: # end of instrumentation for that instruction, reset toggle
+    #                 toggle *= -1
+    #             f.write(self.instruction_to_str(inst) + "\n")
+    #         while (line_number <= lines):
+    #             f.write(f".line_{line_number}:\n")
+    #             line_number += 1
+    #         # print epilogue
+    #         for line in self.epilogue_template:
+    #             f.write(line)
 
     def instruction_to_str(self, inst: Instruction):
         operands = ", ".join([self.operand_to_str(op) for op in inst.operands])
@@ -193,6 +193,41 @@ class _X86Printer(Printer):
 
     def map_addresses(self, *args, **kwargs):
         raise NotImplementedError("map_addresses not implemented for x86 printer yet")
+    
+    # def print(self, test_case: TestCaseProgram, lines = 15) -> None:
+    #     with open(test_case.asm_path(), "w") as f:
+    #         for line in self.prologue_template:
+    #             f.write(line)
+
+    #         line_number = 1
+    #         # print program
+    #         toggle = -1 # toggle = -1 means not instrumenting, toggle = 1 means instrumenting
+    #         for bb in test_case.iter_basic_blocks():
+    #             for inst in list(bb):
+    #             # label printing logic
+    #                 if toggle == -1:
+    #                     if inst.is_instrumentation:
+    #                         f.write(f".line_{line_number}:\n")
+    #                         line_number += 1
+    #                         toggle *= -1
+    #                     else:
+    #                         f.write(f".line_{line_number}:\n")
+    #                         line_number += 1
+    #                 elif not inst.is_instrumentation: # end of instrumentation for that instruction, reset toggle
+    #                     toggle *= -1
+    #                 f.write(self._instruction_to_str(inst) + "\n")
+    #         while (line_number <= lines):
+    #             f.write(f".line_{line_number}:\n")
+    #             line_number += 1
+
+
+
+    #         for section in test_case:
+    #             self._print_section(section, f)
+
+    #         for line in self.epilogue_template:
+    #             f.write(line)
+
 
     def _instruction_to_str(self, inst: Instruction) -> str:
         if inst.name == "macro":
