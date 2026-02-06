@@ -751,6 +751,7 @@ class TestCaseProgram:
 
         self._actors = {"main": Actor.create_main()}
         self._sections = [CodeSection(self._actors["main"])]
+        self.index = 0
 
     def __len__(self) -> int:
         """ Length of the test case is the number of sections """

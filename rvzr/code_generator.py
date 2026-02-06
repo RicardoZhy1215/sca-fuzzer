@@ -83,6 +83,62 @@ class Printer(ABC):
             for line in self.epilogue_template:
                 f.write(line)
 
+    def add_line_num(self, test_case: TestCaseProgram, min_lines=15) -> None:
+        # 1. 收集所有要写入的行
+        instrumented_instrs = []
+        line_number = 1
+        toggle = -1 
+
+        # 遍历基本块和指令
+        for bb in test_case.iter_basic_blocks():
+            # 跳过第一个指令（通常是宏/标记）
+            instructions = list(bb)
+            for instr in instructions[1:]:
+                inst_str = self._instruction_to_str(instr)
+                
+                # 状态机：只有在需要新标签时才插入
+                if toggle == -1:
+                    instrumented_instrs.append(f".line_{line_number}:")
+                    line_number += 1
+                    toggle = 1 
+
+                if instr.is_instrumentation:
+                    # 清理可能存在的旧注释，防止叠加
+                    clean_inst = inst_str.replace("# instrumentation", "").strip()
+                    instrumented_instrs.append(f"{clean_inst} # instrumentation")
+                else:
+                    instrumented_instrs.append(inst_str)
+                    toggle = -1 # 普通指令结束，下一条指令将触发新行号
+
+        # 2. 保底机制：如果当前行号还没到 min_lines，补齐剩下的
+        while line_number <= min_lines:
+            instrumented_instrs.append(f".line_{line_number}:")
+            line_number += 1
+
+        # 3. 构造完整的文件内容（直接定义结构，不依赖读取旧文件）
+        # 这种方式最安全，不会因为找不到 marker 而导致 CPU 飙升
+        final_asm = [
+            ".intel_syntax noprefix",
+            ".section .data.main",
+            ".function_0:",
+            ".bb_0.0:",
+            ".macro.measurement_start: nop qword ptr [rax + 0xff]"
+        ]
+        
+        final_asm.extend(instrumented_instrs)
+        
+        final_asm.extend([
+            ".exit_0:",
+            ".macro.measurement_end: nop qword ptr [rax + 0xff]",
+            "jmp .test_case_exit",
+            ".section .data.main",
+            ".test_case_exit:nop"
+        ])
+
+        # 4. 一次性写入
+        with open(test_case.asm_path(), "w") as f:
+            f.write("\n".join(final_asm) + "\n")
+
     def _print_section(self, sec: CodeSection, file_: TextIO) -> None:
         file_.write(f".section .data.{sec.name}\n")
         for func in sec:
@@ -256,10 +312,12 @@ class CodeGenerator(ABC):
         return test_case
     
     def insert_instruction_in_test_case(self, test_case: TestCaseProgram, inst: Instruction) -> None:
+
         main_section = test_case[0]
         main_func = main_section[0]
         self._function_generator._insert_instruction_in_function(main_func, inst)
         self._printer.print(test_case)
+
         
 
     def create_test_case_from_template(self, template_file: str) -> TestCaseProgram:

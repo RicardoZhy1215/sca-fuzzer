@@ -135,7 +135,8 @@ class SpecEnv(gym.Env):
 
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
-        self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
+        # self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
+        self.printer = _X86Printer(target_desc) 
         #self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         # Todo: Need to use code_generator to generate program.
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
@@ -144,7 +145,7 @@ class SpecEnv(gym.Env):
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
                                       elf_parser=self.elf_parser)
         self.generator.instruction_space = self.instruction_space
-        # self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=False)
+        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -272,12 +273,13 @@ class SpecEnv(gym.Env):
 
             all_instructions = []
             for bb in self.new_program.iter_basic_blocks():
-                for instr in list(bb) + bb.terminators:
+                for instr in bb:
                     new_instr = copy.deepcopy(instr)
                     new_instr._section_id = -1
                     all_instructions.append(new_instr)
             total_instructions_num = len(all_instructions)
-
+            count = total_instructions_num - 2
+            print("count = ", count)
             # for i in range(self.program.length):
             for i in range(total_instructions_num - 1): # -1 to account for added instrumentation at start
                 target_inst = all_instructions[i + 1] # +1 to account for added instrumentation at start
@@ -286,8 +288,6 @@ class SpecEnv(gym.Env):
                 #     continue
                 if target_inst.is_instrumentation:
                     continue
-
-                count += 1
 
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i + 1}.asm"
@@ -305,7 +305,7 @@ class SpecEnv(gym.Env):
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
-                # self.printer.print(temp, temp_asm_path)
+                self.printer.add_line_num(temp_program)
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
@@ -378,16 +378,14 @@ class SpecEnv(gym.Env):
         #raw_htraces = [ht.get_raw_traces() for ht in htraces]
 
         #pfc_feedback = self.executor.get_last_feedback()
-        #recovery = []
-        #transient = []
+        recovery = []
+        transient = []
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
-        recovery = np.full(20, -1, dtype=np.int64)
-        transient = np.full(20, -1, dtype=np.int64)
         for i, pfc_values in enumerate(pfc_feedback):
-            recovery[i] = pfc_values[2]
+            recovery.append(pfc_values[2])
             if (pfc_values[0] > pfc_values[1]):
-                transient[i] = pfc_values[0] - pfc_values[1]
-            else: transient[i] = 0
+                transient.append(pfc_values[0] - pfc_values[1])
+            else: transient.append(0)
         return (program.__len__(), htraces_int, ctraces, recovery, transient)
         #return (program.__len__(), htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
 
@@ -444,14 +442,17 @@ class SpecEnv(gym.Env):
 
         all_instructions = []
         for bb in temp.iter_basic_blocks(): 
-            for instr in list(bb) + bb.terminators:
+            for instr in list(bb):
                 instr._section_id = -1
                 all_instructions.append(instr)
         total_instructions_num = len(all_instructions)
 
+        self.printer.add_line_num(temp)
+        # self.printer.print(temp, lines=15)
         temp.assign_obj(bin.name)
         assemble(temp)
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
+        shutil.copyfile(temp.asm_path(), f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_full_obs.asm")
         # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)
         
@@ -487,21 +488,21 @@ class SpecEnv(gym.Env):
         fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
         
 
-        # debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
-        # os.makedirs(debug_path, exist_ok=True)
-        # dest_path = f"{debug_path}/fenced_obs.asm"
+        debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
+        os.makedirs(debug_path, exist_ok=True)
+        dest_path = f"{debug_path}/fenced_obs.asm"
         for i in range(total_instructions_num - 1):
             self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i + 1])
             self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
 
-        # shutil.copyfile(fenced.name, dest_path)
+
 
         
-
+        self.printer.add_line_num(fenced_test_case)
         fenced_test_case.assign_obj(fenced_obj.name)
         assemble(fenced_test_case)
         self.elf_parser.populate_elf_data(fenced_test_case.get_obj(), fenced_test_case)
-
+        shutil.copyfile(fenced.name, dest_path)
 
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
         # assemble(fenced.name)
@@ -556,27 +557,27 @@ class SpecEnv(gym.Env):
         #         print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
         #         return None
 
-        # 4. Check if the violation survives priming
-        if not CONF.enable_priming:
-            return violations[-1]
-        # STAT.required_priming += 1
+        # # 4. Check if the violation survives priming
+        # if not CONF.enable_priming:
+        #     return violations[-1]
+        # # STAT.required_priming += 1
 
-        violation_stack = list(violations)  # make a copy
-        while violation_stack:
-            # self.LOG.fuzzer_priming(len(violation_stack))
-            violation: EquivalenceClass = violation_stack.pop()
-            if self.fuzzer.priming(violation, boosted_inputs):
-                break
-        else:
-            # All violations were cleared by priming.
-            print("\n\n\n FAILED PRIMING \n\n\n")
-            return None
+        # violation_stack = list(violations)  # make a copy
+        # while violation_stack:
+        #     # self.LOG.fuzzer_priming(len(violation_stack))
+        #     violation: EquivalenceClass = violation_stack.pop()
+        #     if self.fuzzer.priming(violation, boosted_inputs):
+        #         break
+        # else:
+        #     # All violations were cleared by priming.
+        #     print("\n\n\n FAILED PRIMING \n\n\n")
+        #     return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
 
         # Violation survived priming. Report it
         self.leak = True
-        return violation
+        return violations
 
     def _infiniteLoopCheck(self, prog: Program, instr: Instruction, timeout: int) -> bool:
         prog_ = copy.deepcopy(prog)
