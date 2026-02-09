@@ -278,30 +278,32 @@ class SpecEnv(gym.Env):
                     new_instr._section_id = -1
                     all_instructions.append(new_instr)
             total_instructions_num = len(all_instructions)
-            count = total_instructions_num - 2
-            print("count = ", count)
+            # count = total_instructions_num - 2
+            # print("count = ", count)
+            # print([self.printer._instruction_to_str(instr) for instr in all_instructions])
             # for i in range(self.program.length):
-            for i in range(total_instructions_num - 1): # -1 to account for added instrumentation at start
-                target_inst = all_instructions[i + 1] # +1 to account for added instrumentation at start
+            for i in range(1, total_instructions_num - 1): # -1 to account for added instrumentation at start
+                target_inst = all_instructions[i] # +1 to account for added instrumentation at start
                 # check if program[i] is instrumentation. If so, skip
                 # if (self.program.getInd(i).is_instrumentation):
                 #     continue
                 if target_inst.is_instrumentation:
                     continue
+                count += 1
 
                 # temp program / file creation
-                temp_asm_path = f"temp_obs_{i + 1}.asm"
-                temp_bin_path = f"temp_obs_{i + 1}.o"
+                temp_asm_path = f"temp_obs_{i}.asm"
+                temp_bin_path = f"temp_obs_{i}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
                 temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
                 # print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
-                for j in range(i + 1):
-                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j + 1])
-                    all_instructions[j + 1]._section_id = -1
+                for j in range(1, i):
+                    self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j])
+                    all_instructions[j]._section_id = -1
                     # print("i=", i, "j=", j)
-                    # shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j+1}.asm")
+                    # shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j}.asm")
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
@@ -452,7 +454,7 @@ class SpecEnv(gym.Env):
         temp.assign_obj(bin.name)
         assemble(temp)
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
-        shutil.copyfile(temp.asm_path(), f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_full_obs.asm")
+        # shutil.copyfile(temp.asm_path(), f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_full_obs.asm")
         # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)
         
@@ -491,16 +493,17 @@ class SpecEnv(gym.Env):
         debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
         os.makedirs(debug_path, exist_ok=True)
         dest_path = f"{debug_path}/fenced_obs.asm"
-        for i in range(total_instructions_num - 1):
-            self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i + 1])
-            self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
+        for i in range(1, total_instructions_num - 1):
+            self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
+            # self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
 
-
-
-        
         self.printer.add_line_num(fenced_test_case)
+        self.apply_selective_fencing(fenced_test_case.asm_path())
+        # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
         fenced_test_case.assign_obj(fenced_obj.name)
         assemble(fenced_test_case)
+
+
         self.elf_parser.populate_elf_data(fenced_test_case.get_obj(), fenced_test_case)
         shutil.copyfile(fenced.name, dest_path)
 
@@ -616,6 +619,23 @@ class SpecEnv(gym.Env):
             aggregated_traces.append(merged_trace)
         
         return aggregated_traces
+    
+    def apply_selective_fencing(self, file_path):
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+        fenced_lines = []
+        in_test_zone = False
+        for line in lines:
+            stripped = line.strip()
+            if ".line_1:" in stripped:
+                in_test_zone = True
+            if ".exit_0:" in stripped or ".macro.measurement_end" in stripped:
+                in_test_zone = False
+            fenced_lines.append(line)
+            if in_test_zone and stripped:
+                fenced_lines.append("lfence\n")
+        with open(file_path, 'w') as f:
+            f.writelines(fenced_lines)
 
 
 

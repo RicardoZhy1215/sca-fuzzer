@@ -4,18 +4,23 @@
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
 .line_1:
-MOV rcx, 10 
+AND rcx, 0b1111111111111 # instrumentation
+IMUL byte ptr [R14 + rcx] 
 .line_2:
-MOV rcx, r14 
+ADD rdx, 5 
 .line_3:
-ADD rcx, 5 
+CMP rdx, rdx 
 .line_4:
-and rcx, 0b1111111111111 # instrumentation
-MOV rax, qword ptr [R14 + rcx] 
+AND rax, 0b1111111111111 # instrumentation
+IMUL byte ptr [R14 + rax] 
 .line_5:
+ADD rdx, 5 
 .line_6:
+XOR rdx, rdx 
 .line_7:
+XOR rax, rdx 
 .line_8:
+JMP .line_1 # instrumentation
 .line_9:
 .line_10:
 .line_11:
