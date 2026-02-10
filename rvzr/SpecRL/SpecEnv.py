@@ -235,7 +235,6 @@ class SpecEnv(gym.Env):
         #         all_instructions.append(instr)
         # total_instructions_num = len(all_instructions)
         # print("new_program after reset: ", total_instructions_num)
-
         # print(f"bin path: {self.program.bin_path}")
         return (self._get_obs(), {"program": self.new_program})
 
@@ -282,7 +281,7 @@ class SpecEnv(gym.Env):
             # print("count = ", count)
             # print([self.printer._instruction_to_str(instr) for instr in all_instructions])
             # for i in range(self.program.length):
-            for i in range(1, total_instructions_num - 1): # -1 to account for added instrumentation at start
+            for i in range(1, total_instructions_num): # -1 to account for added instrumentation at start
                 target_inst = all_instructions[i] # +1 to account for added instrumentation at start
                 # check if program[i] is instrumentation. If so, skip
                 # if (self.program.getInd(i).is_instrumentation):
@@ -299,7 +298,7 @@ class SpecEnv(gym.Env):
                 temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
                 # print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
-                for j in range(1, i):
+                for j in range(1, i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j])
                     all_instructions[j]._section_id = -1
                     # print("i=", i, "j=", j)
@@ -307,7 +306,7 @@ class SpecEnv(gym.Env):
                 # for _ in range(i + 1):
                 #     temp.append(curr)
                 #     curr = curr.next
-                self.printer.add_line_num(temp_program)
+                # self.printer.add_line_num(temp_program)
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
@@ -448,8 +447,10 @@ class SpecEnv(gym.Env):
                 instr._section_id = -1
                 all_instructions.append(instr)
         total_instructions_num = len(all_instructions)
+        print("total instructions in program: ", total_instructions_num)
+        print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
 
-        self.printer.add_line_num(temp)
+        # self.printer.add_line_num(temp)
         # self.printer.print(temp, lines=15)
         temp.assign_obj(bin.name)
         assemble(temp)
@@ -492,13 +493,14 @@ class SpecEnv(gym.Env):
 
         debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
         os.makedirs(debug_path, exist_ok=True)
-        dest_path = f"{debug_path}/fenced_obs.asm"
-        for i in range(1, total_instructions_num - 1):
+        
+        for i in range(1, total_instructions_num):
+            dest_path = f"{debug_path}/fenced_obs{i}.asm"
             self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
-            # self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
+            self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
 
-        self.printer.add_line_num(fenced_test_case)
-        self.apply_selective_fencing(fenced_test_case.asm_path())
+        self.printer.add_line_num_full_obs(fenced_test_case)
+        # self.apply_selective_fencing(fenced_test_case.asm_path())
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
         fenced_test_case.assign_obj(fenced_obj.name)
         assemble(fenced_test_case)
