@@ -109,10 +109,10 @@ class Printer(ABC):
                 else:
                     instrumented_instrs.append(inst_str)
 
-        # while line_number <= min_lines:
-        #     instrumented_instrs.append(f".line_{line_number}:")
-        #     instrumented_instrs.append("lfence") # 填充行依然保持“标签+屏障”结构
-        #     line_number += 1
+        while line_number <= min_lines:
+            instrumented_instrs.append(f".line_{line_number}:")
+            instrumented_instrs.append("lfence") 
+            line_number += 1
 
         final_asm = [
             ".intel_syntax noprefix",

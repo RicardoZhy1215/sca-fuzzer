@@ -4,19 +4,18 @@
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
 .line_1:
-MOV rcx, 10 
+MOV rbx, rcx 
 lfence  
 .line_2:
-MOV rcx, r14 
+XOR rdx, rcx 
 lfence  
 .line_3:
-ADD rcx, 5 
-lfence  
-.line_4:
 AND rcx, 0b1111111111111 # instrumentation
 lfence  
-MOV rax, qword ptr [R14 + rcx] 
+SBB qword ptr [R14 + rcx], 35 
 lfence  
+.line_4:
+lfence
 .line_5:
 lfence
 .line_6:
