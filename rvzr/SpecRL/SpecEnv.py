@@ -413,8 +413,11 @@ class SpecEnv(gym.Env):
             exit()
             reward += 9999 # reward for leak
         reward = reward + 30 if self.misspec else reward - 30 # reward/punish for passing/failing misspeculative filters
+        print(f"misspec: {self.misspec}, reward: {reward}")
         reward = reward + 50 if self.observable else reward - 50 # reward/punish for passing/failing observation filters
+        print(f"observable: {self.observable}, reward: {reward}")
         reward -= 1 # negative reward for each additional step
+        print(f"step penalty, reward: {reward}")
 
         return reward
 
@@ -537,7 +540,7 @@ class SpecEnv(gym.Env):
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
         # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
-        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, temp, boosted_inputs, True)
+        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, fenced_test_case, boosted_inputs, True)
         if not violations:  # nothing detected? -> we are done here, move to next test case
             return None
 

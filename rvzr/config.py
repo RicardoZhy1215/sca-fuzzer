@@ -145,9 +145,11 @@ class Conf:
     """ fuzzer: type of the fuzzing algorithm """
     enable_priming: bool = True
     """ enable_priming: whether to check violations with priming """
-    enable_speculation_filter: bool = False
+    # enable_speculation_filter: bool = False
+    enable_speculation_filter: bool = True
     """ enable_speculation_filter: if True, discard test cases that don't trigger speculation"""
-    enable_observation_filter: bool = False
+    # enable_observation_filter: bool = False
+    enable_observation_filter: bool = True
     """ enable_observation_filter: if True,discard test cases that don't leave speculative traces"""
     enable_fast_path_model: bool = True
     """ enable_fast_path_boosting: if enabled, the same contract trace will be used
@@ -241,9 +243,11 @@ class Conf:
     # Contract Model
     model_backend: str = 'unicorn'
     """ model_backend: The backend used to collect contract traces on generated test cases """
-    contract_execution_clause: List[str] = ["seq"]
+    # contract_execution_clause: List[str] = ["seq"]
+    contract_execution_clause: List[str] = ["no_speculation"]
     """ contract_execution_clause: """
-    contract_observation_clause: str = 'ct'
+    # contract_observation_clause: str = 'ct'
+    contract_observation_clause: str = 'load+store+pc'
     """ contract_observation_clause: """
     model_min_nesting: int = 1
     """ model_max_nesting: """

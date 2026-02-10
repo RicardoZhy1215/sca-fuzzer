@@ -12,7 +12,6 @@ import multiprocessing
 import threading
 from typing import List, Tuple, Optional, Set, TYPE_CHECKING, Final, Dict, Type
 
-from SpecRL.src.interfaces import Input
 import numpy as np
 
 import unicorn as uc
