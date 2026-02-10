@@ -584,25 +584,17 @@ class SpecEnv(gym.Env):
         self.leak = True
         return violations
 
-    def _infiniteLoopCheck(self, prog: Program, instr: Instruction, timeout: int) -> bool:
+    def _infiniteLoopCheck(self, prog: TestCaseProgram, instr: Instruction, timeout: int) -> bool:
         prog_ = copy.deepcopy(prog)
         unique = uuid.uuid4().hex
+        self.generator.insert_instruction_in_test_case(prog_, instr)
+        self.printer.add_line_num(prog_)
         prog_.asm_path = f"/tmp/test_case_{unique}.s"
-        prog_.bin_path = f"/tmp/test_case_{unique}.o"
-        prog_.append(instr)
-        curr = prog_.start
-        while curr is not None:
-    # memory instructions in Revizor fall under category "mem"
-            if hasattr(curr, "category") and curr.category == "mem":
-                curr.offset = curr.offset & self.addr_mask
+        prog_.assign_obj(f"/tmp/test_case_{unique}.o")
 
-            curr = curr.next
-
-
-        self.printer.print(prog_, prog_.asm_path)
-        self.printer.assemble(prog_.asm_path, prog_.bin_path)
-        self.printer.map_addresses(prog_, prog_.bin_path)
-        self.model.load_program(prog_)
+        assemble(prog_)
+        self.elf_parser.populate_elf_data(prog_.get_obj(), prog_)
+        self.model.load_test_case(prog_)
 
         return self.model.check_inf_loop(self.inputs, 1, timeout)
     

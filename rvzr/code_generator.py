@@ -133,53 +133,53 @@ class Printer(ABC):
         with open(test_case.asm_path(), "w") as f:
             f.write("\n".join(final_asm) + "\n")
 
-    # def add_line_num(self, test_case: TestCaseProgram, min_lines=15) -> None:
-    #     instrumented_instrs = []
-    #     line_number = 1
-    #     toggle = -1 
+    def add_line_num(self, test_case: TestCaseProgram, min_lines=15) -> None:
+        instrumented_instrs = []
+        line_number = 1
+        toggle = -1 
 
 
-    #     for bb in test_case.iter_basic_blocks():
-    #         instructions = list(bb)
-    #         for instr in instructions[1:]:
-    #             inst_str = self._instruction_to_str(instr)
+        for bb in test_case.iter_basic_blocks():
+            instructions = list(bb)
+            for instr in instructions[1:]:
+                inst_str = self._instruction_to_str(instr)
                 
-    #             if toggle == -1:
-    #                 instrumented_instrs.append(f".line_{line_number}:")
-    #                 line_number += 1
-    #                 toggle = 1 
+                if toggle == -1:
+                    instrumented_instrs.append(f".line_{line_number}:")
+                    line_number += 1
+                    toggle = 1 
 
-    #             if instr.is_instrumentation:
-    #                 clean_inst = inst_str.replace("# instrumentation", "").strip()
-    #                 instrumented_instrs.append(f"{clean_inst} # instrumentation")
-    #             else:
-    #                 instrumented_instrs.append(inst_str)
-    #                 toggle = -1
+                if instr.is_instrumentation:
+                    clean_inst = inst_str.replace("# instrumentation", "").strip()
+                    instrumented_instrs.append(f"{clean_inst} # instrumentation")
+                else:
+                    instrumented_instrs.append(inst_str)
+                    toggle = -1
 
-    #     while line_number <= min_lines:
-    #         instrumented_instrs.append(f".line_{line_number}:")
-    #         line_number += 1
+        while line_number <= min_lines:
+            instrumented_instrs.append(f".line_{line_number}:")
+            line_number += 1
 
-    #     final_asm = [
-    #         ".intel_syntax noprefix",
-    #         ".section .data.main",
-    #         ".function_0:",
-    #         ".bb_0.0:",
-    #         ".macro.measurement_start: nop qword ptr [rax + 0xff]"
-    #     ]
+        final_asm = [
+            ".intel_syntax noprefix",
+            ".section .data.main",
+            ".function_0:",
+            ".bb_0.0:",
+            ".macro.measurement_start: nop qword ptr [rax + 0xff]"
+        ]
         
-    #     final_asm.extend(instrumented_instrs)
+        final_asm.extend(instrumented_instrs)
         
-    #     final_asm.extend([
-    #         ".exit_0:",
-    #         ".macro.measurement_end: nop qword ptr [rax + 0xff]",
-    #         "jmp .test_case_exit",
-    #         ".section .data.main",
-    #         ".test_case_exit:nop"
-    #     ])
+        final_asm.extend([
+            ".exit_0:",
+            ".macro.measurement_end: nop qword ptr [rax + 0xff]",
+            "jmp .test_case_exit",
+            ".section .data.main",
+            ".test_case_exit:nop"
+        ])
 
-    #     with open(test_case.asm_path(), "w") as f:
-    #         f.write("\n".join(final_asm) + "\n")
+        with open(test_case.asm_path(), "w") as f:
+            f.write("\n".join(final_asm) + "\n")
 
     def _print_section(self, sec: CodeSection, file_: TextIO) -> None:
         file_.write(f".section .data.{sec.name}\n")
