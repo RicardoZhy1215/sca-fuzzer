@@ -8,14 +8,17 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import multiprocessing
+import threading
 from typing import List, Tuple, Optional, Set, TYPE_CHECKING, Final, Dict, Type
 
+from SpecRL.src.interfaces import Input
 import numpy as np
 
 import unicorn as uc
 import unicorn.x86_const as x86ucc  # type: ignore # no type hints for unicorn.x86_const
 import unicorn.arm64_const as armucc  # type: ignore # no type hints for unicorn.arm_const
-from unicorn import Uc, UC_HOOK_CODE, UC_HOOK_MEM_READ, UC_HOOK_MEM_WRITE, \
+from unicorn import UC_SECOND_SCALE, Uc, UC_HOOK_CODE, UC_HOOK_MEM_READ, UC_HOOK_MEM_WRITE, \
     UC_HOOK_MEM_UNMAPPED, UcError, UC_MEM_WRITE, UC_PROT_NONE, UC_PROT_READ
 
 from ..model import Model
@@ -287,6 +290,89 @@ class UnicornModel(Model, ABC):
             self.emulator.hook_add(UC_HOOK_CODE, _instruction_hook, self)
         except UcError as e:
             error(f"[UnicornModel:load_test_case] {e}")
+
+    def _shallow_execute_test_case(self, inputs: List[InputData], nesting: int):
+        """
+        Architecture independent code - it starts the emulator
+        """
+        self.nesting = nesting
+        for index, input_ in enumerate(inputs):
+            self._load_input(input_)
+            self.reset_model()
+            start_address = self.code_start
+            while True:
+                self.pending_fault_id = 0
+
+                # execute the test case
+                try:
+                    self.emulator.emu_start(
+                        start_address, self.code_end, timeout=10*UC_SECOND_SCALE)
+                except UcError as e:
+                    # the type annotation below is ignored because some
+                    # of the packaged versions of Unicorn do not have
+                    # complete type annotations
+                    self.pending_fault_id = e.errno  # type: ignore
+
+                # handle faults
+                if self.pending_fault_id:
+                    # workaround for a Unicorn bug: after catching an exception
+                    # we need to restore some pre-exception context. otherwise,
+                    # the emulator becomes corrupted
+                    self.emulator.context_restore(self.previous_context)
+                    # another workaround, specifically for flags
+                    self.emulator.reg_write(self.flags_id, self.emulator.reg_read(self.flags_id))
+
+                    start_address = self.handle_fault(self.pending_fault_id)
+                    self.pending_fault_id = 0
+                    if start_address:
+                        continue
+
+                # if we use one of the speculative contracts, we might have some residual simulation
+                # that did not reach the spec. window by the end of simulation. Those need
+                # to be rolled back
+                if self.in_speculation:
+                    start_address = self.rollback()
+                    continue
+
+                # otherwise, we're done with this execution
+                break
+
+    class StoppableThread(threading.Thread):
+        inputs: List[InputData]
+        nesting: int
+        model: UnicornModel
+        def __init__(self, model, inputs: List[InputData], nesting: int):
+            super().__init__()
+            self.inputs = inputs
+            self.nesting = nesting
+            self.model = model
+            self._stop_event = threading.Event()
+
+        def run(self):
+            started = False
+            while not self._stop_event.is_set():
+                if started:
+                    continue
+                started = True
+                self.model._shallow_execute_test_case(self.inputs, self.nesting)
+
+        def stop(self):
+            self._stop_event.set()
+            self.model.emulator.emu_stop()
+            
+    def check_inf_loop(self, inputs: List[InputData], nesting: int, timeout: int) -> bool:
+        """
+        Checks for potential infinite loop/runtime too long
+        """
+        emu_proc = multiprocessing.Process(target=self._shallow_execute_test_case, args= (inputs, nesting)) 
+
+        emu_proc.start()
+        emu_proc.join(timeout)
+        if emu_proc.is_alive():
+            self.emulator.emu_stop()
+            emu_proc.terminate()
+            return False
+        return True
             
     def trace_test_case(self, inputs: List[InputData], nesting: int) -> List[CTrace]:
         """
