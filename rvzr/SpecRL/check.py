@@ -95,7 +95,7 @@ def X86NonCanonicalAddressCheck(testcase: TestCaseProgram, instr: Instruction, g
 
 def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86TargetDesc, generator: X86Generator) -> bool:
     mask_3bits = "0b111"
-    bit_test_names = ["BT", "BTC", "BTR", "BTS", "LOCK BT", "LOCK BTC", "LOCK BTR", "LOCK BTS"]
+    bit_test_names = ["bt", "btc", "btr", "bts", "lock bt", "lock btc", "lock btr", "lock bts"]
     
     
     # input_memory_size = CONF.input_main_region_size + CONF.input_faulty_region_size
@@ -116,8 +116,8 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
 
         # # FIXME: broken type
         # if CONF.x86_generator_align_locks:  # type: ignore  # pylint: disable = no-member
-        #     if "lock" in instr.name or instr.name == "xchg":
-        #         mask = mask[:-3] + "0" * 3
+        if "lock" in instr.name or instr.name == "xchg":
+                mask = mask[:-3] + "0" * 3
 
         if mem_operands and not implicit_mem_operands:
             assert len(mem_operands) == 1, \
@@ -126,7 +126,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             address_reg = mem_operand.value
             # if instr.instrumented: address_reg = address_reg[6:]
             imm_width = mem_operand.width if mem_operand.width <= 32 else 32
-            apply_mask = Instruction("AND", is_instrumentation=True) \
+            apply_mask = Instruction("and", is_instrumentation=True) \
                 .add_op(RegisterOp(address_reg, 64, True, True)) \
                 .add_op(ImmediateOp(mask, imm_width)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
@@ -134,7 +134,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             # prog.append(apply_mask)
             # prevent double adding R14
             if not instr.instrumented:
-                instr.get_mem_operands()[0].value = "R14 + " + address_reg
+                instr.get_mem_operands()[0].value = "r14 + " + address_reg
                 instr.instrumented = True
             return True
 
@@ -151,13 +151,13 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 imm_width = mem_operand.width if mem_operand.width <= 32 else 32
                 assert address_reg in target_desc.registers_by_size[64], \
                     f"Unexpected address register {address_reg} used in {instr}"
-                apply_mask = Instruction("AND", True) \
+                apply_mask = Instruction("and", True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
                     .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-                add_base = Instruction("ADD", True) \
+                add_base = Instruction("add", True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
-                    .add_op(RegisterOp("R14", 64, True, False)) \
+                    .add_op(RegisterOp("r14", 64, True, False)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
                 generator.insert_instruction_in_test_case(prog, apply_mask)
                 generator.insert_instruction_in_test_case(prog, add_base)
@@ -199,14 +199,14 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             return False
 
         # divisor in D or in memory with RDX offset? Impossible case, give up
-        if divisor.value in ["RDX", "EDX", "DX", "DH", "DL"] or "RDX" in divisor.value:
+        if divisor.value in ["rdx", "edx", "dx", "dh", "dl"] or "rdx" in divisor.value:
             return False
 
         # dividend in AX?
         if divisor.width == 8:
-            if "RAX" not in divisor.value:
-                instrumentation = Instruction("MOV", is_instrumentation=True).\
-                    add_op(RegisterOp("AX", 16, False, True)).\
+            if "rax" not in divisor.value:
+                instrumentation = Instruction("mov", is_instrumentation=True).\
+                    add_op(RegisterOp("ax", 16, False, True)).\
                     add_op(ImmediateOp("1", 16))
                 generator.insert_instruction_in_test_case(prog, instrumentation)
                 # prog.append(instrumentation)
@@ -218,14 +218,14 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
 
         # Normal case
         # D = (D & divisor) >> 1
-        d_register = {64: "RDX", 32: "EDX", 16: "DX"}[divisor.width]
-        instrumentation = Instruction("AND", is_instrumentation=True) \
+        d_register = {64: "rdx", 32: "edx", 16: "dx"}[divisor.width]
+        instrumentation = Instruction("and", is_instrumentation=True) \
             .add_op(RegisterOp(d_register, divisor.width, False, True)) \
             .add_op(divisor) \
             .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
         generator.insert_instruction_in_test_case(prog, instrumentation)
         # prog.append(instrumentation)
-        instrumentation = Instruction("SHR", is_instrumentation=True) \
+        instrumentation = Instruction("shr", is_instrumentation=True) \
             .add_op(RegisterOp(d_register, divisor.width, False, True)) \
             .add_op(ImmediateOp("1", 8)) \
             .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "undef"]), True)
@@ -257,7 +257,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
         # Mask its upper bits to reduce the stored value to at most 7
         if address.value != offset.value:
             new_offset = copy_op_with_flow_modification(offset, dest=True)
-            apply_mask = Instruction("AND", is_instrumentation=True) \
+            apply_mask = Instruction("and", is_instrumentation=True) \
                 .add_op(new_offset) \
                 .add_op(ImmediateOp(mask_3bits, 8)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
@@ -270,12 +270,12 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
         return False
 
     def sandbox_repeated_instruction(instr: Instruction, prog: TestCaseProgram) -> bool:
-        apply_mask = Instruction("AND", is_instrumentation=True) \
-            .add_op(RegisterOp("RCX", 64, True, True)) \
+        apply_mask = Instruction("and", is_instrumentation=True) \
+            .add_op(RegisterOp("rcx", 64, True, True)) \
             .add_op(ImmediateOp("0xff", 8)) \
             .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-        add_base = Instruction("ADD", is_instrumentation=True) \
-            .add_op(RegisterOp("RCX", 64, True, True)) \
+        add_base = Instruction("add", is_instrumentation=True) \
+            .add_op(RegisterOp("rcx", 64, True, True)) \
             .add_op(ImmediateOp("1", 1)) \
             .add_op(FlagsOp(["w", "w", "w", "w", "w", "", "", "", "w"]), True)
         generator.insert_instruction_in_test_case(prog, apply_mask)
@@ -286,7 +286,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
         return True
 
     def sandbox_corrupted_cf(instr: Instruction, prog: TestCaseProgram) -> bool:
-        set_cf = Instruction("STC", is_instrumentation= True) \
+        set_cf = Instruction("stc", is_instrumentation= True) \
             .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True)
         generator.insert_instruction_in_test_case(prog, set_cf)
         #prog.append(set_cf)
@@ -302,8 +302,8 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             "6",  # emodpe
             "7",  # eacceptcopy
         ]
-        set_rax = Instruction("MOV", is_instrumentation=True) \
-            .add_op(RegisterOp("EAX", 32, True, True)) \
+        set_rax = Instruction("mov", is_instrumentation=True) \
+            .add_op(RegisterOp("eax", 32, True, True)) \
             .add_op(ImmediateOp(random.choice(options), 1))
         generator.insert_instruction_in_test_case(prog, set_rax)
         #prog.append(set_rax)
@@ -314,11 +314,11 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
 
     if instr.has_mem_operand(True):
         passed = passed and sandbox_memory_access(instr, prog)
-    if instr.name in ["DIV", "REX DIV"]:
+    if instr.name in ["div", "rex div"]:
         passed = passed and sandbox_division(instr, prog)
     elif instr.name in bit_test_names:
         passed = passed and sandbox_bit_test(instr, prog)
-    elif "REP" in instr.name:
+    elif "rep" in instr.name:
         passed = passed and sandbox_repeated_instruction(instr, prog)
     elif instr.category == "BASE-ROTATE" or instr.category == "BASE-SHIFT":
         passed = passed and sandbox_corrupted_cf(instr, prog)

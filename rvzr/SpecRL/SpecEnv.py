@@ -500,9 +500,9 @@ class SpecEnv(gym.Env):
         for i in range(1, total_instructions_num):
             dest_path = f"{debug_path}/fenced_obs{i}.asm"
             self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
-            self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
+            # self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
 
-        self.printer.add_line_num_full_obs(fenced_test_case)
+        # self.printer.add_line_num_full_obs(fenced_test_case)
         # self.apply_selective_fencing(fenced_test_case.asm_path())
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
         fenced_test_case.assign_obj(fenced_obj.name)
@@ -540,7 +540,7 @@ class SpecEnv(gym.Env):
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
         # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
-        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, fenced_test_case, boosted_inputs, True)
+        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, program, boosted_inputs, False)
         if not violations:  # nothing detected? -> we are done here, move to next test case
             return None
 

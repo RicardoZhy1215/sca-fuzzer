@@ -22,8 +22,6 @@ and rcx, 0b1111111111111 # instrumentation
 sub al, byte ptr [r14 + rcx] 
 and rcx, 0b1111111111111 # instrumentation
 mul qword ptr [r14 + rcx] 
-and rax, 0b1111111111000 # instrumentation
-lock sub byte ptr [r14 + rax], -128 
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 
