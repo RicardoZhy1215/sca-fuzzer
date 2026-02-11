@@ -166,7 +166,7 @@ class Conf:
     """ generator: type of the program generator """
     instruction_set: Architecture = _get_architecture()
     """ instruction_set: ISA under test """
-    instruction_categories: List[str] = []
+    instruction_categories: List[str] = ["BASE-BINARY"]
     """ instruction_categories: list of instruction categories to use for generating programs """
     instruction_allowlist: List[str] = []
     """ instruction_allowlist: list of instructions to use for generating programs;
@@ -244,10 +244,10 @@ class Conf:
     model_backend: str = 'unicorn'
     """ model_backend: The backend used to collect contract traces on generated test cases """
     # contract_execution_clause: List[str] = ["seq"]
-    contract_execution_clause: List[str] = ["no_speculation"]
+    contract_execution_clause: List[str] = ["delayed-exception-handling"]
     """ contract_execution_clause: """
     # contract_observation_clause: str = 'ct'
-    contract_observation_clause: str = 'load+store+pc'
+    contract_observation_clause: str = 'loads+stores+pc'
     """ contract_observation_clause: """
     model_min_nesting: int = 1
     """ model_max_nesting: """
