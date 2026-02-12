@@ -62,8 +62,7 @@ class CTrace:
     def __init__(self, trace: List[CTraceEntry]) -> None:
         self._trace = trace
         self._untyped = [entry.value for entry in trace]
-        # self._hash = xxhash.xxh64(str(self._untyped), seed=0).intdigest()
-        self._hash = hash(tuple(self._untyped))
+        self._hash = xxhash.xxh64(str(self._untyped), seed=0).intdigest()
 
     # ==============================================================================================
     # Printers

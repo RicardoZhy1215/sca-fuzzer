@@ -236,8 +236,7 @@ class _RoundManager:
             return
 
         # Normal case - boost the inputs
-        self._non_boosted_ctraces, taints = \
-            self.fuzzer.model.trace_test_case_with_taints(self.org_inputs, self.conf.model_nesting)
+        self._non_boosted_ctraces, taints = self.fuzzer.model.trace_test_case_with_taints(self.org_inputs, self.conf.model_nesting)
         self.boosted_inputs = self.fuzzer.data_gen.generate_boosted(self.org_inputs, taints,
                                                                     CONF.inputs_per_class)
 

@@ -145,7 +145,7 @@ class SpecEnv(gym.Env):
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
                                       elf_parser=self.elf_parser)
         self.generator.instruction_space = self.instruction_space
-        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -227,7 +227,7 @@ class SpecEnv(gym.Env):
         self.num_steps = 0
         self.bad_case = False
         # self.program = Program(self.seq_size, self.asm_path, self.bin_path)
-        self.new_program = self.generator.create_test_case("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
+        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
                                                            instruction_space=self.generator.instruction_space)
         # all_instructions = []
         # for bb in self.new_program.iter_basic_blocks():
@@ -295,7 +295,7 @@ class SpecEnv(gym.Env):
                 temp_bin_path = f"temp_obs_{i}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
                 # temp = Program(i + 1, temp_asm_path, temp_bin_path)
-                temp_program = self.generator.create_test_case(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+                temp_program = self.generator.create_test_case_SpecRL(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
                 # print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
                 for j in range(1, i + 1):
@@ -327,27 +327,27 @@ class SpecEnv(gym.Env):
                 #subprocess.run("/home/laievan/specenv/SpecRL/src/reset_branch") # want to run reset_branch between iterations but not between inputs
                 temp_obs = self._obs_program(temp_program)
 
-                print(f"\niteration {count} observations: ")
+                # print(f"\niteration {count} observations: ")
                 #print(temp_obs)
 
                 # fill appropriate observation row in
-                obs["instruction"][count - 1] = temp_obs[0]
+                # obs["instruction"][count - 1] = temp_obs[0]
 
-                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
-                padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
-                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
-                obs["htrace"][count - 1] = padded_htrace
+                # temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
+                # padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
+                # padded_htrace[:temp_htrace.shape[0]] = temp_htrace
+                # obs["htrace"][count - 1] = padded_htrace
 
-                temp_ctrace = np.array(temp_obs[2])
-                padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
-                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
-                obs["ctrace"][count - 1] = padded_ctrace
+                # temp_ctrace = np.array(temp_obs[2])
+                # padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
+                # padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
+                # obs["ctrace"][count - 1] = padded_ctrace
 
-                print("temp htrace: ", temp_htrace)
-                print("temp ctrace: ", temp_ctrace)
+                # print("temp htrace: ", temp_htrace)
+                # print("temp ctrace: ", temp_ctrace)
 
-                obs["recovery_cycles"][count - 1] = temp_obs[3]
-                obs["transient_uops"][count - 1] = temp_obs[4]
+                # obs["recovery_cycles"][count - 1] = temp_obs[3]
+                # obs["transient_uops"][count - 1] = temp_obs[4]
 
         # temp file cleanup
         os.chdir(cwd)
@@ -375,7 +375,7 @@ class SpecEnv(gym.Env):
         self.executor.valid_mem_limit = 0x100000
 
         htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
-        htraces_int = self.aggregate_htraces(htraces, n_reps=1)
+        # htraces_int = self.aggregate_htraces(htraces, n_reps=1)
         #raw_htraces = [ht.get_raw_traces() for ht in htraces]
 
         #pfc_feedback = self.executor.get_last_feedback()
@@ -387,7 +387,7 @@ class SpecEnv(gym.Env):
             if (pfc_values[0] > pfc_values[1]):
                 transient.append(pfc_values[0] - pfc_values[1])
             else: transient.append(0)
-        return (program.__len__(), htraces_int, ctraces, recovery, transient)
+        # return (program.__len__(), htraces_int, ctraces, recovery, transient)
         #return (program.__len__(), htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
 
 
@@ -466,19 +466,22 @@ class SpecEnv(gym.Env):
         self.model.load_test_case(temp)
 
         ctraces: List[CTrace]
-        htraces: List[HTrace]
-
+        htraces: List[HTrace]   
+        print("len of inputs", len(inputs))
         # at this point we need to increase the effectiveness of inputs
         # so that we can detect contract violations (note that it wasn't necessary
         # up to this point because we weren't testing against a contract)
         #boosted_inputs: List[InputData] = fuzzer.generate_boosted(inputs, 1)
-        manager = _RoundManager(self.fuzzer, temp, self.inputs)
+        manager = _RoundManager(self.fuzzer, temp, inputs)
         manager._boost_inputs()
         boosted_inputs = manager.boosted_inputs
 
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
         htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
+        print("len of boosted inputs", len(boosted_inputs))
+        for input in boosted_inputs:
+            print("input in bi", input)
 
         # check if misspec occurs, updates flag
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
@@ -491,7 +494,7 @@ class SpecEnv(gym.Env):
   
         fenced = tempfile.NamedTemporaryFile(delete=False)
         fenced_obj = tempfile.NamedTemporaryFile(delete=False)
-        fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+        fenced_test_case = self.generator.create_test_case_SpecRL(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
         
 
         debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
@@ -545,6 +548,7 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+        exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:

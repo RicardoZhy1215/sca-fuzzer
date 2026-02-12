@@ -299,7 +299,7 @@ class CodeGenerator(ABC):
 
     # ----------------------------------------------------------------------------------------------
     # Public Interface
-    def create_test_case(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True, instruction_space: List[Instruction] = None) -> TestCaseProgram:
+    def create_test_case_SpecRL(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True, instruction_space: List[Instruction] = None) -> TestCaseProgram:
         """
         Generate a random test case, write its assembly code to a file,
         and assemble it into an object (unless disabled).
@@ -310,12 +310,10 @@ class CodeGenerator(ABC):
         if not asm_file:
             asm_file = 'generated.asm'
         test_case = TestCaseProgram(asm_file, seed=self._state)
-        print(f"test_case", test_case)
         # create actors and their corresponding sections
         actors_config: ActorsConf = CONF.get_actors_conf()
         if len(actors_config) != 1:
             error("Generation of test cases with multiple actors is not yet supported")
-        print("actors_config", actors_config)
         self.generate_actors_with_sections(test_case, actors_config)
 
         # create empty main function and fill it with random instructions
@@ -329,7 +327,53 @@ class CodeGenerator(ABC):
         if not generate_empty_case:
             self._function_generator._add_instructions_in_function(main_func, instruction_space)
             
+        # add it to the test case, in the first section
+        test_case[0].append(main_func)
+
+        # process the test case
+        for p in self._passes:
+            p.run_on_test_case(test_case)
+
+        # add symbols to test case
+        self._add_required_symbols(test_case)
+
+        self._printer.print(test_case)
+
+        if disable_assembler:
+            return test_case
+
+        test_case.assign_obj(asm_file[:-4] + ".o")
+        assemble(test_case)
+        self._elf_parser.populate_elf_data(test_case.get_obj(), test_case)
+
+        self._update_state()
+        return test_case
     
+
+    def create_test_case(self, asm_file: str, disable_assembler: bool = False) -> TestCaseProgram:
+        """
+        Generate a random test case, write its assembly code to a file,
+        and assemble it into an object (unless disabled).
+        :param asm_file: the path to the output file
+        :param disable_assembler: if True, the function will not assemble the test case
+        :return: the generated test case object
+        """
+        if not asm_file:
+            asm_file = 'generated.asm'
+        test_case = TestCaseProgram(asm_file, seed=self._state)
+
+        # create actors and their corresponding sections
+        actors_config: ActorsConf = CONF.get_actors_conf()
+        if len(actors_config) != 1:
+            error("Generation of test cases with multiple actors is not yet supported")
+        self.generate_actors_with_sections(test_case, actors_config)
+
+        # create empty main function and fill it with random instructions
+        main_section = test_case[0]
+        default_actor = main_section.owner
+        assert default_actor.is_main
+        main_func = self._function_generator.generate_empty(".function_0", main_section)
+        self._function_generator.fill_function(main_func)
 
         # add it to the test case, in the first section
         test_case[0].append(main_func)
@@ -720,7 +764,7 @@ class _FunctionGenerator:
             # > 2 successors
             raise NotImplementedError("Indirect jumps/calls are not yet supported")
 
-    def _add_instructions_in_function(self, func: Function, instruction_space: List[Instruction]) -> None:
+    def _add_instructions_in_function(self, func: Function) -> None:
         """
         Fill the function with random instructions.
         Ensures that all basic blocks are filled with roughly the same number of instructions
@@ -731,8 +775,6 @@ class _FunctionGenerator:
         assert all(len(bb) == 0 for bb in bb_list), "Basic blocks are not empty"
         for _ in range(0, CONF.program_size):
             bb = random.choice(bb_list)
-            # inst = random.choice(instruction_space)
-            # inst._section_id = 0
             inst = self._instruction_generator.generate_from_random_spec(
                 self._isa_spec.non_memory_access_specs, self._isa_spec.store_instructions,
                 self._isa_spec.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
