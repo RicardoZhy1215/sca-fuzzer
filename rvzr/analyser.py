@@ -105,7 +105,10 @@ class EquivalenceAnalyserCommon(Analyser):
 
         # Skip if there are no htraces
         if not htraces:
+            # print("htraces is empty*****************")
             return []
+        
+        # print("htrace len", len(htraces))
 
         # Package all the measurements into TraceBundles
         # and filter out the measurements with corrupted/ignored htraces
@@ -116,10 +119,14 @@ class EquivalenceAnalyserCommon(Analyser):
             measurements.append(TraceBundle(i, inputs[i], ctraces[i], htrace))
         if not measurements:
             return []
+        
+        # print("measurements len", len(measurements))
 
         # Build a list of equivalence classes:
         all_classes = ContractEqClass.build_contract_classes(measurements)
-
+        # print("len of allclasses", len(all_classes))
+        # for eq_cls in all_classes:
+            # print("len of eq cls.meausremts", len(eq_cls.measurements))
         # Filter out ineffective equivalence classes
         effective_classes = [eq_cls for eq_cls in all_classes if len(eq_cls.measurements) >= 2]
 
@@ -128,8 +135,18 @@ class EquivalenceAnalyserCommon(Analyser):
 
         # Compute hardware equivalence classes
         for eq_cls in effective_classes:
-            hw_classes = HardwareEqClass.build_hw_classes(
-                eq_cls.measurements, equivalence_function=self.htraces_are_equivalent)
+            # if len(eq_cls.measurements) >= 2:
+            #     m1 = eq_cls.measurements[0]
+            #     m2 = eq_cls.measurements[1]
+            #     print("\n--- Debug: Comparing HTraces ---")
+            #     print(f"HTrace 1: {m1.htrace}")
+            #     print(f"HTrace 2: {m2.htrace}")
+            #     is_eq = self.htraces_are_equivalent(m1.htrace, m2.htrace)
+            #     print(f"Function 'htraces_are_equivalent' says: {is_eq}")
+            #     print("--------------------------------\n")
+            hw_classes = HardwareEqClass.build_hw_classes(eq_cls.measurements, equivalence_function=self.htraces_are_equivalent)
+            # print("len of hw classes", len(hw_classes))
+
             eq_cls.set_hw_classes(hw_classes)
 
         # Check if any of the equivalence classes is a contract counterexample
@@ -139,6 +156,8 @@ class EquivalenceAnalyserCommon(Analyser):
             if len(hw_classes) >= 2:
                 v = Violation.from_contract_eq_class(eq_cls, inputs, test_case_code)
                 violations.append(v)
+            # else:
+            #     print("len(hw_classes) < 2 ***************")
 
         # Update statistics
         if stats_:

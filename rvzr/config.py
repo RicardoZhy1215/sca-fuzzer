@@ -247,7 +247,7 @@ class Conf:
     contract_execution_clause: List[str] = ["delayed-exception-handling"]
     """ contract_execution_clause: """
     # contract_observation_clause: str = 'ct'
-    contract_observation_clause: str = 'loads+stores+pc'
+    contract_observation_clause: str = 'ct'
     """ contract_observation_clause: """
     model_min_nesting: int = 1
     """ model_max_nesting: """
