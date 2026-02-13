@@ -145,9 +145,9 @@ class Conf:
     """ fuzzer: type of the fuzzing algorithm """
     enable_priming: bool = True
     """ enable_priming: whether to check violations with priming """
-    enable_speculation_filter: bool = False
+    enable_speculation_filter: bool = True
     """ enable_speculation_filter: if True, discard test cases that don't trigger speculation"""
-    enable_observation_filter: bool = False
+    enable_observation_filter: bool = True
     """ enable_observation_filter: if True,discard test cases that don't leave speculative traces"""
     enable_fast_path_model: bool = True
     """ enable_fast_path_boosting: if enabled, the same contract trace will be used

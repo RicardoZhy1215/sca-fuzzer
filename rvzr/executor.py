@@ -324,7 +324,7 @@ class Executor(ABC):
 
         # Post-process results and return a list of HTrace objects
         traces = self._raw_readings_to_traces(all_readings, n_inputs)
-        # self._log.dbg_dump_raw_traces(traces)
+        self._log.dbg_dump_raw_traces(traces)
         return traces
 
         # threshold = n_reps // 10 if n_reps >= 10 else 1
