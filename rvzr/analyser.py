@@ -135,15 +135,15 @@ class EquivalenceAnalyserCommon(Analyser):
 
         # Compute hardware equivalence classes
         for eq_cls in effective_classes:
-            # if len(eq_cls.measurements) >= 2:
-            #     m1 = eq_cls.measurements[0]
-            #     m2 = eq_cls.measurements[1]
-            #     print("\n--- Debug: Comparing HTraces ---")
-            #     print(f"HTrace 1: {m1.htrace}")
-            #     print(f"HTrace 2: {m2.htrace}")
-            #     is_eq = self.htraces_are_equivalent(m1.htrace, m2.htrace)
-            #     print(f"Function 'htraces_are_equivalent' says: {is_eq}")
-            #     print("--------------------------------\n")
+            if len(eq_cls.measurements) >= 2:
+                m1 = eq_cls.measurements[0]
+                m2 = eq_cls.measurements[1]
+                print("\n--- Debug: Comparing HTraces ---")
+                print(f"HTrace 1: {m1.htrace}")
+                print(f"HTrace 2: {m2.htrace}")
+                is_eq = self.htraces_are_equivalent(m1.htrace, m2.htrace)
+                print(f"Function 'htraces_are_equivalent' says: {is_eq}")
+                print("--------------------------------\n")
             hw_classes = HardwareEqClass.build_hw_classes(eq_cls.measurements, equivalence_function=self.htraces_are_equivalent)
             # print("len of hw classes", len(hw_classes))
 

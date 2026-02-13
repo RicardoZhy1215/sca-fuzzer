@@ -205,7 +205,9 @@ class SpecEnv(gym.Env):
         print("program: ")
         # self.program.print()
         step_obs = self._get_obs()
-        step_reward = self._reward()
+        step_reward = 0
+        if self.succ_step_counter == 14:
+            step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         return (step_obs, step_reward, end, truncate, {"program": self.new_program})
@@ -263,7 +265,7 @@ class SpecEnv(gym.Env):
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
             "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64)
         } # filled with -1's as filler
-
+        return 0
         # temp file management
         cwd = os.getcwd()
         with tempfile.TemporaryDirectory() as temp_path:
@@ -530,10 +532,7 @@ class SpecEnv(gym.Env):
         # self.executor.valid_mem_base = 0x0
         # self.executor.valid_mem_limit = 0x100000
         # fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
-        os.remove(fenced.name)
-        os.remove(fenced_obj.name)
-        os.remove(asm.name)
-        os.remove(bin.name)
+
 
         # program._asm_path = self.asm_path
         # program._obj = self.bin_path
@@ -541,14 +540,20 @@ class SpecEnv(gym.Env):
         if fenced_htraces != htraces:
             self.observable = True
 
+        # self.fuzzer.standalone_analyse(ctraces, htraces)
+        violations = self.fuzzer.fuzzing_round(temp, boosted_inputs, [])
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
         # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
-        violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, program, boosted_inputs, False)
+        # violations = self.fuzzer.analyser.filter_violations(ctraces, htraces, program, boosted_inputs, False)
         if not violations:  # nothing detected? -> we are done here, move to next test case
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+        os.remove(fenced.name)
+        os.remove(fenced_obj.name)
+        os.remove(asm.name)
+        os.remove(bin.name)
         exit(1)
 
         # 2. Repeat with with max nesting
