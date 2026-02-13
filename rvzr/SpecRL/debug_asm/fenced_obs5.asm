@@ -3,11 +3,12 @@
 .function_0:
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-and rsi, 0b1111111111111 # instrumentation
-add rdi, qword ptr [r14 + rsi] 
-add cl, dl 
-and rcx, 0b1111111111111 # instrumentation
-add qword ptr [r14 + rcx], rbx 
+dec di 
+and rdx, 0b1111111111000 # instrumentation
+or word ptr [r14 + rdx], 0b1000 # instrumentation
+and byte ptr [r14 + rdx], 0b1111111111000 # instrumentation
+and rbx, 0b1111111111000 # instrumentation
+.bb_0.1:
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 

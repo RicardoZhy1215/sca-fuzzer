@@ -5,18 +5,21 @@
 .macro.measurement_start: nop qword ptr [rax + 0xff]
 dec di 
 and rdx, 0b1111111111000 # instrumentation
+and rdx, 0b1111111111111 # instrumentation
 or word ptr [r14 + rdx], 0b1000 # instrumentation
+and rdx, 0b1111111111111 # instrumentation
 and byte ptr [r14 + rdx], 0b1111111111000 # instrumentation
 and rbx, 0b1111111111000 # instrumentation
-and rax, 0b1111111111000 # instrumentation
+and rax, 0b1111111111111 # instrumentation
 mul dword ptr [r14 + rax] 
 and rdi, 0b1111111111111 # instrumentation
 mul dword ptr [r14 + rdi] 
 add al, -110 
-jbe .bb_0.1 
-jmp .exit_0 
+jbe .bb_0.1 # instrumentation
+jmp .exit_0 # instrumentation
+and rbx, 0b1111111111111 # instrumentation
+mov qword ptr [r14 + rbx], 1 
 .bb_0.1:
-and rbx, 0b1111111111000 # instrumentation
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 

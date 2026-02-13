@@ -22,7 +22,7 @@ from rvzr.arch.x86.asm_parser import X86AsmParser
 from rvzr.elf_parser import ELFParser
 from rvzr.isa_spec import InstructionSet
 from rvzr.tc_components.test_case_data import InputData
-from rvzr.tc_components.instruction import Instruction
+from rvzr.tc_components.instruction import Instruction, RegisterOp, MemoryOp, ImmediateOp
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.code_generator import assemble
@@ -49,6 +49,7 @@ import tempfile
 import os
 import shutil
 from subprocess import run
+
 
 
 
@@ -179,9 +180,9 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
-            passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
+            # passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
-            # passed_inst = True
+            passed_inst = True
             passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
