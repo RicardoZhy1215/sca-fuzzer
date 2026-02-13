@@ -145,20 +145,13 @@ class Conf:
     """ fuzzer: type of the fuzzing algorithm """
     enable_priming: bool = True
     """ enable_priming: whether to check violations with priming """
-    # enable_speculation_filter: bool = False
-    enable_speculation_filter: bool = True
+    enable_speculation_filter: bool = False
     """ enable_speculation_filter: if True, discard test cases that don't trigger speculation"""
-    # enable_observation_filter: bool = False
-    enable_observation_filter: bool = True
+    enable_observation_filter: bool = False
     """ enable_observation_filter: if True,discard test cases that don't leave speculative traces"""
     enable_fast_path_model: bool = True
     """ enable_fast_path_boosting: if enabled, the same contract trace will be used
     for all inputs in the same taint-based input class """
-
-    # ==============================================================================================
-    # Execution Environment
-    permitted_faults: List[str] = []
-    """ permitted_faults: a list of faults that are permitted to happen during testing """
 
     # ==============================================================================================
     # Program Generator
@@ -166,7 +159,7 @@ class Conf:
     """ generator: type of the program generator """
     instruction_set: Architecture = _get_architecture()
     """ instruction_set: ISA under test """
-    instruction_categories: List[str] = ["BASE-BINARY"]
+    instruction_categories: List[str] = []
     """ instruction_categories: list of instruction categories to use for generating programs """
     instruction_allowlist: List[str] = []
     """ instruction_allowlist: list of instructions to use for generating programs;
@@ -188,16 +181,16 @@ class Conf:
     """ program_size: size of generated programs """
     avg_mem_accesses: int = 12
     """ avg_mem_accesses: average number of memory accesses in generated programs """
-    min_bb_per_function: int = 1
+    min_bb_per_function: int = 2
     """ min_bb_per_function: minimal number of basic blocks per function in generated programs """
-    max_bb_per_function: int = 1
+    max_bb_per_function: int = 2
     """ max_bb_per_function: maximum number of basic blocks per function in generated programs """
-    min_successors_per_bb: int = 2
+    min_successors_per_bb: int = 1
     """ min_bb_per_function: min. number of successors for each basic block in generated programs
     Note 1: this config option is a *hint*; it could be ignored if the instruction set does not
     have the necessary instructions to satisfy it, or if a certain number of successor is required
     for correctness"""
-    max_successors_per_bb: int = 2
+    max_successors_per_bb: int = 1
     """ min_bb_per_function: min. number of successors for each basic block in generated programs
     Note: this config option is a *hint*; it could be ignored if the instruction set does not
     have the necessary instructions to satisfy it, or if a certain number of successor is required
@@ -211,10 +204,16 @@ class Conf:
      has lower priority than register_allowlist.
      The resulting list is: (all registers - register_blocklist) + register_allowlist """
     faults_allowlist: List[str] = []
+    permitted_faults: List[str] = []
     """ faults_allowlist: by default, generator will produce programs that never
     trigger exceptions. This option modifies this behavior by permitting the generator to produce
     'unsafe' instruction sequences that could potentially trigger an exception. Model and executor
      will also be configured to handle these exceptions gracefully """
+    
+    input_main_region_size = 4096
+    input_faulty_region_size = 4096
+    input_register_region_size: int = 64
+    executor_repetitions = 10
 
     # ==============================================================================================
     # Input Data Generator
@@ -230,23 +229,13 @@ class Conf:
     """ input_gen_probability_of_special_value: probability of generating a special value
     (zero or maximum value) when setting a register value in the input generator. This is used
     to test fast paths in the microarchitecture """
-    """ inputs_per_class: number of inputs per input class """
-    memory_access_zeroed_bits: int = 0
-    input_main_region_size: int = 4096
-    """ input_main_region_size: """
-    input_faulty_region_size: int = 4096
-    """ input_faulty_region_size: """
-    input_register_region_size: int = 64
-    """ input_register_region_size: """
 
     # ==============================================================================================
     # Contract Model
     model_backend: str = 'unicorn'
     """ model_backend: The backend used to collect contract traces on generated test cases """
-    # contract_execution_clause: List[str] = ["seq"]
-    contract_execution_clause: List[str] = ["delayed-exception-handling"]
+    contract_execution_clause: List[str] = ["seq"]
     """ contract_execution_clause: """
-    # contract_observation_clause: str = 'ct'
     contract_observation_clause: str = 'ct'
     """ contract_observation_clause: """
     model_min_nesting: int = 1
@@ -265,7 +254,6 @@ class Conf:
     executor_warmups: int = 5
     """ executor_warmups: number of warmup rounds executed before starting to collect
     hardware traces """
-    executor_repetitions: int = 10
     executor_sample_sizes: List[int] = [10, 50, 100, 500]
     """ executor_sample_sizes: a list of sample sizes to be used during the measurements;
     the executor will first collect the hardware traces with the first sample size in the list,

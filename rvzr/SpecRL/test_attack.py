@@ -27,47 +27,59 @@ ADD_RCX_5 = Instruction("ADD", False, "", False) \
 
 
 # Attack instructions sequence based on revizor example 
-ADD_RDI_RSI = Instruction("add", False, "", False) \
-    .add_op(RegisterOp("rdi", 64, False, True)) \
-    .add_op(MemoryOp("rsi", 64, True, False))
+DEC_DI  = Instruction("dec", False, "", False) \
+    .add_op(RegisterOp("di", 16, False, True))
 
-ADD_CL_DL = Instruction("add", False, "", False) \
-    .add_op(RegisterOp("cl", 8, False, True)) \
-    .add_op(RegisterOp("dl", 8, True, False))
+AND_RDX_0B = Instruction("and", False, "", is_instrumentation=True) \
+    .add_op(RegisterOp("rdx", 64, False, True)) \
+    .add_op(ImmediateOp("0b1111111111000", 8))
 
-ADD_RCX_RBX = Instruction("add", False, "", False) \
-    .add_op(MemoryOp("rcx", 64, False, True)) \
-    .add_op(RegisterOp("rbx", 64, True, False))
+OR_RDX_0B = Instruction("or", False, "", is_instrumentation=True) \
+    .add_op(MemoryOp("r14 + rdx", 16, False, True)) \
+    .add_op(ImmediateOp("0b1000", 16))
 
-ADD_RBX_ECX = Instruction("add", False, "", False) \
-    .add_op(MemoryOp("rbx", 32, False, True)) \
-    .add_op(RegisterOp("ecx", 32, True, False))
+AND_RDX_0B_MEM = Instruction("and", False, "", is_instrumentation=True) \
+    .add_op(MemoryOp("r14 + rdx", 8, False, True)) \
+    .add_op(ImmediateOp("0b1111111111000", 8))
 
-CMP_RAX_ECX = Instruction("cmp", False, "", False) \
-    .add_op(MemoryOp("rax", 32, False, True)) \
-    .add_op(RegisterOp("ecx", 32, True, False))
+AND_RBX_0B = Instruction("and", False, "", is_instrumentation=True) \
+    .add_op(RegisterOp("rbx", 64, False, True)) \
+    .add_op(ImmediateOp("0b1111111111000", 64))
 
-DIV_RDI = Instruction("div", False, "", False) \
-    .add_op(MemoryOp("rdi", 8, True, False))
+AND_RAX_0B = Instruction("and", False, "", is_instrumentation=True) \
+    .add_op(RegisterOp("rax", 32, False, True)) \
+    .add_op(ImmediateOp("0b1111111111000", 32))
 
-SUB_RSI_BL = Instruction("sub", False, "", False) \
-    .add_op(MemoryOp("rsi", 8, False, True)) \
-    .add_op(RegisterOp("bl", 8, True, False))
+MUL_RAX = Instruction("mul", False, "", False) \
+    .add_op(MemoryOp("r14 + rax", 32, False, True)) \
+    
+AND_RDI_0B = Instruction("and", False, "", is_instrumentation=True) \
+    .add_op(RegisterOp("rdi", 32, False, True)) \
+    .add_op(ImmediateOp("0b1111111111111", 32))
+MUL_RDI = Instruction("mul", False, "", False) \
+    .add_op(MemoryOp("r14 + rdi", 32, False, True)) \
 
-SUB_AL_RCX = Instruction("sub", False, "", False) \
+ADD_AL_110 = Instruction("add", False, "", False) \
     .add_op(RegisterOp("al", 8, False, True)) \
-    .add_op(MemoryOp("rcx", 8, True, False))
+    .add_op(ImmediateOp("-110", 8))
 
-MUL_RCX = Instruction("mul", False, "", False) \
-    .add_op(MemoryOp("rcx", 64, True, False))
+JBE_BB_01 = Instruction("jbe", True, "", False) \
+    .add_op(LabelOp(".bb_0.1"))
 
-SUB_RAX_128 = Instruction("lock sub", False, "", False) \
-    .add_op(MemoryOp("rax", 8, False, True)) \
-    .add_op(ImmediateOp("-128", 8))
+JMP_EXIT = Instruction("jmp", True, "", False) \
+    .add_op(LabelOp(".exit_0"))
+
+
+
+MOV_RBX_1 = Instruction("mov", False, "", False) \
+    .add_op(MemoryOp("r14 + rbx", 64, False, True)) \
+    .add_op(ImmediateOp("1", 64))
+
+
 
 
 # test_instruction_space = [SBB_qword_ptr_R14_RBX_35, JNS_line_4, JMP_line_5, IMUL_byte_ptr_R14_RCX, MOV_RCX_R14, MOV_RAX_RCX, MOV_RCX_10, ADD_RCX_5]
-test_instruction_space = [ADD_RDI_RSI, ADD_CL_DL, ADD_RCX_RBX, ADD_RBX_ECX, CMP_RAX_ECX, DIV_RDI, SUB_RSI_BL, SUB_AL_RCX, MUL_RCX, SUB_RAX_128]
+test_instruction_space = [DEC_DI, AND_RDX_0B, OR_RDX_0B, AND_RDX_0B_MEM, AND_RBX_0B, AND_RAX_0B,MUL_RAX,AND_RDI_0B, MUL_RDI, ADD_AL_110, JBE_BB_01, JMP_EXIT, AND_RBX_0B, MOV_RBX_1]
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 15,
@@ -75,16 +87,20 @@ env_config = {"instruction_space": test_instruction_space,
 
 if __name__ == "__main__":
     test = SpecEnv(env_config)
-    test.step(0)  # ADD RDI, [RSI]
-    test.step(1)  # ADD CL, DL
-    test.step(2)  # ADD [RCX], RBX
-    test.step(3)  # ADD [RBX], ECX  
-    test.step(4)  # CMP [RAX], ECX
-    test.step(5)  # DIV [RDI]
-    test.step(6)  # SUB [RSI], BL
-    test.step(7)  # SUB AL, [RCX]
-    test.step(8)  # MUL [RCX]
-    test.step(9)  # LOCK SUB [RAX], -128
+    test.step(0)  
+    test.step(1)  
+    test.step(2) 
+    test.step(3)  
+    test.step(4)  
+    test.step(5) 
+    test.step(6)  
+    test.step(7) 
+    test.step(8) 
+    test.step(9)  
+    test.step(10) 
+    test.step(11)
+    test.step(12)
+    test.step(13)
 
     # print("MOV RCX, 10")
     # test.step(6)

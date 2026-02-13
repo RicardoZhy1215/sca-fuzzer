@@ -36,6 +36,8 @@ if TYPE_CHECKING:
     from .elf_parser import ELFParser
 
 
+
+
 # ==================================================================================================
 # Interfaces and common functionality of ISA-specific service classes
 # ==================================================================================================
@@ -731,7 +733,7 @@ class _FunctionGenerator:
             label = terminator.get_label_operand()
             assert label is not None
             label.value = destination.name
-            bb.terminators.append(terminator)
+            # bb.terminators.append(terminator)
 
         for bb in func:
             assert not bb.terminators, "Basic block already has terminators"
@@ -780,9 +782,42 @@ class _FunctionGenerator:
                 self._isa_spec.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
             bb.insert_after(bb.get_last(), inst)
     
+    def _is_and_rbx_mask_inst(self, inst: Instruction) -> bool:
+        """and rbx, 0b1111111111000 # instrumentation"""
+        if inst.name != "and" or not inst.is_instrumentation or len(inst.operands) < 2:
+            return False
+        op0, op1 = inst.operands[0], inst.operands[1]
+        return (isinstance(op0, RegisterOp) and op0.value == "rbx"
+                and isinstance(op1, ImmediateOp) and op1.value == "0b1111111111000")
+
+    def _is_mov_rbx_store_inst(self, inst: Instruction) -> bool:
+        """mov qword ptr [rbx], 1 或 mov word ptr [r14 + rbx], 1"""
+        if inst.name != "mov" or len(inst.operands) < 2:
+            return False
+        op0, op1 = inst.operands[0], inst.operands[1]
+        if not (isinstance(op0, MemoryOp) and isinstance(op1, ImmediateOp) and op1.value == "1"):
+            return False
+        return op0.value in ("rbx", "r14 + rbx")
+
+    def _count_and_rbx_mask_in_func(self, func: Function) -> int:
+        count = 0
+        for bb in func:
+            for instr in bb:
+                if self._is_and_rbx_mask_inst(instr):
+                    count += 1
+        return count
+
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
         bb_list = list(func)
         bb = bb_list[0]
+
+        if self._is_and_rbx_mask_inst(inst):
+            and_count = self._count_and_rbx_mask_in_func(func)
+            if and_count >= 1 and len(bb_list) >= 2:
+                bb = bb_list[1]
+        elif self._is_mov_rbx_store_inst(inst) and len(bb_list) >= 2:
+            bb = bb_list[1]
+
         new_inst = copy.copy(inst)
         new_inst._section_id = -1
         bb.insert_after(bb.get_last(), new_inst)
