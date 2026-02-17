@@ -275,12 +275,12 @@ class Conf:
     """ analyser_subsets_is_violation: [only for analyser='sets' or analyser='bitmaps']
     if False, the analyser will not label hardware traces as mismatching if they form
     a subset relation """
-    analyser_outliers_threshold: float = 0.1
+    analyser_outliers_threshold: float = 0.5
     """ analyser_outliers_threshold: [only for analyser='sets' or analyser='bitmaps']
     analyser will ignore the htraces that appear in less then this percentage of the repetitions.
     I.e., a htrace passes the filter if it is observed at least
         (analyser_outliers_threshold * len(htrace)) times """
-    analyser_stat_threshold: float = 0.5
+    analyser_stat_threshold: float = 0.1
     """ analyser_stat_threshold: [only for analyser='chi2' and analyser='mwu']
     Threshold for the statistical tests. If a pair of hardware traces has the (normalized)
     statistics below the threshold, then the traces are considered equivalent.

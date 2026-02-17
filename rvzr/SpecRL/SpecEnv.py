@@ -239,7 +239,8 @@ class SpecEnv(gym.Env):
         # total_instructions_num = len(all_instructions)
         # print("new_program after reset: ", total_instructions_num)
         # print(f"bin path: {self.program.bin_path}")
-        return (self._get_obs(), {"program": self.new_program})
+        # return (self._get_obs(), {"program": self.new_program})
+        return
 
     # extra functions that could be used down the line to visualize the env
     def render(self):
@@ -437,7 +438,7 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), input_paths=inputs)
+        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm",input_paths=self.inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser
@@ -481,7 +482,7 @@ class SpecEnv(gym.Env):
 
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
-        htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
+        htraces = self.executor.trace_test_case(inputs, 10)
         print("len of boosted inputs", len(boosted_inputs))
         for input in boosted_inputs:
             print("input in bi", input)
@@ -497,33 +498,34 @@ class SpecEnv(gym.Env):
   
         fenced = tempfile.NamedTemporaryFile(delete=False)
         fenced_obj = tempfile.NamedTemporaryFile(delete=False)
-        fenced_test_case = self.generator.create_test_case_SpecRL(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+        # fenced_test_case = self.generator.create_test_case_SpecRL(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
         
 
         debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
         os.makedirs(debug_path, exist_ok=True)
         
-        for i in range(1, total_instructions_num):
-            dest_path = f"{debug_path}/fenced_obs{i}.asm"
-            self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
+        # for i in range(1, total_instructions_num):
+        #     dest_path = f"{debug_path}/fenced_obs{i}.asm"
+        #     self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
             # self.generator.insert_instruction_in_test_case(fenced_test_case, Instruction("lfence"))
+
 
         # self.printer.add_line_num_full_obs(fenced_test_case)
         # self.apply_selective_fencing(fenced_test_case.asm_path())
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
-        fenced_test_case.assign_obj(fenced_obj.name)
-        assemble(fenced_test_case)
+        # fenced_test_case.assign_obj(fenced_obj.name)
+        # assemble(fenced_test_case)
 
 
-        self.elf_parser.populate_elf_data(fenced_test_case.get_obj(), fenced_test_case)
-        shutil.copyfile(fenced.name, dest_path)
+        # self.elf_parser.populate_elf_data(fenced_test_case.get_obj(), fenced_test_case)
+        # shutil.copyfile(fenced.name, dest_path)
 
         # run('awk \'//{print $0, "\\nlfence"}\' ' + temp.asm_path() + '>' + fenced.name, shell=True)
         # assemble(fenced.name)
-        # fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator,self.elf_parser)
+        fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
 
         self.executor.load_test_case(fenced_test_case)
-        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=1)
+        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=10)
 
 
         # fenced_test_case = self.generator.create_test_case(fenced.name, disable_assembler=False, generate_empty_case=False, instruction_space=self.generator.instruction_space)
@@ -540,8 +542,15 @@ class SpecEnv(gym.Env):
         if fenced_htraces != htraces:
             self.observable = True
 
+        traces_match = True
+        for i, _ in enumerate(inputs):
+            if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
+                traces_match = False
+                break
+        print("traces_match ***************", traces_match)
+
         # self.fuzzer.standalone_analyse(ctraces, htraces)
-        violations = self.fuzzer.fuzzing_round(temp, boosted_inputs, [])
+        violations = self.fuzzer.start_SpecRL(1, len(boosted_inputs), 0, False, False, type_='asm')
         # self.LOG.trc_fuzzer_dump_traces(self.model, boosted_inputs, htraces, ctraces,
         #                                 self.executor.get_last_feedback())
         # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)

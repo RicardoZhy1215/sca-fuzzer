@@ -122,7 +122,8 @@ class X86Fuzzer(Fuzzer):
             return False
 
         with tempfile.NamedTemporaryFile(delete=False) as fenced:
-            fenced_name = fenced.name
+            # fenced_name = fenced.name
+            fenced_name = "debug_fenced.asm"
         fenced_test_case = _create_fenced_test_case(test_case.asm_path(), fenced_name,
                                                     self.asm_parser, self.code_gen, self.elf_parser)
         try:
@@ -130,7 +131,7 @@ class X86Fuzzer(Fuzzer):
             fenced_htraces = self.executor.trace_test_case(inputs, reps)
         except IOError:
             return True  # skip the test case if there is an error
-        os.remove(fenced.name)
+        # os.remove(fenced.name)
 
         traces_match = True
         for i, _ in enumerate(inputs):
