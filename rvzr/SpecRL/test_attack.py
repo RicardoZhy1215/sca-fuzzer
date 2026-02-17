@@ -83,7 +83,7 @@ test_instruction_space = [DEC_DI, AND_RDX_0B, OR_RDX_0B, AND_RDX_0B_MEM, AND_RBX
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 15,
-              "num_inputs": 1}
+              "num_inputs": 10}
 
 if __name__ == "__main__":
     test = SpecEnv(env_config)

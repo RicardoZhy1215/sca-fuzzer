@@ -1,0 +1,26 @@
+6c6
+< dec di
+---
+> dec di 
+12c12
+< mul dword ptr [r14 + rax]
+---
+> mul dword ptr [r14 + rax] 
+14,17c14,17
+< mul dword ptr [r14 + rdi]
+< add al, -110
+< jbe .bb_0.1
+< jmp .exit_0
+---
+> mul dword ptr [r14 + rdi] 
+> add al, -110 
+> jbe .bb_0.1 
+> jmp .exit_0 
+20c20
+< mov qword ptr [r14 + rbx], 1
+---
+> mov qword ptr [r14 + rbx], 1 
+23c23
+< jmp .test_case_exit
+---
+> jmp .test_case_exit 

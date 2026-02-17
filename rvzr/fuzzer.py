@@ -544,6 +544,67 @@ class Fuzzer:
         self.log.report_model_coverage(self.model)
         return STAT.violations > 0
 
+
+    def start_SpecRL(self, num_test_cases: int, num_inputs: int, timeout: int, nonstop: bool,
+              save_violations: bool, type_: FuzzingMode) -> bool:
+        """
+        Start the fuzzing process with the given parameters.
+        :param num_test_cases: the number of test cases to be generated
+        :param num_inputs: the number of inputs to be generated for each test case
+        :param timeout: the maximum time (in seconds) to run the fuzzer
+        :param nonstop: whether to continue the fuzzing process after the first violation
+        :param save_violations: whether to store the violation artifacts
+        :param type_: the type of fuzzing to be performed (random, template, asm)
+        :return: True if at least one violation was detected, False otherwise
+        """
+        # Print header
+        start_time = datetime.today()
+        self.log.start(num_test_cases, start_time)
+        # Find an appropriate generation function
+        self._set_generation_function(type_)
+
+        # Start the fuzzing loop
+        for i in range(num_test_cases):
+            self.log.start_round(i)
+            # Generate a test case
+            test_case: TestCaseProgram = self._generation_function(self._existing_test_case)
+            STAT.test_cases += 1
+
+            # Prepare inputs
+            inputs: List[InputData]
+            if self._input_paths:
+                # inputs = self.data_gen.load(self._input_paths)
+                inputs = self._input_paths
+            else:
+                inputs = self.data_gen.generate(num_inputs, n_actors=test_case.n_actors())
+            STAT.num_inputs += len(inputs) * CONF.inputs_per_class
+
+            # Check if the test case is useful
+            if self._filter(test_case, inputs):
+                continue
+            # Fuzz the test case
+            print("run the fuzzing round")
+            violation = self.fuzzing_round(test_case, inputs, [])
+            if violation:
+                self.log.report_violations(violation)
+                self.log.dbg_violation(violation, self.model)
+                if save_violations:
+                    self._store_violation_artifact(violation, self._work_dir)
+                STAT.violations += 1
+                if not nonstop:
+                    break
+
+            # Terminate the fuzzer if the timeout has expired
+            if timeout:
+                now = datetime.today()
+                if (now - start_time).total_seconds() > timeout:
+                    self.log.timeout()
+                    break
+
+        self.log.finish()
+        self.log.report_model_coverage(self.model)
+        return STAT.violations > 0
+
     def fuzzing_round(self, test_case: TestCaseProgram, inputs: List[InputData],
                       starting_ignore_list: List[int]) -> Optional[Violation]:
         """

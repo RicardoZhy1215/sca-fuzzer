@@ -128,7 +128,9 @@ class DataGenerator:
         n_actors = len(CONF.get_actors_conf())
         for input_path in input_paths:
             input_ = InputData(n_actors)
-
+            print(f"DEBUG: Attempting to load path: {repr(input_path)}")
+            if '\0' in str(input_path):
+                print("CRITICAL: Found null character in path!")
             # check that the file is not corrupted
             size = os.path.getsize(input_path)
             expected = input_.itemsize * n_actors
