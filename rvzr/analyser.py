@@ -273,8 +273,8 @@ class ChiSquaredAnalyser(EquivalenceAnalyserCommon):
 
     def __init__(self) -> None:
         super().__init__()
-        a = [1] * CONF.executor_sample_sizes[0]
-        b = [2] * CONF.executor_sample_sizes[0]
+        a = [1] * CONF.executor_sample_sizes[1]
+        b = [2] * CONF.executor_sample_sizes[1]
         stat = self.homogeneity_test(a, b)
         if CONF.analyser_stat_threshold > stat:
             error("analyser_stat_threshold is too low for the given sample size")

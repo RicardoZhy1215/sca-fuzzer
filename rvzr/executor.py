@@ -327,18 +327,6 @@ class Executor(ABC):
         self._log.dbg_dump_raw_traces(traces)
         return traces
 
-        # threshold = n_reps // 10 if n_reps >= 10 else 1
-        # aggregated_traces = []
-        # for htrace in traces:
-        #     raw_samples = htrace.get_raw_traces()
-        #     counter = Counter(raw_samples)
-        #     merged_trace = 0
-        #     for trace_val, count in counter.items():
-        #         if count > threshold:
-        #             merged_trace |= int(trace_val)
-        #     aggregated_traces.append(merged_trace)
-
-        # return aggregated_traces
 
     def _identify_trace_type(self) -> HTraceType:
         """ Identify the type of the traces based on the configuration """

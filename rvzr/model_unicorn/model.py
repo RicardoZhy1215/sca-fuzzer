@@ -290,51 +290,19 @@ class UnicornModel(Model, ABC):
         except UcError as e:
             error(f"[UnicornModel:load_test_case] {e}")
 
-    def _shallow_execute_test_case(self, inputs: List[InputData], nesting: int):
+    def _execute_shallow_test_case_with_inputs(self, inputs: List[InputData]) -> None:
         """
-        Architecture independent code - it starts the emulator
+        Execute the loaded test case as fast as possible without collecting 
+        detailed traces or taints. Useful for checking termination or faults.
         """
-        self.nesting = nesting
         for index, input_ in enumerate(inputs):
+            self.state.full_reset()
+            self._dispatcher.execution_start_dispatch(input_)
+
             self._load_input(input_)
-            self.reset_model()
-            start_address = self.code_start
-            while True:
-                self.pending_fault_id = 0
+            self._run_state_machine_shallow()
 
-                # execute the test case
-                try:
-                    self.emulator.emu_start(
-                        start_address, self.code_end, timeout=10*UC_SECOND_SCALE)
-                except UcError as e:
-                    # the type annotation below is ignored because some
-                    # of the packaged versions of Unicorn do not have
-                    # complete type annotations
-                    self.pending_fault_id = e.errno  # type: ignore
-
-                # handle faults
-                if self.pending_fault_id:
-                    # workaround for a Unicorn bug: after catching an exception
-                    # we need to restore some pre-exception context. otherwise,
-                    # the emulator becomes corrupted
-                    self.emulator.context_restore(self.previous_context)
-                    # another workaround, specifically for flags
-                    self.emulator.reg_write(self.flags_id, self.emulator.reg_read(self.flags_id))
-
-                    start_address = self.handle_fault(self.pending_fault_id)
-                    self.pending_fault_id = 0
-                    if start_address:
-                        continue
-
-                # if we use one of the speculative contracts, we might have some residual simulation
-                # that did not reach the spec. window by the end of simulation. Those need
-                # to be rolled back
-                if self.in_speculation:
-                    start_address = self.rollback()
-                    continue
-
-                # otherwise, we're done with this execution
-                break
+        return None
 
     class StoppableThread(threading.Thread):
         inputs: List[InputData]
@@ -353,7 +321,7 @@ class UnicornModel(Model, ABC):
                 if started:
                     continue
                 started = True
-                self.model._shallow_execute_test_case(self.inputs, self.nesting)
+                self.model._execute_shallow_test_case_with_inputs(self.inputs)
 
         def stop(self):
             self._stop_event.set()
@@ -363,7 +331,7 @@ class UnicornModel(Model, ABC):
         """
         Checks for potential infinite loop/runtime too long
         """
-        emu_proc = multiprocessing.Process(target=self._shallow_execute_test_case, args= (inputs, nesting)) 
+        emu_proc = multiprocessing.Process(target=self._execute_shallow_test_case_with_inputs, args= ([inputs])) 
 
         emu_proc.start()
         emu_proc.join(timeout)
@@ -561,6 +529,75 @@ class UnicornModel(Model, ABC):
             pc = self.speculator.rollback()
             self._log.dbg_rollback(pc)
             continue
+
+
+    def _run_state_machine_shallow(self) -> None:
+        """
+        Execute the loaded test case on the model with the loaded input.
+
+        This method implements a state machine that repeatedly executes the test case
+        until it reaches the exit instruction while being in a non-speculative state.
+
+        The state machine ensures that:
+            - whenever the emulator exits without reaching the exit instruction,
+              the model either rolls back (if in speculation) or exits (if not in speculation)
+            - whenever a fault is triggered, the model jumps to the corresponding fault handler
+              (if not in speculation) or rolls back (if in speculation)
+        The complete state machine is shown in:
+            `docs/assets/unicorn-model-state-machine.drawio.png`.
+
+        """
+        code_start = self.layout.code_start()
+        pc = code_start
+        while True:
+            self.state.reset_after_em_stop(pc)
+
+            # Handle re-entries after faults and rollbacks
+            if pc != code_start:
+                in_speculation = self.speculator.in_speculation()
+
+                # When entering a new loop iterations, there are the following options:
+                # 1. Re-entering after reaching the end and not in speculation
+                if self.state.is_exit_addr(pc) and not in_speculation:
+                    return
+
+                # 2. Re-entering after reaching the end and in speculation
+                if self.state.is_exit_addr(pc) and in_speculation:
+                    pc = self.speculator.rollback()
+                    self._log.dbg_rollback(pc)
+                    continue
+
+                # 3. Re-entering into a fault handler and in speculation
+                if pc == self.state.fault_handler_addr and in_speculation:
+                    # This case indicates that the rollback was supposed to terminate speculation,
+                    # so rollback again
+                    pc = self.speculator.rollback()
+                    self._log.dbg_rollback(pc)
+                    continue
+                # 4. In all other cases, continue execution as normal
+
+            # Execute the test case
+            try:
+                self.emulator.emu_start(pc, self.layout.code_end(), timeout=20 * uc.UC_SECOND_SCALE)
+            except UcError as e:
+                self.state.pending_fault = int(e.errno)  # type: ignore  # missing type annotation
+
+            # Handle faults
+            if self.state.pending_fault:
+                self._patch_context_after_fault()
+                pc = self._handle_fault()
+                if pc and pc != self.state.exit_addr:
+                    continue
+
+            # If the model is in non-speculative state, a fault terminates the execution
+            if not self.speculator.in_speculation():
+                break
+
+            # Otherwise (in a speculative state), a fault causes a speculation rollback
+            pc = self.speculator.rollback()
+            self._log.dbg_rollback(pc)
+            continue
+            
 
     def _handle_fault(self) -> int:
         """
