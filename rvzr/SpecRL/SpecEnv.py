@@ -6,8 +6,7 @@ from gymnasium import spaces
 from typing import Counter, List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
-from rvzr.arch.x86.generator import newPrinter
-from rvzr.tc_components.test_case_code import Program, TestCaseProgram
+from rvzr.tc_components.test_case_code import TestCaseProgram
 from rvzr.tc_components.test_case_data import InputData
 from rvzr.executor import Executor
 from rvzr.model import Model
@@ -26,7 +25,7 @@ from rvzr.tc_components.instruction import Instruction, RegisterOp, MemoryOp, Im
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.code_generator import assemble
-from rvzr.code_generator import map_address
+# from rvzr.code_generator import map_address
 from rvzr.arch.x86.target_desc import X86TargetDesc
 from check import X86CheckAll
 from rvzr.traces import CTrace
@@ -137,7 +136,7 @@ class SpecEnv(gym.Env):
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
         # self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
-        self.printer = _X86Printer(target_desc) 
+        self.printer = _X86Printer(target_desc)
         #self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
         # Todo: Need to use code_generator to generate program.
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
@@ -181,9 +180,10 @@ class SpecEnv(gym.Env):
             # run checks / instrument
             target_desc = X86TargetDesc()
             # passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
-            # passed_loop = self._infiniteLoopCheck(self.program, inst_action, 1)
+            passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
+            print(passed_loop)
             passed_inst = True
-            passed_loop = True
+            # passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
                 step_obs = self._get_obs()
@@ -205,9 +205,9 @@ class SpecEnv(gym.Env):
         print("program: ")
         # self.program.print()
         step_obs = self._get_obs()
-        step_reward = 0
-        if self.succ_step_counter == 14:
-            step_reward = self._reward()
+        # step_reward = 0
+        # if self.succ_step_counter == 14:
+        step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         return (step_obs, step_reward, end, truncate, {"program": self.new_program})
@@ -266,14 +266,14 @@ class SpecEnv(gym.Env):
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
             "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64)
         } # filled with -1's as filler
-        return 0
+
         # temp file management
         cwd = os.getcwd()
         with tempfile.TemporaryDirectory() as temp_path:
 
             os.chdir(temp_path)
             count = 0 # iteration counter, necessary as some instructions in are instrumentation
-
+            
             all_instructions = []
             for bb in self.new_program.iter_basic_blocks():
                 for instr in bb:
@@ -281,15 +281,9 @@ class SpecEnv(gym.Env):
                     new_instr._section_id = -1
                     all_instructions.append(new_instr)
             total_instructions_num = len(all_instructions)
-            # count = total_instructions_num - 2
-            # print("count = ", count)
-            # print([self.printer._instruction_to_str(instr) for instr in all_instructions])
-            # for i in range(self.program.length):
-            for i in range(1, total_instructions_num): # -1 to account for added instrumentation at start
-                target_inst = all_instructions[i] # +1 to account for added instrumentation at start
-                # check if program[i] is instrumentation. If so, skip
-                # if (self.program.getInd(i).is_instrumentation):
-                #     continue
+
+            for i in range(1, total_instructions_num): # 1 to account for added instrumentation at start
+                target_inst = all_instructions[i] 
                 if target_inst.is_instrumentation:
                     continue
                 count += 1
@@ -298,60 +292,39 @@ class SpecEnv(gym.Env):
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
-                # temp = Program(i + 1, temp_asm_path, temp_bin_path)
                 temp_program = self.generator.create_test_case_SpecRL(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
-                # print(f"temp program before adding instructions: {temp_program}", temp_program.asm_path())
 
                 for j in range(1, i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j])
                     all_instructions[j]._section_id = -1
-                    # print("i=", i, "j=", j)
-                    # shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j}.asm")
-                # for _ in range(i + 1):
-                #     temp.append(curr)
-                #     curr = curr.next
-                # self.printer.add_line_num(temp_program)
+
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
                 self.elf_parser.populate_elf_data(temp_program.get_obj(), temp_program)
-                # map_address(temp_program, temp_bin_path)
 
-                # print(f"Checking object file: {temp_program.get_obj().obj_path}")
-                # if not os.path.exists(temp_program.get_obj().obj_path) or os.path.getsize(temp_program.get_obj().obj_path) == 0:
-                #     print("CRITICAL: Object file is missing or empty!")
-                # else:
-                #     print("Object file exists and is non-empty.")
-                
-                # print(f"mapped addresses: {temp_program.address_map}")
-                # self.printer.map_addresses(temp, temp_bin_path)
-                # self.printer.create_pte(temp)
-
-
-
-                #subprocess.run("/home/laievan/specenv/SpecRL/src/reset_branch") # want to run reset_branch between iterations but not between inputs
                 temp_obs = self._obs_program(temp_program)
 
-                # print(f"\niteration {count} observations: ")
-                #print(temp_obs)
+                print(f"\niteration {count} observations: ")
+                # print(temp_obs)
 
                 # fill appropriate observation row in
-                # obs["instruction"][count - 1] = temp_obs[0]
+                obs["instruction"][count - 1] = temp_obs[0]
 
-                # temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
-                # padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
-                # padded_htrace[:temp_htrace.shape[0]] = temp_htrace
-                # obs["htrace"][count - 1] = padded_htrace
+                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
+                padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
+                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
+                obs["htrace"][count - 1] = padded_htrace
 
-                # temp_ctrace = np.array(temp_obs[2])
-                # padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
-                # padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
-                # obs["ctrace"][count - 1] = padded_ctrace
+                temp_ctrace = np.array(temp_obs[2])
+                padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
+                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
+                obs["ctrace"][count - 1] = padded_ctrace
 
                 # print("temp htrace: ", temp_htrace)
                 # print("temp ctrace: ", temp_ctrace)
 
-                # obs["recovery_cycles"][count - 1] = temp_obs[3]
-                # obs["transient_uops"][count - 1] = temp_obs[4]
+                obs["recovery_cycles"][count - 1] = temp_obs[3]
+                obs["transient_uops"][count - 1] = temp_obs[4]
 
         # temp file cleanup
         os.chdir(cwd)
@@ -366,33 +339,41 @@ class SpecEnv(gym.Env):
     uses revizor's executor and model code to observe the program
     """
     def _obs_program(self, program: TestCaseProgram):
-        # self.executor.load_program(program)
-        # self.model.load_program(program)
         self.executor.load_test_case(program)
         self.model.load_test_case(program)
 
-        # could boost inputs here?
         ctraces = self.model.trace_test_case(self.inputs, 1)
-        #raw_ctraces = [ct.get_untyped() for ct in ctraces]  
+        ctraces_obs = [ct.__hash__() for ct in ctraces]
+
         # clamp memory operands to safe region
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
 
         htraces = self.executor.trace_test_case(self.inputs, n_reps=1)
-        # htraces_int = self.aggregate_htraces(htraces, n_reps=1)
-        #raw_htraces = [ht.get_raw_traces() for ht in htraces]
+
+        n_reps = 1
+        threshold = n_reps // 10 if n_reps >= 10 else 1
+        htraces_obs = []
+        for htrace in htraces:
+            raw_samples = htrace.get_raw_traces()
+            counter = Counter(raw_samples)
+            merged_trace = 0
+            for trace_val, count in counter.items():
+                if count > threshold:
+                    merged_trace |= int(trace_val)
+            htraces_obs.append(merged_trace)
 
         #pfc_feedback = self.executor.get_last_feedback()
         recovery = []
         transient = []
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
-        for i, pfc_values in enumerate(pfc_feedback):
+        for _, pfc_values in enumerate(pfc_feedback):
             recovery.append(pfc_values[2])
             if (pfc_values[0] > pfc_values[1]):
                 transient.append(pfc_values[0] - pfc_values[1])
             else: transient.append(0)
-        # return (program.__len__(), htraces_int, ctraces, recovery, transient)
-        #return (program.__len__(), htraces.get_raw_traces(), ctraces.get_untyped(), recovery, transient)
+
+        return (program.__len__(), htraces_obs, ctraces_obs, recovery, transient)
 
 
     """
@@ -414,7 +395,6 @@ class SpecEnv(gym.Env):
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
-            exit()
             reward += 9999 # reward for leak
         reward = reward + 30 if self.misspec else reward - 30 # reward/punish for passing/failing misspeculative filters
         print(f"misspec: {self.misspec}, reward: {reward}")
@@ -449,7 +429,7 @@ class SpecEnv(gym.Env):
         temp = copy.deepcopy(program)
 
         all_instructions = []
-        for bb in temp.iter_basic_blocks(): 
+        for bb in temp.iter_basic_blocks():
             for instr in list(bb):
                 instr._section_id = -1
                 all_instructions.append(instr)
@@ -457,20 +437,19 @@ class SpecEnv(gym.Env):
         print("total instructions in program: ", total_instructions_num)
         print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
 
-        # self.printer.add_line_num(temp)
-        # self.printer.print(temp, lines=15)
+
         temp.assign_obj(bin.name)
         assemble(temp)
         self.elf_parser.populate_elf_data(temp.get_obj(), temp)
         # shutil.copyfile(temp.asm_path(), f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_full_obs.asm")
         # map_address(temp, temp.get_obj().obj_path)
         #self.printer.map_addresses(temp, temp.bin_path)
-        
+
         self.executor.load_test_case(temp)
         self.model.load_test_case(temp)
 
         ctraces: List[CTrace]
-        htraces: List[HTrace]   
+        htraces: List[HTrace]
         print("len of inputs", len(inputs))
         # at this point we need to increase the effectiveness of inputs
         # so that we can detect contract violations (note that it wasn't necessary
@@ -495,15 +474,15 @@ class SpecEnv(gym.Env):
                 self.misspec = True
 
         # check if it's observable, updates flag
-  
+
         fenced = tempfile.NamedTemporaryFile(delete=False)
         fenced_obj = tempfile.NamedTemporaryFile(delete=False)
         # fenced_test_case = self.generator.create_test_case_SpecRL(fenced.name, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
-        
+
 
         debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm"
         os.makedirs(debug_path, exist_ok=True)
-        
+
         # for i in range(1, total_instructions_num):
         #     dest_path = f"{debug_path}/fenced_obs{i}.asm"
         #     self.generator.insert_instruction_in_test_case(fenced_test_case, all_instructions[i])
@@ -563,7 +542,6 @@ class SpecEnv(gym.Env):
         os.remove(fenced_obj.name)
         os.remove(asm.name)
         os.remove(bin.name)
-        exit(1)
 
         # 2. Repeat with with max nesting
         if 'seq' not in CONF.contract_execution_clause:
@@ -610,21 +588,23 @@ class SpecEnv(gym.Env):
         prog_ = copy.deepcopy(prog)
         unique = uuid.uuid4().hex
         self.generator.insert_instruction_in_test_case(prog_, instr)
-        self.printer.add_line_num(prog_)
-        prog_.asm_path = f"/tmp/test_case_{unique}.s"
-        prog_.assign_obj(f"/tmp/test_case_{unique}.o")
-
+        temp_asm_path = f"/tmp/test_case_{unique}.s"
+        temp_bin_path = f"/tmp/test_case_{unique}.o"
+        prog_._asm_path = temp_asm_path
+        prog_.assign_obj(temp_bin_path)
+        self.printer.print(prog_)
         assemble(prog_)
         self.elf_parser.populate_elf_data(prog_.get_obj(), prog_)
         self.model.load_test_case(prog_)
 
+
         return self.model.check_inf_loop(self.inputs, 1, timeout)
-    
+
     def aggregate_htraces(self, htraces: List[HTrace], n_reps: int) -> List[int]:
 
         threshold = n_reps // 10 if n_reps >= 10 else 0
         aggregated_traces = []
-    
+
         for htrace in htraces:
             raw_samples = htrace.get_raw_traces()
             counter = Counter(raw_samples)
@@ -633,9 +613,9 @@ class SpecEnv(gym.Env):
                 if count > threshold:
                     merged_trace |= int(trace_val)
             aggregated_traces.append(merged_trace)
-        
+
         return aggregated_traces
-    
+
     def apply_selective_fencing(self, file_path):
         with open(file_path, 'r') as f:
             lines = f.readlines()

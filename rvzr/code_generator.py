@@ -791,7 +791,7 @@ class _FunctionGenerator:
                 and isinstance(op1, ImmediateOp) and op1.value == "0b1111111111000")
 
     def _is_mov_rbx_store_inst(self, inst: Instruction) -> bool:
-        """mov qword ptr [rbx], 1 或 mov word ptr [r14 + rbx], 1"""
+        """mov qword ptr [rbx], 1 or mov word ptr [r14 + rbx], 1"""
         if inst.name != "mov" or len(inst.operands) < 2:
             return False
         op0, op1 = inst.operands[0], inst.operands[1]
@@ -807,6 +807,7 @@ class _FunctionGenerator:
                     count += 1
         return count
 
+    # probably need to add functionality of inserting new inst to which bb
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
         bb_list = list(func)
         bb = bb_list[0]

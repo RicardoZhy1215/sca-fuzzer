@@ -76,6 +76,22 @@ class Model(ABC):
         in the given file path.
         """
 
+    @abstractmethod
+    def check_inf_loop(self, inputs: List[InputData], nesting: int, timeout: int) -> bool:
+        """
+        Docstring for check_inf_loop
+        
+        :param self: Description
+        :param inputs: Description
+        :type inputs: List[InputData]
+        :param nesting: Description
+        :type nesting: int
+        :param timeout: Description
+        :type timeout: int
+        :return: Description
+        :rtype: bool
+        """
+
 
 class DummyModel(Model):
     """

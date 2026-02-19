@@ -79,11 +79,12 @@ MOV_RBX_1 = Instruction("mov", False, "", False) \
 
 
 # test_instruction_space = [SBB_qword_ptr_R14_RBX_35, JNS_line_4, JMP_line_5, IMUL_byte_ptr_R14_RCX, MOV_RCX_R14, MOV_RAX_RCX, MOV_RCX_10, ADD_RCX_5]
-test_instruction_space = [DEC_DI, AND_RDX_0B, OR_RDX_0B, AND_RDX_0B_MEM, AND_RBX_0B, AND_RAX_0B,MUL_RAX,AND_RDI_0B, MUL_RDI, ADD_AL_110, JBE_BB_01, JMP_EXIT, AND_RBX_0B, MOV_RBX_1]
+test_instruction_space = [DEC_DI, AND_RDX_0B, OR_RDX_0B, AND_RDX_0B_MEM, AND_RBX_0B, AND_RAX_0B, \
+                          MUL_RAX,AND_RDI_0B, MUL_RDI, ADD_AL_110, JBE_BB_01, JMP_EXIT, AND_RBX_0B, MOV_RBX_1]
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 15,
-              "num_inputs": 10}
+              "num_inputs": 50}
 
 if __name__ == "__main__":
     test = SpecEnv(env_config)
