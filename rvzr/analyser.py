@@ -138,12 +138,12 @@ class EquivalenceAnalyserCommon(Analyser):
             if len(eq_cls.measurements) >= 2:
                 m1 = eq_cls.measurements[0]
                 m2 = eq_cls.measurements[1]
-                print("\n--- Debug: Comparing HTraces ---")
-                print(f"HTrace 1: {m1.htrace}")
-                print(f"HTrace 2: {m2.htrace}")
-                is_eq = self.htraces_are_equivalent(m1.htrace, m2.htrace)
-                print(f"Function 'htraces_are_equivalent' says: {is_eq}")
-                print("--------------------------------\n")
+                # print("\n--- Debug: Comparing HTraces ---")
+                # print(f"HTrace 1: {m1.htrace}")
+                # print(f"HTrace 2: {m2.htrace}")
+                # is_eq = self.htraces_are_equivalent(m1.htrace, m2.htrace)
+                # print(f"Function 'htraces_are_equivalent' says: {is_eq}")
+                # print("--------------------------------\n")
             hw_classes = HardwareEqClass.build_hw_classes(eq_cls.measurements, equivalence_function=self.htraces_are_equivalent)
             # print("len of hw classes", len(hw_classes))
 
@@ -273,8 +273,8 @@ class ChiSquaredAnalyser(EquivalenceAnalyserCommon):
 
     def __init__(self) -> None:
         super().__init__()
-        a = [1] * CONF.executor_sample_sizes[1]
-        b = [2] * CONF.executor_sample_sizes[1]
+        a = [1] * CONF.executor_sample_sizes[0]
+        b = [2] * CONF.executor_sample_sizes[0]
         stat = self.homogeneity_test(a, b)
         if CONF.analyser_stat_threshold > stat:
             error("analyser_stat_threshold is too low for the given sample size")

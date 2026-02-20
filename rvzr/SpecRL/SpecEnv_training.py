@@ -52,7 +52,6 @@ from subprocess import run
 
 
 
-
 class SpecEnv(gym.Env):
     metadata = {}
     printer: Printer
@@ -225,19 +224,9 @@ class SpecEnv(gym.Env):
         self.counter += 1
         print(f"NUMBER OF TEST CASES: {self.counter}")
         self.num_steps = 0
-        self.bad_case = False
-        # self.program = Program(self.seq_size, self.asm_path, self.bin_path)
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
                                                            instruction_space=self.generator.instruction_space)
-        # all_instructions = []
-        # for bb in self.new_program.iter_basic_blocks():
-        #     for instr in bb:
-        #         all_instructions.append(instr)
-        # total_instructions_num = len(all_instructions)
-        # print("new_program after reset: ", total_instructions_num)
-        # print(f"bin path: {self.program.bin_path}")
-        # return (self._get_obs(), {"program": self.new_program})
-        return
+        return (self._get_obs(), {"program": self.new_program})
 
     # extra functions that could be used down the line to visualize the env
     def render(self):
@@ -447,6 +436,7 @@ class SpecEnv(gym.Env):
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
         htraces = self.executor.trace_test_case(boosted_inputs, 10)
+        print("len of boosted inputs", len(boosted_inputs))
 
         # check if misspec occurs, updates flag
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
