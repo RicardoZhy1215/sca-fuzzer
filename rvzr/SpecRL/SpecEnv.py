@@ -415,7 +415,7 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm",input_paths=self.inputs)
+        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser

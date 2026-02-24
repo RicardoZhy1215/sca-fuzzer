@@ -209,7 +209,7 @@ class Conf:
     trigger exceptions. This option modifies this behavior by permitting the generator to produce
     'unsafe' instruction sequences that could potentially trigger an exception. Model and executor
      will also be configured to handle these exceptions gracefully """
-    
+
     input_main_region_size = 4096
     input_faulty_region_size = 4096
     input_register_region_size: int = 64
