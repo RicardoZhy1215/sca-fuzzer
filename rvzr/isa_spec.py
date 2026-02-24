@@ -58,6 +58,19 @@ class InstructionSet:
         _set_isa_properties(self)
         _dedup(self)
         _set_categories(self)
+        # regs_64bit = set()
+        # for spec in self.instructions:
+        #     for op in spec.operands:
+        #         if op.type == OT.REG and op.width == 64:
+        #             regs_64bit.update(op.values)
+        #     for op in spec.implicit_operands:
+        #         if op.type == OT.REG and op.width == 64:
+        #             regs_64bit.update(op.values)
+
+        # print(f"--- ISA stat ---")
+        # print(f"available 64 bits regs: {len(regs_64bit)}")
+        # print(f"regs lists: {sorted(list(regs_64bit))}")
+        # print(f"--------------------")
 
     def get_return_spec(self) -> InstructionSpec:
         """ Return the instruction spec for the RET instruction on the given architecture """

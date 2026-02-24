@@ -1,4 +1,4 @@
-from SpecEnv import SpecEnv
+from SpecEnv_training import SpecEnv
 from rvzr.tc_components.instruction import Instruction, RegisterOp, ImmediateOp, MemoryOp, LabelOp
 
 SBB_qword_ptr_R14_RBX_35 = Instruction("SBB", False, "",  False) \
@@ -26,7 +26,7 @@ ADD_RCX_5 = Instruction("ADD", False, "", False) \
 
 
 
-# Attack instructions sequence based on revizor example 
+# Attack instructions sequence based on revizor example
 DEC_DI  = Instruction("dec", False, "", False) \
     .add_op(RegisterOp("di", 16, False, True))
 
@@ -52,7 +52,7 @@ AND_RAX_0B = Instruction("and", False, "", is_instrumentation=True) \
 
 MUL_RAX = Instruction("mul", False, "", False) \
     .add_op(MemoryOp("r14 + rax", 32, False, True)) \
-    
+
 AND_RDI_0B = Instruction("and", False, "", is_instrumentation=True) \
     .add_op(RegisterOp("rdi", 32, False, True)) \
     .add_op(ImmediateOp("0b1111111111111", 32))
@@ -88,17 +88,17 @@ env_config = {"instruction_space": test_instruction_space,
 
 if __name__ == "__main__":
     test = SpecEnv(env_config)
-    test.step(0)  
-    test.step(1)  
-    test.step(2) 
-    test.step(3)  
-    test.step(4)  
-    test.step(5) 
-    test.step(6)  
-    test.step(7) 
-    test.step(8) 
-    test.step(9)  
-    test.step(10) 
+    test.step(0)
+    test.step(1)
+    test.step(2)
+    test.step(3)
+    test.step(4)
+    test.step(5)
+    test.step(6)
+    test.step(7)
+    test.step(8)
+    test.step(9)
+    test.step(10)
     test.step(11)
     test.step(12)
     test.step(13)

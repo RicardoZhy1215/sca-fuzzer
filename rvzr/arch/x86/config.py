@@ -230,7 +230,7 @@ x86_disable_div64: bool = True
 x86_generator_align_locks: bool = True
 """ x86_generator_align_locks: align all generated locks to 8 bytes """
 
-instruction_categories: List[str] = ["BASE-BINARY", "BASE-BITBYTE", "BASE-COND_BR"]
+instruction_categories: List[str] = ["BASE-BINARY", "BASE-COND_BR"]
 """ instruction_categories: a default list of tested instruction categories """
 
 _buggy_instructions: List[str] = [

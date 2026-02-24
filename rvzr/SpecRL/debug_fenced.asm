@@ -16,21 +16,7 @@ and rbx, 0b1111111111000 # instrumentation
 lfence
 and rax, 0b1111111111000 # instrumentation
 lfence
-mul dword ptr [r14 + rax]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-mul dword ptr [r14 + rdi]
-lfence
-add al, -110
-lfence
-jbe .bb_0.1
-jmp .exit_0
 .bb_0.1:
-lfence
-and rbx, 0b1111111111000 # instrumentation
-lfence
-mov qword ptr [r14 + rbx], 1
 lfence
 .exit_0:
 lfence
