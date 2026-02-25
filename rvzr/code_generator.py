@@ -406,6 +406,7 @@ class CodeGenerator(ABC):
         self._function_generator._insert_instruction_in_function(main_func, inst)
         self._printer.print(test_case)
 
+
         
 
     def create_test_case_from_template(self, template_file: str) -> TestCaseProgram:
@@ -733,7 +734,7 @@ class _FunctionGenerator:
             label = terminator.get_label_operand()
             assert label is not None
             label.value = destination.name
-            # bb.terminators.append(terminator)
+            bb.terminators.append(terminator)
 
         for bb in func:
             assert not bb.terminators, "Basic block already has terminators"
@@ -810,19 +811,27 @@ class _FunctionGenerator:
     # probably need to add functionality of inserting new inst to which bb
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
         bb_list = list(func)
-        bb = bb_list[0]
-
-        if self._is_and_rbx_mask_inst(inst):
-            and_count = self._count_and_rbx_mask_in_func(func)
-            if and_count >= 1 and len(bb_list) >= 2:
-                bb = bb_list[1]
-        elif self._is_mov_rbx_store_inst(inst) and len(bb_list) >= 2:
-            bb = bb_list[1]
+        idx = random.choice([0, 1])
+        bb = bb_list[idx]
+        # if self._is_and_rbx_mask_inst(inst):
+        #     and_count = self._count_and_rbx_mask_in_func(func)
+        #     if and_count >= 1 and len(bb_list) >= 2:
+        #         bb = bb_list[1]
+        # elif self._is_mov_rbx_store_inst(inst) and len(bb_list) >= 2:
+        #     bb = bb_list[1]
 
         new_inst = copy.copy(inst)
         new_inst._section_id = -1
         bb.insert_after(bb.get_last(), new_inst)
-        
+
+
+    def _insert_instruction_in_function_continue(self, func: Function, inst: Instruction) -> None:
+        bb_list = list(func)
+        idx = random.choice([0, 1])
+        bb = bb_list[idx]
+        new_inst = copy.copy(inst)
+        new_inst._section_id = -1
+        bb.insert_after(bb.get_last(), new_inst)
 
 
 class _InstructionGenerator:

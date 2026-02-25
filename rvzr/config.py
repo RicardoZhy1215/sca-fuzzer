@@ -212,6 +212,7 @@ class Conf:
 
     input_main_region_size = 4096
     input_faulty_region_size = 4096
+    memory_access_zeroed_bits = 0
     input_register_region_size: int = 64
     executor_repetitions = 10
 
