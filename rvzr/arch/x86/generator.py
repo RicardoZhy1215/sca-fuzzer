@@ -1131,6 +1131,7 @@ class X86Generator(CodeGenerator):
     """ x86-specific implementation of the test case program generator """
 
     _faults: _FaultFilter
+    _insert_bb_index: int
 
     def __init__(self, seed: int, instruction_set: InstructionSet, target_desc: TargetDesc,
                  asm_parser: AsmParser, elf_parser: ELFParser) -> None:
@@ -1152,3 +1153,4 @@ class X86Generator(CodeGenerator):
         self._passes.append(_X86PatchOpcodesPass())
         self._printer = _X86Printer(self._target_desc)
         self.instruction_space = []
+        self._insert_bb_index = 0

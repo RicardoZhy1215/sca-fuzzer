@@ -25,7 +25,6 @@ from rvzr.tc_components.instruction import Instruction, RegisterOp, MemoryOp, Im
 from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.code_generator import assemble
-# from rvzr.code_generator import map_address
 from rvzr.arch.x86.target_desc import X86TargetDesc
 from check import X86CheckAll
 from rvzr.traces import CTrace
@@ -38,7 +37,6 @@ from interfaces import Measurement, EquivalenceClass
 import copy
 import shutil
 from collections import Counter
-from enum import Enum
 
 
 from rvzr.arch.x86.generator import _X86NonCanonicalAddressPass,_X86PatchOpcodesPass, \
@@ -50,21 +48,6 @@ import os
 import shutil
 from subprocess import run
 
-
-class OT(Enum):
-    """
-    Enumeration class representing an Operand Type (OT) of an instruction.
-    """
-    REG = 1  # Register Operand
-    MEM = 2  # Memory Operand
-    IMM = 3  # Immediate Operand
-    LABEL = 4  # Label Operand
-    AGEN = 5  # Memory address in LEA instructions
-    FLAGS = 6  # Flags Operand
-    COND = 7  # Condition Operand
-
-    def __str__(self) -> str:
-        return str(self._name_)  # pylint: disable=no-member  # This is an intended private use
 
 
 
@@ -151,24 +134,8 @@ class SpecEnv(gym.Env):
 
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
-        # self.printer = newPrinter(target_desc) # using x86 printer for now, may need to change later
         self.printer = _X86Printer(target_desc)
-        #self.program = Program(self.seq_size, self.asm_path, self.bin_path) #Initialization may need to pass in more args later compare to orignal SpecEnv
-        instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json", CONF.instruction_categories)
-        # unique_instruction_names = set(spec.name.lower() for spec in instruction_set.instructions)
-        # num_categories = len(unique_instruction_names)
-        # print("unique instruction names:", unique_instruction_names)
-        # print(f"spec number: {len(instruction_set.instructions)}")
-        # print(f"len unique operand: {num_categories}")
-        # self.opcode_vocab = list(dict.fromkeys(inst.name.lower() for inst in self.instruction_space))
-        # self.opcode_vocab = list(unique_instruction_names)
-        # print("opcode_vocab", self.opcode_vocab)
-        # self.reg_vocab = instruction_set.get_reg64_spec()
-        # self.reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
-        # print("reg64 spec from isa_spec", self.reg_vocab)
-
-
-
+        instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
         self.elf_parser = ELFParser(target_desc)
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
@@ -208,11 +175,8 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
-            # passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
+            passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
-            print(passed_loop)
-            passed_inst = True
-            # passed_loop = True
             if (not passed_inst):
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
                 step_obs = self._get_obs()
@@ -224,6 +188,7 @@ class SpecEnv(gym.Env):
                 step_reward = -20
                 return (step_obs, step_reward, end, truncate, {"program": self.new_program})
             else:
+                # self.program.append(self.instruction_space[action])
                 self.generator.insert_instruction_in_test_case(self.new_program, self.instruction_space[action])
                 print(f"adding step {self.instruction_space[action]}")
                 self.succ_step_counter += 1
@@ -253,8 +218,9 @@ class SpecEnv(gym.Env):
         self.counter += 1
         print(f"NUMBER OF TEST CASES: {self.counter}")
         self.num_steps = 0
-        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True, \
-                                                           instruction_space=self.generator.instruction_space)
+        self.bad_case = False
+        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+
         return (self._get_obs(), {"program": self.new_program})
 
     # extra functions that could be used down the line to visualize the env
@@ -275,7 +241,7 @@ class SpecEnv(gym.Env):
     """
     def _get_obs(self):
         obs = {
-            "instruction": np.full((self.seq_size, 4), -1, dtype=np.int64),
+            "instruction": np.full((self.seq_size,), -1, dtype=np.int64),
             "htrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
             "ctrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
@@ -320,11 +286,10 @@ class SpecEnv(gym.Env):
                 temp_obs = self._obs_program(temp_program)
 
                 print(f"\niteration {count} observations: ")
-                # print(temp_obs)
 
                 # fill appropriate observation row in
-                # obs["instruction"][count - 1] = temp_obs[0]
-                obs["instruction"][count - 1] = np.array(temp_obs[0])
+                obs["instruction"][count - 1] = temp_obs[0]
+
                 temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
                 padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
                 padded_htrace[:temp_htrace.shape[0]] = temp_htrace
@@ -334,9 +299,6 @@ class SpecEnv(gym.Env):
                 padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
                 padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
                 obs["ctrace"][count - 1] = padded_ctrace
-
-                # print("temp htrace: ", temp_htrace)
-                # print("temp ctrace: ", temp_ctrace)
 
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
                 obs["transient_uops"][count - 1] = temp_obs[4]
@@ -387,9 +349,8 @@ class SpecEnv(gym.Env):
             if (pfc_values[0] > pfc_values[1]):
                 transient.append(pfc_values[0] - pfc_values[1])
             else: transient.append(0)
-        last_instr_info = tuple(self._extract_last_instr_info(program))
-        print("last info", last_instr_info)
-        return (last_instr_info, htraces_obs, ctraces_obs, recovery, transient)
+
+        return (program.__len__(), htraces_obs, ctraces_obs, recovery, transient)
 
 
     """
@@ -434,7 +395,7 @@ class SpecEnv(gym.Env):
         self.misspec = False
         self.observable = False
 
-        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm",input_paths=self.inputs)
+        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser
@@ -466,7 +427,6 @@ class SpecEnv(gym.Env):
         # check for violations
         ctraces = self.model.trace_test_case(boosted_inputs, 1)
         htraces = self.executor.trace_test_case(boosted_inputs, 10)
-        print("len of boosted inputs", len(boosted_inputs))
 
         # check if misspec occurs, updates flag
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
@@ -495,7 +455,7 @@ class SpecEnv(gym.Env):
             if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
                 traces_match = False
                 break
-        print("traces_match ***************", traces_match)
+        # print("traces_match ***************", traces_match)
 
         violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
         if not violations:  # nothing detected? -> we are done here, move to next test case
@@ -597,55 +557,6 @@ class SpecEnv(gym.Env):
         with open(file_path, 'w') as f:
             f.writelines(fenced_lines)
 
-    def _get_last_instruction(self, program: TestCaseProgram) -> Optional[Instruction]:
-        """Get the last instruction in program order (excluding macros)."""
-        last_instr = None
-        for bb in program.iter_basic_blocks():
-            for instr in bb:
-                if instr.name != "macro":
-                    last_instr = instr
-        return last_instr
-
-
-    def _normalize_reg_name(self, reg_name: str) -> str:
-        mapping = {
-                'eax': 'rax', 'ax': 'rax', 'al': 'rax', 'ah': 'rax',
-                'ebx': 'rbx', 'bx': 'rbx', 'bl': 'rbx', 'bh': 'rbx',
-                'ecx': 'rcx', 'cx': 'rcx', 'cl': 'rcx', 'ch': 'rcx',
-                'edx': 'rdx', 'dx': 'rdx', 'dl': 'rdx', 'dh': 'rdx',
-                'esi': 'rsi', 'si': 'rsi', 'sil': 'rsi',
-                'edi': 'rdi', 'di': 'rdi', 'dil': 'rdi',
-                'rip': 'rip',
-            }
-        return mapping.get(reg_name, reg_name)
-
-    def _extract_last_instr_info(self, program: TestCaseProgram) -> List[int]:
-        """Return [opname_id, reg_src_id, reg_dst_id, imm_id] for last instruction."""
-        last_instr = self._get_last_instruction(program)
-        if last_instr is None:
-            return [-1, -1, -1, -1]
-
-        name_lower = last_instr.name.lower()
-        opname_id = self.opcode_vocab.index(name_lower) if name_lower in self.opcode_vocab else -1
-
-        reg_ops = last_instr.get_reg_operands(include_implicit=True)
-        reg_src_id = -1
-        reg_dst_id = -1
-
-        for op in reg_ops:
-            val_raw = op.value.lower()
-            val_norm = self._normalize_reg_name(val_raw)
-            if val_norm in self.reg_vocab:
-                idx = self.reg_vocab.index(val_norm)
-                if op.src and reg_src_id == -1:
-                    reg_src_id = idx
-                if op.dest and reg_dst_id == -1:
-                    reg_dst_id = idx
-
-        imm_ops = last_instr.get_imm_operands()
-        imm_id = 0 if imm_ops else -1
-
-        return [opname_id, reg_src_id, reg_dst_id, imm_id]
 
 
 

@@ -98,37 +98,38 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
     bit_test_names = ["bt", "btc", "btr", "bts", "lock bt", "lock btc", "lock btr", "lock bts"]
     
     
-    # input_memory_size = CONF.input_main_region_size + CONF.input_faulty_region_size
-    size_of_directly_accessible_memory = SandboxLayout.data_area_size(DataArea.MAIN) + SandboxLayout.data_area_size(DataArea.FAULTY)
-    mask_size = int(math.log(size_of_directly_accessible_memory, 2))
-    sandbox_address_mask = "0b" + "1" * mask_size
+    input_memory_size = CONF.input_main_region_size + CONF.input_faulty_region_size
+    mask_size = int(math.log(input_memory_size, 2)) - CONF.memory_access_zeroed_bits
+    # size_of_directly_accessible_memory = SandboxLayout.data_area_size(DataArea.MAIN) + SandboxLayout.data_area_size(DataArea.FAULTY)
+    # mask_size = int(math.log(size_of_directly_accessible_memory, 2))
+    sandbox_address_mask = "0b" + "1" * mask_size + "0" * CONF.memory_access_zeroed_bits
 
     def sandbox_memory_access(instr: Instruction, prog: TestCaseProgram) -> bool:
         """ Force the memory accesses into the page starting from R14 """
         mem_operands = instr.get_mem_operands()
         implicit_mem_operands = instr.get_mem_operands(include_explicit=False, include_implicit=True)
 
-        mask = sandbox_address_mask
-        if any(op.width >= 256 for op in mem_operands):
-            mask = mask[:-5] + "0" * 5
-        elif any(op.width >= 128 for op in mem_operands):
-            mask = mask[:-4] + "0" * 4
+        # mask = sandbox_address_mask
+        # if any(op.width >= 256 for op in mem_operands):
+        #     mask = mask[:-5] + "0" * 5
+        # elif any(op.width >= 128 for op in mem_operands):
+        #     mask = mask[:-4] + "0" * 4
 
         # # FIXME: broken type
         # if CONF.x86_generator_align_locks:  # type: ignore  # pylint: disable = no-member
-        if "lock" in instr.name or instr.name == "xchg":
-                mask = mask[:-3] + "0" * 3
+        # if "lock" in instr.name or instr.name == "xchg":
+        #         mask = mask[:-3] + "0" * 3
 
         if mem_operands and not implicit_mem_operands:
             assert len(mem_operands) == 1, \
                 f"Instructions with multiple memory accesses are not yet supported: {instr.name}"
             mem_operand: Operand = mem_operands[0]
             address_reg = mem_operand.value
-            # if instr.instrumented: address_reg = address_reg[6:]
+            if instr.instrumented: address_reg = address_reg[6:]
             imm_width = mem_operand.width if mem_operand.width <= 32 else 32
             apply_mask = Instruction("and", is_instrumentation=True) \
-                .add_op(RegisterOp(address_reg, 64, True, True)) \
-                .add_op(ImmediateOp(mask, imm_width)) \
+                .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
+                .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
             generator.insert_instruction_in_test_case(prog, apply_mask)
             # prog.append(apply_mask)
@@ -151,11 +152,11 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 imm_width = mem_operand.width if mem_operand.width <= 32 else 32
                 assert address_reg in target_desc.registers_by_size[64], \
                     f"Unexpected address register {address_reg} used in {instr}"
-                apply_mask = Instruction("and", True) \
+                apply_mask = Instruction("and", is_instrumentation=True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
                     .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-                add_base = Instruction("add", True) \
+                add_base = Instruction("add", is_instrumentation=True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
                     .add_op(RegisterOp("r14", 64, True, False)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)

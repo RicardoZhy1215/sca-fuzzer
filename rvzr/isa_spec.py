@@ -58,18 +58,18 @@ class InstructionSet:
         _set_isa_properties(self)
         _dedup(self)
         _set_categories(self)
-        # regs_64bit = set()
-        # for spec in self.instructions:
-        #     for op in spec.operands:
-        #         if op.type == OT.REG and op.width == 64:
-        #             regs_64bit.update(op.values)
-        #     for op in spec.implicit_operands:
-        #         if op.type == OT.REG and op.width == 64:
-        #             regs_64bit.update(op.values)
+        self.regs_64bit = set()
+        for spec in self.instructions:
+            for op in spec.operands:
+                if op.type == OT.REG and op.width == 64:
+                    self.regs_64bit.update(op.values)
+            for op in spec.implicit_operands:
+                if op.type == OT.REG and op.width == 64:
+                    self.regs_64bit.update(op.values)
 
         # print(f"--- ISA stat ---")
-        # print(f"available 64 bits regs: {len(regs_64bit)}")
-        # print(f"regs lists: {sorted(list(regs_64bit))}")
+        # print(f"available 64 bits regs: {len(self.regs_64bit)}")
+        # print(f"regs lists: {sorted(list(self.regs_64bit))}")
         # print(f"--------------------")
 
     def get_return_spec(self) -> InstructionSpec:
@@ -94,6 +94,10 @@ class InstructionSet:
             spec.operands.append(OperandSpec([], OT.LABEL, src=True, dest=False, width=64))
             return spec
         raise NotImplementedError(f"Unsupported instruction set: {CONF.instruction_set}")
+
+    def get_reg64_spec(self) -> set[str]:
+        """ Return the set of 64-bit register names """
+        return self.regs_64bit
 
 
 # ==================================================================================================
