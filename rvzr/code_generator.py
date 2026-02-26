@@ -24,7 +24,6 @@ from .instruction_spec import OT
 from .logs import GeneratorLogger, error, inform
 from .config import CONF, ActorsConf
 
-from rvzr.tc_components.test_case_code import Program
 import copy
 
 if TYPE_CHECKING:
@@ -333,8 +332,8 @@ class CodeGenerator(ABC):
         test_case[0].append(main_func)
 
         # process the test case
-        for p in self._passes:
-            p.run_on_test_case(test_case)
+        # for p in self._passes:
+        #     p.run_on_test_case(test_case)
 
         # add symbols to test case
         self._add_required_symbols(test_case)
@@ -406,6 +405,13 @@ class CodeGenerator(ABC):
         self._function_generator._insert_instruction_in_function(main_func, inst)
         self._printer.print(test_case)
 
+
+    def insert_instruction_in_test_case_randomly(self, test_case: TestCaseProgram, inst: Instruction, bb_index: Optional[int] = None) -> None:
+
+        main_section = test_case[0]
+        main_func = main_section[0]
+        self._function_generator._insert_instruction_in_function_randomly(main_func, inst, bb_index)
+        self._printer.print(test_case)
 
         
 
@@ -754,10 +760,15 @@ class _FunctionGenerator:
 
             if len(bb.successors) == 2:
                 # Conditional branch
-                spec = random.choice(self._isa_spec.cond_branches)
-                terminator = self._instruction_generator.generate(spec)
-                label = terminator.get_label_operand()
-                assert label
+                max_tries = 100
+                for _ in range(max_tries):
+                    spec = random.choice(self._isa_spec.cond_branches)
+                    terminator = self._instruction_generator.generate(spec)
+                    label = terminator.get_label_operand()
+                    if label is not None:
+                        break
+                else:
+                    raise RuntimeError("No conditional jump with label operand found in cond_branches")
                 label.value = bb.successors[0].name
                 bb.terminators.append(terminator)
 
@@ -811,7 +822,7 @@ class _FunctionGenerator:
     # probably need to add functionality of inserting new inst to which bb
     def _insert_instruction_in_function(self, func: Function, inst: Instruction) -> None:
         bb_list = list(func)
-        idx = random.choice([0, 1])
+        idx = inst.bb_id
         bb = bb_list[idx]
         # if self._is_and_rbx_mask_inst(inst):
         #     and_count = self._count_and_rbx_mask_in_func(func)
@@ -825,11 +836,11 @@ class _FunctionGenerator:
         bb.insert_after(bb.get_last(), new_inst)
 
 
-    def _insert_instruction_in_function_continue(self, func: Function, inst: Instruction) -> None:
+    def _insert_instruction_in_function_randomly(self, func: Function, inst: Instruction, bb_index: Optional[int] = None) -> None:
         bb_list = list(func)
-        idx = random.choice([0, 1])
-        bb = bb_list[idx]
+        bb = bb_list[bb_index ]
         new_inst = copy.copy(inst)
+        new_inst.bb_id = bb_index
         new_inst._section_id = -1
         bb.insert_after(bb.get_last(), new_inst)
 

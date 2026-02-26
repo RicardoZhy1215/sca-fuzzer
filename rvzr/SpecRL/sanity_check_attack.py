@@ -20,8 +20,8 @@ parser = add_rllib_example_script_args(
 
 
 # Attack instructions sequence based on revizor example
-DEC_DI  = Instruction("dec", False, "", False) \
-    .add_op(RegisterOp("rdi", 64, False, True))
+# DEC_DI  = Instruction("dec", False, "", False) \
+#     .add_op(RegisterOp("rdi", 64, False, True))
 
 MUL_RAX = Instruction("mul", False, "", False) \
     .add_op(MemoryOp("rax", 64, False, True)) \
@@ -40,7 +40,7 @@ MOV_RBX_1 = Instruction("mov", False, "", False) \
     .add_op(MemoryOp("rbx", 64, False, True)) \
     .add_op(ImmediateOp("1", 64))
 
-test_instruction_space = [DEC_DI, MUL_RAX, MUL_RDI,ADD_AL_110, MOV_RBX_1]
+test_instruction_space = [MUL_RAX, MUL_RDI,ADD_AL_110, MOV_RBX_1]
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 100,

@@ -319,7 +319,7 @@ class Instruction:
     _section_offset: int = -1  # instruction offset in the section; access via section_offset()
     _size: int = -1  # size of the instruction in bytes; access via size()
     _inst_brief: str = ""  # cached brief representation of the instruction
-    _id: int #instruction id
+    bb_id: int = -1 #basic block id
 
     # ----------------------------------------------------------------------------------------------
     # Constructors
@@ -331,14 +331,14 @@ class Instruction:
                  is_instrumentation: bool = False,
                  is_noremove: bool = False,
                  _section_id: int = -1,
-                 _id = -1) -> None:
+                 bb_id: int = -1) -> None:
         self.name = name
         self.category = category
         self.is_control_flow = is_control_flow
         self.is_instrumentation = is_instrumentation
         self.is_noremove = is_noremove
         self._section_id = _section_id
-        self._id = _id
+        self.bb_id = bb_id
 
         self.operands = []
         self.implicit_operands = []

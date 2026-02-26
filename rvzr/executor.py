@@ -21,8 +21,6 @@ from rvzr.sandbox import BaseAddrTuple
 from rvzr.stats import FuzzingStats
 from rvzr.traces import HTrace, RawHTraceSample, HTraceType
 from rvzr.tc_components.test_case_data import save_input_sequence_as_rdbf
-from rvzr.tc_components.test_case_code import Program
-from rvzr.tc_components.test_case_code import ProgramBinary
 from rvzr.tc_components.test_case_binary import TestCaseBinary
 
 
