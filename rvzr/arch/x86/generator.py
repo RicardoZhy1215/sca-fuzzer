@@ -69,14 +69,14 @@ class newPrinter(Printer):
 
     def _instruction_to_str(self, *args, **kwargs):
         pass  # 或者 return ""
-        
+
     def _macro_to_str(self, *args, **kwargs):
         pass
-        
+
     def _operand_to_str(self, *args, **kwargs):
         pass
 
-    
+
     # def print(self, prg: Program, outfile: str, lines = 15) -> None:
     #     with open (outfile, "w") as f:
     #         # print prologue
@@ -116,7 +116,7 @@ class newPrinter(Printer):
             return f"{prefix} [{op.value}]"
 
         return op.value
-    
+
     def map_addresses(self, program: Program, bin_file: str) -> None:
 
         # get a list of relative instruction addresses
@@ -148,7 +148,7 @@ class newPrinter(Printer):
         Pick a random PTE bit (among the permitted ones) and set/reset it
         """
         target_desc = X86TargetDesc()
-        
+
         pte_bit_choices: List[Tuple[int, bool]] = []
         if 'assist-accessed' in CONF.permitted_faults:
             pte_bit_choices.append(target_desc.pte_bits["ACCESSED"])
@@ -186,13 +186,13 @@ class _X86Printer(Printer):
             ".section .data.main\n",
             ".test_case_exit:nop\n",
         ]
-        
+
     def create_pte(self, *args, **kwargs):
         raise NotImplementedError("create_pte not implemented for x86 printer yet")
 
     def map_addresses(self, *args, **kwargs):
         raise NotImplementedError("map_addresses not implemented for x86 printer yet")
-    
+
     # def print(self, test_case: TestCaseProgram, lines = 15) -> None:
     #     with open(test_case.asm_path(), "w") as f:
     #         for line in self.prologue_template:
@@ -965,25 +965,25 @@ class _X86PatchUndefinedFlagsPass(Pass):
                 flags_to_set.add(f)
 
         # make sure that we do not have undefined flags when we enter the BB
-        # if flags_to_set:
-        #             entry_node = bb.get_first(exclude_macros=True)
-        #             patches = self._find_flags_patch(list(flags_to_set), flags_to_set)
-                    
-        #             if not entry_node:
-        #                 for patch in patches:
-        #                     bb.insert_before(None, patch) 
-        #             else:
-        #                 for patch in patches:
-        #                     bb.insert_before(entry_node, patch)
         if flags_to_set:
-            # find a place to insert the patches
-            entry_node = bb.get_first(exclude_macros=True)
-            if not entry_node:
-                raise ValueError("X86PatchUndefinedFlagsPass: No place to insert a patch")
+                    entry_node = bb.get_first(exclude_macros=True)
+                    patches = self._find_flags_patch(list(flags_to_set), flags_to_set)
 
-            patches = self._find_flags_patch(list(flags_to_set), flags_to_set)
-            for patch in patches:
-                bb.insert_before(entry_node, patch)
+                    if not entry_node:
+                        for patch in patches:
+                            bb.insert_before(None, patch)
+                    else:
+                        for patch in patches:
+                            bb.insert_before(entry_node, patch)
+        # if flags_to_set:
+        #     # find a place to insert the patches
+        #     entry_node = bb.get_first(exclude_macros=True)
+        #     if not entry_node:
+        #         raise ValueError("X86PatchUndefinedFlagsPass: No place to insert a patch")
+
+            # patches = self._find_flags_patch(list(flags_to_set), flags_to_set)
+            # for patch in patches:
+            #     bb.insert_before(entry_node, patch)
 
     def _find_flags_patch(self, undef_flags: List[str],
                           flags_to_set: Set[str]) -> List[Instruction]:

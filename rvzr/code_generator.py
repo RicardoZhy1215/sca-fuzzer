@@ -88,7 +88,7 @@ class Printer(ABC):
     def add_line_num_full_obs(self, test_case: TestCaseProgram, min_lines=15) -> None:
         instrumented_instrs = []
         line_number = 1
-        toggle = -1 
+        toggle = -1
 
         for bb in test_case.iter_basic_blocks():
             instructions = list(bb)
@@ -99,20 +99,20 @@ class Printer(ABC):
                     if toggle == -1:
                         instrumented_instrs.append(f".line_{line_number}:")
                         line_number += 1
-                        toggle = 1 
-                    
+                        toggle = 1
+
                     if instr.is_instrumentation:
                         clean_inst = inst_str.replace("# instrumentation", "").strip()
                         instrumented_instrs.append(f"{clean_inst} # instrumentation")
                     else:
                         instrumented_instrs.append(inst_str)
-                        toggle = -1 
+                        toggle = -1
                 else:
                     instrumented_instrs.append(inst_str)
 
         while line_number <= min_lines:
             instrumented_instrs.append(f".line_{line_number}:")
-            instrumented_instrs.append("lfence") 
+            instrumented_instrs.append("lfence")
             line_number += 1
 
         final_asm = [
@@ -137,18 +137,18 @@ class Printer(ABC):
     def add_line_num(self, test_case: TestCaseProgram, min_lines=15) -> None:
         instrumented_instrs = []
         line_number = 1
-        toggle = -1 
+        toggle = -1
 
 
         for bb in test_case.iter_basic_blocks():
             instructions = list(bb)
             for instr in instructions[1:]:
                 inst_str = self._instruction_to_str(instr)
-                
+
                 if toggle == -1:
                     instrumented_instrs.append(f".line_{line_number}:")
                     line_number += 1
-                    toggle = 1 
+                    toggle = 1
 
                 if instr.is_instrumentation:
                     clean_inst = inst_str.replace("# instrumentation", "").strip()
@@ -168,9 +168,9 @@ class Printer(ABC):
             ".bb_0.0:",
             ".macro.measurement_start: nop qword ptr [rax + 0xff]"
         ]
-        
+
         final_asm.extend(instrumented_instrs)
-        
+
         final_asm.extend([
             ".exit_0:",
             ".macro.measurement_end: nop qword ptr [rax + 0xff]",
@@ -220,8 +220,8 @@ class Printer(ABC):
     @abstractmethod
     def create_pte(self, prog: Program) -> None:
         pass
-    
-    @staticmethod 
+
+    @staticmethod
     def assemble(asm_file: str, bin_file: str) -> None:
         """Assemble the test case into a stripped binary"""
 
@@ -327,13 +327,13 @@ class CodeGenerator(ABC):
         self._function_generator._add_terminators_in_function(main_func)
         if not generate_empty_case:
             self._function_generator._add_instructions_in_function(main_func, instruction_space)
-            
+
         # add it to the test case, in the first section
         test_case[0].append(main_func)
 
         # process the test case
-        # for p in self._passes:
-        #     p.run_on_test_case(test_case)
+        for p in self._passes:
+            p.run_on_test_case(test_case)
 
         # add symbols to test case
         self._add_required_symbols(test_case)
@@ -349,7 +349,7 @@ class CodeGenerator(ABC):
 
         self._update_state()
         return test_case
-    
+
 
     def create_test_case(self, asm_file: str, disable_assembler: bool = False) -> TestCaseProgram:
         """
@@ -397,7 +397,7 @@ class CodeGenerator(ABC):
 
         self._update_state()
         return test_case
-    
+
     def insert_instruction_in_test_case(self, test_case: TestCaseProgram, inst: Instruction) -> None:
 
         main_section = test_case[0]
@@ -413,7 +413,7 @@ class CodeGenerator(ABC):
         self._function_generator._insert_instruction_in_function_randomly(main_func, inst, bb_index)
         self._printer.print(test_case)
 
-        
+
 
     def create_test_case_from_template(self, template_file: str) -> TestCaseProgram:
         """
@@ -793,7 +793,7 @@ class _FunctionGenerator:
                 self._isa_spec.non_memory_access_specs, self._isa_spec.store_instructions,
                 self._isa_spec.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
             bb.insert_after(bb.get_last(), inst)
-    
+
     def _is_and_rbx_mask_inst(self, inst: Instruction) -> bool:
         """and rbx, 0b1111111111000 # instrumentation"""
         if inst.name != "and" or not inst.is_instrumentation or len(inst.operands) < 2:
