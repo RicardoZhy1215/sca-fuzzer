@@ -12,7 +12,6 @@ from typing import List, Tuple, TYPE_CHECKING, Any
 
 from .traces import CTrace
 from .tc_components.test_case_data import InputData, InputTaint
-from rvzr.tc_components.test_case_code import Program
 
 if TYPE_CHECKING:
     from .sandbox import SandboxLayout, BaseAddrTuple

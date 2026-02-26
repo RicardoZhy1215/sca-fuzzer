@@ -131,7 +131,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
                 .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-            generator.insert_instruction_in_test_case(prog, apply_mask)
+            generator.insert_instruction_in_test_case_randomly(prog, apply_mask, generator._insert_bb_index)
             # prog.append(apply_mask)
             # prevent double adding R14
             if not instr.instrumented:
@@ -160,8 +160,8 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
                     .add_op(RegisterOp("r14", 64, True, False)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-                generator.insert_instruction_in_test_case(prog, apply_mask)
-                generator.insert_instruction_in_test_case(prog, add_base)
+                generator.insert_instruction_in_test_case_randomly(prog, apply_mask, generator._insert_bb_index)
+                generator.insert_instruction_in_test_case_randomly(prog, add_base, generator._insert_bb_index)
                 # prog.append(apply_mask)
                 # prog.append(add_base)
             return True
@@ -193,7 +193,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 .add_op(divisor) \
                 .add_op(ImmediateOp("1", 8)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-            generator.insert_instruction_in_test_case(prog, instrumentation)
+            generator.insert_instruction_in_test_case_randomly(prog, instrumentation, generator._insert_bb_index)
             # prog.append(instrumentation)
 
         if 'DE-overflow' in CONF.permitted_faults:
@@ -209,7 +209,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 instrumentation = Instruction("mov", is_instrumentation=True).\
                     add_op(RegisterOp("ax", 16, False, True)).\
                     add_op(ImmediateOp("1", 16))
-                generator.insert_instruction_in_test_case(prog, instrumentation)
+                generator.insert_instruction_in_test_case_randomly(prog, instrumentation, generator._insert_bb_index)
                 # prog.append(instrumentation)
                 return True
             else:
@@ -224,13 +224,13 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             .add_op(RegisterOp(d_register, divisor.width, False, True)) \
             .add_op(divisor) \
             .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-        generator.insert_instruction_in_test_case(prog, instrumentation)
+        generator.insert_instruction_in_test_case_randomly(prog, instrumentation, generator._insert_bb_index)    
         # prog.append(instrumentation)
         instrumentation = Instruction("shr", is_instrumentation=True) \
             .add_op(RegisterOp(d_register, divisor.width, False, True)) \
             .add_op(ImmediateOp("1", 8)) \
             .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "undef"]), True)
-        generator.insert_instruction_in_test_case(prog, instrumentation)
+        generator.insert_instruction_in_test_case_randomly(prog, instrumentation, generator._insert_bb_index)
         #prog.append(instrumentation)
 
         return True
@@ -262,7 +262,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                 .add_op(new_offset) \
                 .add_op(ImmediateOp(mask_3bits, 8)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
-            generator.insert_instruction_in_test_case(prog, apply_mask)
+            generator.insert_instruction_in_test_case_randomly(prog, apply_mask, generator._insert_bb_index)
             # prog.append(apply_mask)
             return True
 
@@ -279,8 +279,8 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             .add_op(RegisterOp("rcx", 64, True, True)) \
             .add_op(ImmediateOp("1", 1)) \
             .add_op(FlagsOp(["w", "w", "w", "w", "w", "", "", "", "w"]), True)
-        generator.insert_instruction_in_test_case(prog, apply_mask)
-        generator.insert_instruction_in_test_case(prog, add_base)
+        generator.insert_instruction_in_test_case_randomly(prog, apply_mask, generator._insert_bb_index)
+        generator.insert_instruction_in_test_case_randomly(prog, add_base, generator._insert_bb_index)
         # prog.append(apply_mask)
         # prog.append(add_base)
 
@@ -289,7 +289,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
     def sandbox_corrupted_cf(instr: Instruction, prog: TestCaseProgram) -> bool:
         set_cf = Instruction("stc", is_instrumentation= True) \
             .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True)
-        generator.insert_instruction_in_test_case(prog, set_cf)
+        generator.insert_instruction_in_test_case_randomly(prog, set_cf, generator._insert_bb_index)
         #prog.append(set_cf)
 
         return True
@@ -306,7 +306,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
         set_rax = Instruction("mov", is_instrumentation=True) \
             .add_op(RegisterOp("eax", 32, True, True)) \
             .add_op(ImmediateOp(random.choice(options), 1))
-        generator.insert_instruction_in_test_case(prog, set_rax)
+        generator.insert_instruction_in_test_case_randomly(prog, set_rax, generator._insert_bb_index)
         #prog.append(set_rax)
 
         return True

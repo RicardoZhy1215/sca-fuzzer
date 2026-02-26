@@ -23,7 +23,6 @@ from rvzr.tc_components.instruction import Instruction, Operand, RegisterOp, Fla
     MemoryOp, ImmediateOp, AgenOp, copy_op_with_flow_modification, \
     copy_inst_with_modification
 from rvzr.tc_components.test_case_code import TestCaseProgram, BasicBlock, InstructionNode
-from rvzr.tc_components.test_case_code import Program
 
 from .target_desc import X86TargetDesc
 
@@ -966,6 +965,16 @@ class _X86PatchUndefinedFlagsPass(Pass):
                 flags_to_set.add(f)
 
         # make sure that we do not have undefined flags when we enter the BB
+        # if flags_to_set:
+        #             entry_node = bb.get_first(exclude_macros=True)
+        #             patches = self._find_flags_patch(list(flags_to_set), flags_to_set)
+                    
+        #             if not entry_node:
+        #                 for patch in patches:
+        #                     bb.insert_before(None, patch) 
+        #             else:
+        #                 for patch in patches:
+        #                     bb.insert_before(entry_node, patch)
         if flags_to_set:
             # find a place to insert the patches
             entry_node = bb.get_first(exclude_macros=True)

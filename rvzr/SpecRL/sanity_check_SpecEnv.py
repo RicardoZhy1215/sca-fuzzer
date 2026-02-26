@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import subprocess
 import gymnasium as gym
@@ -175,6 +177,7 @@ class SpecEnv(gym.Env):
 
             # run checks / instrument
             target_desc = X86TargetDesc()
+            self.generator._insert_bb_index = random.choice([0, 1]) # randomize the basic block index to insert the instruction
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
             if (not passed_inst):
@@ -188,11 +191,12 @@ class SpecEnv(gym.Env):
                 step_reward = -20
                 return (step_obs, step_reward, end, truncate, {"program": self.new_program})
             else:
-                # self.program.append(self.instruction_space[action])
-                self.generator.insert_instruction_in_test_case(self.new_program, self.instruction_space[action])
+                self.generator.insert_instruction_in_test_case_randomly(self.new_program, self.instruction_space[action], self.generator._insert_bb_index)
                 print(f"adding step {self.instruction_space[action]}")
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
+            self.generator._insert_bb_index = None    
+        
         print()
         print("#=======================================================#")
         print("program: ")
@@ -273,7 +277,7 @@ class SpecEnv(gym.Env):
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
-                temp_program = self.generator.create_test_case_SpecRL(temp_asm_path, disable_assembler=True, generate_empty_case=True, instruction_space=self.generator.instruction_space)
+                temp_program = self.generator.create_test_case_SpecRL(temp_asm_path, disable_assembler=True, generate_empty_case=True)
 
                 for j in range(1, i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j])

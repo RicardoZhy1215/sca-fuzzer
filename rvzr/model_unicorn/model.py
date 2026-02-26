@@ -25,7 +25,6 @@ from ..sandbox import SandboxLayout, DataArea
 from ..config import CONF
 from ..logs import ModelLogger, BLUE, COL_RESET, error
 from ..traces import CTraceEntry
-from rvzr.tc_components.test_case_code import Program
 from .taint_tracker import UnicornTaintTracker
 from .coverage import InstructionCoverage
 from .execution_context import ModelExecutionState
