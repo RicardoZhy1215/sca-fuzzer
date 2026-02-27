@@ -319,7 +319,7 @@ class Instruction:
     _section_offset: int = -1  # instruction offset in the section; access via section_offset()
     _size: int = -1  # size of the instruction in bytes; access via size()
     _inst_brief: str = ""  # cached brief representation of the instruction
-    bb_id: int = -1 #basic block id
+    bb_id: int = 0 #basic block id
 
     # ----------------------------------------------------------------------------------------------
     # Constructors

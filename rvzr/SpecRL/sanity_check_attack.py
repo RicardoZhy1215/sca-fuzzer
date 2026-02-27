@@ -1,3 +1,4 @@
+from doctest import testfile
 from sanity_check_SpecEnv import SpecEnv
 from rvzr.tc_components.instruction import Instruction, RegisterOp, ImmediateOp, MemoryOp, LabelOp
 
@@ -48,55 +49,59 @@ env_config = {"instruction_space": test_instruction_space,
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    test = SpecEnv(env_config)
+    # test = SpecEnv(env_config)
+    # test.step(0)
+    # test.step(1)
+    # test.step(2)
+    # test.step(3)
 
 
-    # ray.init()
-    # config = (
-    #     PPOConfig()
-    #     .api_stack(
-    #         enable_rl_module_and_learner=False,
-    #         enable_env_runner_and_connector_v2=False,
-    #     )
-    #     .environment(
-    #         env=SpecEnv,
-    #         env_config=env_config
-    #     )
-    #     .env_runners(
-    #         num_env_runners=1,
-    #         num_envs_per_env_runner=1
-    #     )
-    #     .training(
-    #         lr=5e-5,
-    #         train_batch_size=4000,
-    #         gamma=0.99,
-    #     )
-    #     .resources(num_gpus=1)
-    # )
-    #
-    # algo = config.build()
-    #
-    # try:
-    #     for i in range(100):
-    #         result = algo.train()
-    #
-    #         print_res = {
-    #             "episode_reward_mean": result.get("episode_reward_mean"),
-    #             "episodes_total": result.get("episodes_total"),
-    #             "training_iteration": result.get("training_iteration"),
-    #             "policy_loss": result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {}).get("policy_loss")
-    #         }
-    #         pprint(print_res)
-    #
-    #         if i % 10 == 0:
-    #             checkpoint_dir = algo.save()
-    #             print(f"Iteration {i}: Checkpoint saved at {checkpoint_dir}")
-    #
-    # except KeyboardInterrupt:
-    #     print("Training interrupted by user.")
-    # finally:
-    #     algo.stop()
-    #     ray.shutdown()
+    ray.init()
+    config = (
+        PPOConfig()
+        .api_stack(
+            enable_rl_module_and_learner=False,
+            enable_env_runner_and_connector_v2=False,
+        )
+        .environment(
+            env=SpecEnv,
+            env_config=env_config
+        )
+        .env_runners(
+            num_env_runners=1,
+            num_envs_per_env_runner=1
+        )
+        .training(
+            lr=5e-5,
+            train_batch_size=4000,
+            gamma=0.99,
+        )
+        .resources(num_gpus=1)
+    )
+    
+    algo = config.build()
+    
+    try:
+        for i in range(100):
+            result = algo.train()
+    
+            print_res = {
+                "episode_reward_mean": result.get("episode_reward_mean"),
+                "episodes_total": result.get("episodes_total"),
+                "training_iteration": result.get("training_iteration"),
+                "policy_loss": result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {}).get("policy_loss")
+            }
+            pprint(print_res)
+    
+            if i % 10 == 0:
+                checkpoint_dir = algo.save()
+                print(f"Iteration {i}: Checkpoint saved at {checkpoint_dir}")
+    
+    except KeyboardInterrupt:
+        print("Training interrupted by user.")
+    finally:
+        algo.stop()
+        ray.shutdown()
 
 
 

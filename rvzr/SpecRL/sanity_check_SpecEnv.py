@@ -5,6 +5,7 @@ import subprocess
 import gymnasium as gym
 import uuid
 from gymnasium import spaces
+from copy import deepcopy
 from typing import Counter, List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
@@ -144,6 +145,7 @@ class SpecEnv(gym.Env):
                                       elf_parser=self.elf_parser)
         self.generator.instruction_space = self.instruction_space
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.base_program = deepcopy(self.new_program)
         self.executor = X86IntelExecutor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
@@ -277,11 +279,13 @@ class SpecEnv(gym.Env):
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
                 os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm", exist_ok=True)
-                temp_program = self.generator.create_test_case_SpecRL(temp_asm_path, disable_assembler=True, generate_empty_case=True)
-
+                # we can not create new test cases here, cuz the instruments are randomly generated.
+                temp_program = self.generator.create_asm_with_existing_test_case(temp_asm_path, self.base_program)
                 for j in range(1, i + 1):
                     self.generator.insert_instruction_in_test_case(temp_program, all_instructions[j])
                     all_instructions[j]._section_id = -1
+                    
+                # shutil.copyfile(temp_asm_path, f"/home/hz25d/sca-fuzzer/rvzr/SpecRL/debug_asm/temp_obs_{j}.asm")
 
                 temp_program.assign_obj(temp_bin_path)
                 assemble(temp_program)
