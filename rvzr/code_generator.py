@@ -332,8 +332,8 @@ class CodeGenerator(ABC):
         test_case[0].append(main_func)
 
         # process the test case
-        for p in self._passes:
-            p.run_on_test_case(test_case)
+        # for p in self._passes:
+        #     p.run_on_test_case(test_case)
 
         # add symbols to test case
         self._add_required_symbols(test_case)
@@ -349,6 +349,24 @@ class CodeGenerator(ABC):
 
         self._update_state()
         return test_case
+
+    def create_asm_with_existing_test_case(self, asm_file: str, test_case: TestCaseProgram) -> TestCaseProgram:
+        """
+        Reuse an existing test case's framework (BBs, terminators, structure) to create a new
+        test case. Copies the framework, writes to a new asm file. You can then use
+        insert_instruction_in_test_case / insert_instruction_in_test_case_randomly to add
+        instructions before or after calling this.
+
+        :param asm_file: the path to the output asm file
+        :param test_case: the existing test case whose framework to reuse (e.g. base_program)
+        :param disable_assembler: if True, does not assemble; if False, assembles to .o
+        :return: a new TestCaseProgram (copy) with the same structure, ready for insertion
+        """
+        new_test_case = deepcopy(test_case)
+        new_test_case.reassign_asm_file(asm_file)
+        self._printer.print(new_test_case)
+        return new_test_case
+
 
 
     def create_test_case(self, asm_file: str, disable_assembler: bool = False) -> TestCaseProgram:
@@ -838,7 +856,7 @@ class _FunctionGenerator:
 
     def _insert_instruction_in_function_randomly(self, func: Function, inst: Instruction, bb_index: Optional[int] = None) -> None:
         bb_list = list(func)
-        bb = bb_list[bb_index ]
+        bb = bb_list[bb_index]
         new_inst = copy.copy(inst)
         new_inst.bb_id = bb_index
         new_inst._section_id = -1
