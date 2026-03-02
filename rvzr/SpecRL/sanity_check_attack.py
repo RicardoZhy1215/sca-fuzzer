@@ -28,20 +28,21 @@ MUL_RAX = Instruction("mul", False, "", False) \
     .add_op(MemoryOp("rax", 64, False, True)) \
 
 MUL_RDI = Instruction("mul", False, "", False) \
-    .add_op(MemoryOp("rdi", 64, False, True)) \
+    .add_op(MemoryOp("rdx", 64, False, True)) \
 
 ADD_AL_110 = Instruction("add", False, "", False) \
     .add_op(RegisterOp("rax", 64, False, True)) \
     .add_op(ImmediateOp("-110", 64))
 
-# JMP_EXIT = Instruction("jmp", True, "", False) \
-#     .add_op(LabelOp(".exit_0"))
-
 MOV_RBX_1 = Instruction("mov", False, "", False) \
     .add_op(MemoryOp("rbx", 64, False, True)) \
     .add_op(ImmediateOp("1", 64))
 
-test_instruction_space = [MUL_RAX, MUL_RDI,ADD_AL_110, MOV_RBX_1]
+
+MUL_RCX = Instruction("mul", False, "", False) \
+    .add_op(MemoryOp("rcx", 64, False, True)) \
+
+test_instruction_space = [MUL_RAX, MUL_RDI,MOV_RBX_1, MUL_RCX]
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 100,
