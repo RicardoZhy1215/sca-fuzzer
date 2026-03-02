@@ -332,8 +332,8 @@ class CodeGenerator(ABC):
         test_case[0].append(main_func)
 
         # process the test case
-        # for p in self._passes:
-        #     p.run_on_test_case(test_case)
+        for p in self._passes:
+            p.run_on_test_case(test_case)
 
         # add symbols to test case
         self._add_required_symbols(test_case)

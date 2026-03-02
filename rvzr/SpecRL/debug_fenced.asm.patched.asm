@@ -4,25 +4,23 @@
 .bb_0.0:
 lfence
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-and rdi, 0b1111111111111 # instrumentation
+add cl, 33 # instrumentation
 lfence
-mul qword ptr [r14 + rdi]
+and rcx, 0b1111111111111 # instrumentation
 lfence
-and rax, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rcx]
 lfence
-mul qword ptr [r14 + rax]
+and rdx, 0b1111111111111 # instrumentation
 lfence
-and rax, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rdx]
 lfence
-mul qword ptr [r14 + rax]
-lfence
-jnp .bb_0.1
+jl .bb_0.1
 jmp .exit_0
 .bb_0.1:
 lfence
-and rdi, 0b1111111111111 # instrumentation
+and rcx, 0b1111111111111 # instrumentation
 lfence
-mul qword ptr [r14 + rdi]
+mul qword ptr [r14 + rcx]
 lfence
 and rbx, 0b1111111111111 # instrumentation
 lfence
