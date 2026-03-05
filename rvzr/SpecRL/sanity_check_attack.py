@@ -19,13 +19,15 @@ parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=50, default_timesteps=100000
 )
 
+from custom_mlp_backbone_example import register_custom_models, CustomMLPBackbone
+
 
 # Attack instructions sequence based on revizor example
 # DEC_DI  = Instruction("dec", False, "", False) \
 #     .add_op(RegisterOp("rdi", 64, False, True))
 
 MUL_RAX = Instruction("mul", False, "", False) \
-    .add_op(MemoryOp("rax", 64, False, True)) \
+    .add_op(MemoryOp("rax", 32, False, True)) \
 
 MUL_RDI = Instruction("mul", False, "", False) \
     .add_op(MemoryOp("rdx", 64, False, True)) \
@@ -42,7 +44,7 @@ MOV_RBX_1 = Instruction("mov", False, "", False) \
 MUL_RCX = Instruction("mul", False, "", False) \
     .add_op(MemoryOp("rcx", 64, False, True)) \
 
-test_instruction_space = [MUL_RAX, MUL_RDI,MOV_RBX_1, MUL_RCX]
+test_instruction_space = [MUL_RAX, MUL_RDI, ADD_AL_110, MOV_RBX_1, MUL_RCX]
 
 env_config = {"instruction_space": test_instruction_space,
               "sequence_size": 100,
@@ -58,6 +60,8 @@ if __name__ == "__main__":
 
 
     ray.init()
+    # register_custom_models() 
+
     config = (
         PPOConfig()
         .api_stack(
@@ -76,11 +80,19 @@ if __name__ == "__main__":
             lr=5e-5,
             train_batch_size=4000,
             gamma=0.99,
+            # model={
+            #     "custom_model": "CustomMLPBackbone",
+            #     "custom_model_config": {
+            #         "hidden_sizes": [512, 256, 128],
+            #         "activation": "relu",
+            #     }
+            # },
         )
         .resources(num_gpus=1)
     )
     
     algo = config.build()
+    
     
     try:
         for i in range(100):
