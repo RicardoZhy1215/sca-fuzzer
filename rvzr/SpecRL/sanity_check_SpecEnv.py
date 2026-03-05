@@ -127,8 +127,10 @@ class SpecEnv(gym.Env):
         self.observation_space = spaces.Dict(
             {
                 "instruction": spaces.Box(low = -1, high = len(self.instruction_space) + 1, shape = (self.seq_size,), dtype=np.int64),
-                "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
-                "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
+                # "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
+                # "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
+                "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
+                "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
                 "recovery_cycles": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
                 "transient_uops": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64)
             }
@@ -248,8 +250,8 @@ class SpecEnv(gym.Env):
     def _get_obs(self):
         obs = {
             "instruction": np.full((self.seq_size,), -1, dtype=np.int64),
-            "htrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
-            "ctrace": np.full((self.seq_size, self.max_trace_len), -1, dtype=np.int64),
+            "htrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.int64),
+            "ctrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.uint64),
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
             "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64)
         } # filled with -1's as filler
@@ -298,15 +300,12 @@ class SpecEnv(gym.Env):
                 # fill appropriate observation row in
                 obs["instruction"][count - 1] = temp_obs[0]
 
-                temp_htrace = np.array(temp_obs[1]) # some extra work needed to pad in order to fit the shape
-                padded_htrace = np.full((self.max_trace_len,), -1, dtype = temp_htrace.dtype)
-                padded_htrace[:temp_htrace.shape[0]] = temp_htrace
-                obs["htrace"][count - 1] = padded_htrace
+                # htrace/ctrace: (num_inputs,) per step, stored in (seq_size, num_inputs) array
+                temp_htrace = np.array(temp_obs[1], dtype=np.int64)
+                obs["htrace"][count - 1, : temp_htrace.shape[0]] = temp_htrace[: self.num_inputs]
 
-                temp_ctrace = np.array(temp_obs[2])
-                padded_ctrace = np.full((self.max_trace_len,), -1, dtype = temp_ctrace.dtype)
-                padded_ctrace[:temp_ctrace.shape[0]] = temp_ctrace
-                obs["ctrace"][count - 1] = padded_ctrace
+                temp_ctrace = np.array(temp_obs[2], dtype=np.uint64)
+                obs["ctrace"][count - 1, : temp_ctrace.shape[0]] = temp_ctrace[: self.num_inputs]
 
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
                 obs["transient_uops"][count - 1] = temp_obs[4]
@@ -398,7 +397,7 @@ class SpecEnv(gym.Env):
     essentially has the same functionality as _obs_program except it it checks for a leak and observable speculation
     pulled from revizor code
     """
-    def _full_obs_program(self, program: TestCaseProgram, inputs: List[InputData]) -> Optional[EquivalenceClass]:
+    def _full_obs_program(self, program: TestCaseProgram, inputs: List[InputData]) -> bool:
         self.leak = False
         self.misspec = False
         self.observable = False
@@ -479,7 +478,8 @@ class SpecEnv(gym.Env):
         if 'seq' not in CONF.contract_execution_clause:
             # self.LOG.fuzzer_nesting_increased()
             #boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
-            boosted_inputs = _RoundManager._boost_inputs()
+            manager = _RoundManager(self.fuzzer, temp, inputs)
+            boosted_inputs = manager._boost_inputs()
             ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
             htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
             violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)

@@ -564,6 +564,7 @@ class Fuzzer:
         self._set_generation_function(type_)
 
         # Start the fuzzing loop
+        found_violation_this_run = False  # track violations in THIS call, not cumulative STAT
         for i in range(num_test_cases):
             self.log.start_round(i)
             # Generate a test case
@@ -586,6 +587,7 @@ class Fuzzer:
             print("run the fuzzing round")
             violation = self.fuzzing_round(test_case, inputs, [])
             if violation:
+                found_violation_this_run = True
                 self.log.report_violations(violation)
                 self.log.dbg_violation(violation, self.model)
                 if save_violations:
@@ -603,7 +605,7 @@ class Fuzzer:
 
         self.log.finish()
         self.log.report_model_coverage(self.model)
-        return STAT.violations > 0
+        return found_violation_this_run
 
     def fuzzing_round(self, test_case: TestCaseProgram, inputs: List[InputData],
                       starting_ignore_list: List[int]) -> Optional[Violation]:
