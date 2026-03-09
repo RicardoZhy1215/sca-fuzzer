@@ -1,12 +1,3 @@
-"""
-Observation space :
-- instruction: (seq_size,) = (100,)
-- htrace: (seq_size, num_inputs) = (100, 20)
-- ctrace: (seq_size, num_inputs) = (100, 20)
-- recovery_cycles: (seq_size, num_inputs) = (100, 20)
-- transient_uops: (seq_size, num_inputs) = (100, 20)
-"""
-
 import torch
 import torch.nn as nn
 from gymnasium import spaces

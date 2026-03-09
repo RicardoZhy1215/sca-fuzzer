@@ -19,7 +19,7 @@ parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=50, default_timesteps=100000
 )
 
-from custom_mlp_backbone_example import register_custom_models, CustomMLPBackbone
+from model import register_custom_models, CustomMLPBackbone
 
 
 # Attack instructions sequence based on revizor example
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
 
     ray.init()
-    # register_custom_models() 
+    register_custom_models() 
 
     config = (
         PPOConfig()
@@ -80,13 +80,13 @@ if __name__ == "__main__":
             lr=5e-5,
             train_batch_size=4000,
             gamma=0.99,
-            # model={
-            #     "custom_model": "CustomMLPBackbone",
-            #     "custom_model_config": {
-            #         "hidden_sizes": [512, 256, 128],
-            #         "activation": "relu",
-            #     }
-            # },
+            model={
+                "custom_model": "CustomMLPBackbone",
+                "custom_model_config": {
+                    "hidden_sizes": [512, 256, 128],
+                    "activation": "relu",
+                }
+            },
         )
         .resources(num_gpus=1)
     )
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     
     
     try:
-        for i in range(100):
+        for i in range(10):
             result = algo.train()
     
             print_res = {

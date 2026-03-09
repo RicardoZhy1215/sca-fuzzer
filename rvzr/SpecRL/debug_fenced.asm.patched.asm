@@ -4,13 +4,335 @@
 .bb_0.0:
 lfence
 .macro.measurement_start: nop qword ptr [rax + 0xff]
+add al, -46 # instrumentation
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
 and rbx, 0b1111111111111 # instrumentation
 lfence
 mov qword ptr [r14 + rbx], 1
 lfence
-jrcxz .bb_0.1
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rbx], 1
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rbx], 1
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+jnb .bb_0.1
 jmp .exit_0
 .bb_0.1:
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rbx], 1
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rbx], 1
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rbx], 1
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mul dword ptr [r14 + rax]
 lfence
 .exit_0:
 lfence
