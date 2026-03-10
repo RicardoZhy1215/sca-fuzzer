@@ -178,6 +178,7 @@ class Conf:
     """ program_generator_seed: seed of the program generator; if set to zero, a random seed
     will be used """
     program_size: int = 24
+    instruction_space_size: int = 100
     """ program_size: size of generated programs """
     avg_mem_accesses: int = 12
     """ avg_mem_accesses: average number of memory accesses in generated programs """

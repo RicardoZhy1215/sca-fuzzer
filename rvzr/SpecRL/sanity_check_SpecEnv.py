@@ -126,7 +126,7 @@ class SpecEnv(gym.Env):
         self.max_trace_len = self.seq_size * self.num_inputs
         self.observation_space = spaces.Dict(
             {
-                "instruction": spaces.Box(low = -1, high = len(self.instruction_space) + 1, shape = (self.seq_size,), dtype=np.int64),
+                "instruction": spaces.Box(low = -1, high = len(self.instruction_space) + 1, shape = (self.seq_size, 4), dtype=np.int64),
                 # "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 # "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
@@ -141,6 +141,13 @@ class SpecEnv(gym.Env):
         target_desc = X86TargetDesc()
         self.printer = _X86Printer(target_desc)
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
+        unique_instruction_names = set(spec.name.lower() for spec in instruction_set.instructions)
+        # self.opcode_vocab = list(dict.fromkeys(inst.name.lower() for inst in self.instruction_space))
+        self.opcode_vocab = list(unique_instruction_names)
+        # self.reg_vocab = instruction_set.get_reg64_spec()
+        self.reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
+        # print("opcode_vocab", self.opcode_vocab)
+
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
         self.elf_parser = ELFParser(target_desc)
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
@@ -197,6 +204,7 @@ class SpecEnv(gym.Env):
             else:
                 self.generator.insert_instruction_in_test_case_randomly(self.new_program, self.instruction_space[action], self.generator._insert_bb_index)
                 print(f"adding step {self.instruction_space[action]}")
+                self.num_steps += 1
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
             self.generator._insert_bb_index = None    
@@ -249,7 +257,8 @@ class SpecEnv(gym.Env):
     """
     def _get_obs(self):
         obs = {
-            "instruction": np.full((self.seq_size,), -1, dtype=np.int64),
+            # "instruction": np.full((self.seq_size,), -1, dtype=np.int64),
+            "instruction": np.full((self.seq_size, 4), -1, dtype=np.int64),
             "htrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.int64),
             "ctrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.uint64),
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
@@ -298,8 +307,8 @@ class SpecEnv(gym.Env):
                 print(f"\niteration {count} observations: ")
 
                 # fill appropriate observation row in
-                obs["instruction"][count - 1] = temp_obs[0]
-
+                # obs["instruction"][count - 1] = temp_obs[0]
+                obs["instruction"][count - 1] = np.array(temp_obs[0])
                 # htrace/ctrace: (num_inputs,) per step, stored in (seq_size, num_inputs) array
                 temp_htrace = np.array(temp_obs[1], dtype=np.int64)
                 obs["htrace"][count - 1, : temp_htrace.shape[0]] = temp_htrace[: self.num_inputs]
@@ -356,8 +365,9 @@ class SpecEnv(gym.Env):
             if (pfc_values[0] > pfc_values[1]):
                 transient.append(pfc_values[0] - pfc_values[1])
             else: transient.append(0)
+        last_instr_info = tuple(self._extract_last_instr_info(program))
 
-        return (program.__len__(), htraces_obs, ctraces_obs, recovery, transient)
+        return (last_instr_info, htraces_obs, ctraces_obs, recovery, transient)
 
 
     """
@@ -564,6 +574,61 @@ class SpecEnv(gym.Env):
                 fenced_lines.append("lfence\n")
         with open(file_path, 'w') as f:
             f.writelines(fenced_lines)
+
+    def _get_last_instruction(self, program: TestCaseProgram) -> Optional[Instruction]:
+        """Get the last instruction in program order (excluding macros)."""
+        last_instr = None
+        for bb in program.iter_basic_blocks():
+            for instr in bb:
+                if instr.name != "macro":
+                    last_instr = instr
+        return last_instr
+
+    def _normalize_reg_name(self, reg_name: str) -> str:
+        mapping = {
+                'eax': 'rax', 'ax': 'rax', 'al': 'rax', 'ah': 'rax',
+                'ebx': 'rbx', 'bx': 'rbx', 'bl': 'rbx', 'bh': 'rbx',
+                'ecx': 'rcx', 'cx': 'rcx', 'cl': 'rcx', 'ch': 'rcx',
+                'edx': 'rdx', 'dx': 'rdx', 'dl': 'rdx', 'dh': 'rdx',
+                'esi': 'rsi', 'si': 'rsi', 'sil': 'rsi',
+                'edi': 'rdi', 'di': 'rdi', 'dil': 'rdi',
+                'rip': 'rip',
+            }
+        return mapping.get(reg_name, reg_name)
+    
+    def _extract_last_instr_info(self, program: TestCaseProgram) -> List[int]:
+        """Return [opname_id, reg_src_id, reg_dst_id, imm_id] for last instruction."""
+        last_instr = self._get_last_instruction(program)
+        if last_instr is None:
+            return [-1, -1, -1, -1]
+
+        name_lower = last_instr.name.lower()
+        opname_id = self.opcode_vocab.index(name_lower) if name_lower in self.opcode_vocab else -1
+
+        reg_ops = last_instr.get_reg_operands(include_implicit=True)
+        reg_src_id = -1
+        reg_dst_id = -1
+
+        for op in reg_ops:
+            val_raw = op.value.lower()
+            val_norm = self._normalize_reg_name(val_raw)
+            if val_norm in self.reg_vocab:
+                idx = self.reg_vocab.index(val_norm)
+                if op.src and reg_src_id == -1:
+                    reg_src_id = idx
+                if op.dest and reg_dst_id == -1:
+                    reg_dst_id = idx
+
+        imm_ops = last_instr.get_imm_operands()
+        imm_id = 0 if imm_ops else -1
+
+        return [opname_id, reg_src_id, reg_dst_id, imm_id]
+
+    def _get_opcode_size(self):
+        return len(self.opcode_vocab)   
+
+    def _get_reg_size(self):
+        return len(self.reg_vocab)
 
 
 

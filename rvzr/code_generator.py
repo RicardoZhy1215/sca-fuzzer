@@ -298,6 +298,16 @@ class CodeGenerator(ABC):
         self._function_generator = _FunctionGenerator(self._target_desc, instruction_set)
         self._instruction_generator = _InstructionGenerator(self._target_desc)
 
+    def create_instruction_space(self, instruction_space: List[Instruction]) -> List[Instruction]:
+        """
+        Create a list of instructions from the instruction space
+        """
+        for _ in range(0, CONF.program_size):
+            inst = self._instruction_generator.generate_from_random_spec(
+                self._instruction_set.non_memory_access_specs, self._instruction_set.store_instructions,
+                self._instruction_set.load_instruction, CONF.avg_mem_accesses / CONF.program_size)
+            instruction_space.append(inst)
+        return instruction_space
     # ----------------------------------------------------------------------------------------------
     # Public Interface
     def create_test_case_SpecRL(self, asm_file: str, disable_assembler: bool = False, generate_empty_case: bool = True, instruction_space: List[Instruction] = None) -> TestCaseProgram:
