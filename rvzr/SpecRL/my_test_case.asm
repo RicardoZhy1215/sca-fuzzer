@@ -3,12 +3,10 @@
 .function_0:
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-add dl, 114 # instrumentation
-jbe .bb_0.1 
+add al, -67 # instrumentation
+jnz .bb_0.1 
 jmp .exit_0 
 .bb_0.1:
-and rcx, 0b1111111111111 # instrumentation
-mul qword ptr [r14 + rcx] 
 .exit_0:
 .macro.measurement_end: nop qword ptr [rax + 0xff]
 jmp .test_case_exit 

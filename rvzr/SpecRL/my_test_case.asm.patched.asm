@@ -3,10 +3,22 @@
 .function_0:
 .bb_0.0:
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-add dl, 114 # instrumentation
-jbe .bb_0.1
+add dl, 108 # instrumentation
+and rbx, 0b1111111111111 # instrumentation
+mov qword ptr [r14 + rbx], 1
+and rax, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rax]
+and rdx, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rdx]
+and rdx, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rdx]
+jo .bb_0.1
 jmp .exit_0
 .bb_0.1:
+and rax, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rax]
+and rcx, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rcx]
 and rcx, 0b1111111111111 # instrumentation
 mul qword ptr [r14 + rcx]
 .exit_0:
