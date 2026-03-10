@@ -1,24 +1,3 @@
-"""
-SpecRL architecture: ObsEncoder + AutoregressiveInstructionHead for SpecEnv.
-
-
-- ObsEncoder: multi-modal encoder for Dict obs (instruction, htrace, ctrace, recovery_cycles, transient_uops)
- Supports large instruction vocab via embeddings; mean pooling over sequence.
-- AutoregressiveInstructionHead: opcode -> reg_src -> reg_dst -> imm (mini-AlphaStar style).
-
-
-Usage:
- from rvzr.SpecRL.specrl_arch import register_specrl_model, build_action_to_tuple
- register_specrl_model()
- action_to_tuple = build_action_to_tuple(instruction_space, opcode_vocab, reg_vocab)
- config.training(model={"custom_model": "SpecRLModel", "custom_model_config": {
-     "seq_size": 100, "num_inputs": 20,
-     "action_to_tuple": action_to_tuple,
-     "hidden_dim": 256,
- }})
-"""
-
-
 import torch
 import torch.nn as nn
 from gymnasium import spaces
@@ -64,19 +43,11 @@ def _unflatten_obs(flat_obs: torch.Tensor, seq_size: int, num_inputs: int) -> di
    }
 
 
-
-
-# ---------------------------------------------------------------------------
-# ObsEncoder: encodes Dict observation (instruction, htrace, ctrace, ...)
-# ---------------------------------------------------------------------------
-
-
 class ObsEncoder(nn.Module):
    """
    Multi-modal encoder for SpecEnv observation.
    Handles: instruction (seq,4), htrace (seq,K), ctrace (seq,K), recovery_cycles, transient_uops.
    """
-
 
    def __init__(
        self,
@@ -93,7 +64,10 @@ class ObsEncoder(nn.Module):
        self.num_inputs = num_inputs
        self.hidden_dim = hidden_dim
 
-        
+       from rvzr.isa_spec import InstructionSet
+       instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
+       opcode_size = len(set(spec.name.lower() for spec in instruction_set.instructions))
+       reg_size = len(instruction_set.get_reg64_spec())
 
        # Instruction: (seq_size, 4) -> embed each of [opname, reg_src, reg_dst, imm]
        instr_box = obs_space.spaces.get("instruction")
@@ -102,8 +76,8 @@ class ObsEncoder(nn.Module):
                self.instr_vocab_sizes = [max(2, s) for s in instr_vocab_sizes]
            else:
                # vocab sizes: opcode ~1k+, reg ~20; use +2 for -1 padding
-               opcode_size = SpecEnv._get_opcode_size()
-               reg_size = SpecEnv._get_reg_size()
+            #    opcode_size = SpecEnv._get_opcode_size()
+            #    reg_size = SpecEnv._get_reg_size()
                self.instr_vocab_sizes = [
                    opcode_size + 2,
                    reg_size + 2,
@@ -425,14 +399,6 @@ class AutoregressiveInstructionHead(nn.Module):
    def forward(self, features: torch.Tensor, action_mask: torch.Tensor = None) -> torch.Tensor:
        return self.forward_logits(features, action_mask)
 
-
-
-
-# ---------------------------------------------------------------------------
-# SpecRLModel: full model with ObsEncoder + AutoregressiveInstructionHead
-# ---------------------------------------------------------------------------
-
-
 class SpecRLModel(TorchModelV2, nn.Module):
    """
    SpecRL policy model: ObsEncoder -> AutoregressiveInstructionHead (+ value head).
@@ -455,9 +421,11 @@ class SpecRLModel(TorchModelV2, nn.Module):
 
        self._seq_size = seq_size
        self._num_inputs = num_inputs
-       self.use_dict_obs = use_dict_obs and isinstance(obs_space, spaces.Dict)
-
-
+       # obs_space may be Box (preprocessor output); use original_space to get Dict
+       original = getattr(obs_space, "original_space", obs_space)
+       self.use_dict_obs = use_dict_obs and isinstance(original, spaces.Dict)
+    #    import pdb; 
+    #    pdb.set_trace()
        flat_size = _get_flat_input_size(obs_space)
        self.flat_backbone = nn.Sequential(
            nn.Linear(flat_size, hidden_dim),
@@ -469,7 +437,7 @@ class SpecRLModel(TorchModelV2, nn.Module):
        )
        if self.use_dict_obs:
            self.encoder = ObsEncoder(
-               obs_space,
+               original,
                seq_size=seq_size,
                num_inputs=num_inputs,
                hidden_dim=hidden_dim,

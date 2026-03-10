@@ -148,9 +148,9 @@ if __name__ == "__main__":
                         "seq_size": 50, "num_inputs": 20,
                         "action_to_tuple": action_to_tuple,
                         "hidden_dim": 256,
-                        "use_dict_obs": False
+                        "use_dict_obs": True
                         },
-
+                    "_disable_preprocessor_api": True,
                     },
             # model={
             #     "custom_model": "CustomMLPBackbone",
