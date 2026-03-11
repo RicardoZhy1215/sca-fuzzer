@@ -1,0 +1,64 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            0k4dzewfo8pysctuvwso3pkm4nif98ah:
+                args:
+                    - --specrl-wandb-project
+                    - my-specrl
+                    - --specrl-wandb-run
+                    - exp1
+                codePath: rvzr/SpecRL/hierarchical_testing/train.py
+                codePathLocal: train.py
+                cpu_count: 12
+                cpu_count_logical: 24
+                disk:
+                    /:
+                        total: "2001491361792"
+                        used: "377070923776"
+                email: hz25d@fsu.edu
+                executable: /home/hz25d/miniconda3/envs/specrl/bin/python
+                git:
+                    commit: 57a04559d49a525c4829fe348467cb8c91ba233d
+                    remote: git@github.com:RicardoZhy1215/sca-fuzzer.git
+                host: mluo-Precision-7960-Tower
+                memory:
+                    total: "134269038592"
+                os: Linux-6.8.0-90-generic-x86_64-with-glibc2.35
+                program: /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py
+                python: CPython 3.9.25
+                root: /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing
+                startedAt: "2026-03-11T21:33:16.765759Z"
+                writerId: 0k4dzewfo8pysctuvwso3pkm4nif98ah
+        m: []
+        python_version: 3.9.25
+        t:
+            "1":
+                - 1
+                - 30
+            "2":
+                - 1
+                - 30
+            "3":
+                - 2
+                - 13
+                - 16
+                - 41
+            "4": 3.9.25
+            "5": 0.25.1
+            "12": 0.25.1
+            "13": linux-x86_64
+action_space_size:
+    value: 307
+gamma:
+    value: 0.99
+hidden_dim:
+    value: 256
+lr:
+    value: 5e-05
+num_inputs:
+    value: 20
+seq_size:
+    value: 50
+train_batch_size:
+    value: 4000
