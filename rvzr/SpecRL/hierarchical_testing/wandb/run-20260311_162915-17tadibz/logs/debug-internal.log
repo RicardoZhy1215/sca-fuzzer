@@ -1,0 +1,20 @@
+{"time":"2026-03-11T16:29:15.426045102-04:00","level":"INFO","msg":"wandb-core"}
+{"time":"2026-03-11T16:29:15.426864617-04:00","level":"INFO","msg":"stream: starting","core version":"0.25.1"}
+{"time":"2026-03-11T16:29:15.650674475-04:00","level":"INFO","msg":"stream: created new stream","id":"17tadibz"}
+{"time":"2026-03-11T16:29:15.650763134-04:00","level":"INFO","msg":"handler: started"}
+{"time":"2026-03-11T16:29:15.650877159-04:00","level":"INFO","msg":"stream: started"}
+{"time":"2026-03-11T16:29:15.650922034-04:00","level":"INFO","msg":"sender: started"}
+{"time":"2026-03-11T16:29:15.650922797-04:00","level":"INFO","msg":"writer: started","stream_id":"17tadibz"}
+{"time":"2026-03-11T16:29:16.880768202-04:00","level":"INFO","msg":"filestream: sending request","total_files":1,"console_offset":0,"console_lines":1}
+{"time":"2026-03-11T16:29:17.562787149-04:00","level":"INFO","msg":"filestream: request sent","status":"200 OK"}
+{"time":"2026-03-11T16:29:31.882240503-04:00","level":"INFO","msg":"filestream: sending request","total_files":2,"events_offset":0,"events_lines":1,"console_offset":1,"console_lines":212,"uploaded_len":2}
+{"time":"2026-03-11T16:29:32.654958036-04:00","level":"INFO","msg":"filestream: request sent","status":"200 OK"}
+{"time":"2026-03-11T16:29:46.883468001-04:00","level":"INFO","msg":"filestream: sending request","total_files":2,"events_offset":1,"events_lines":1,"console_offset":213,"console_lines":271}
+{"time":"2026-03-11T16:29:47.200013971-04:00","level":"INFO","msg":"filestream: request sent","status":"200 OK"}
+{"time":"2026-03-11T16:30:01.883352206-04:00","level":"INFO","msg":"filestream: sending request","total_files":2,"events_offset":2,"events_lines":1,"console_offset":484,"console_lines":245}
+{"time":"2026-03-11T16:30:02.446721861-04:00","level":"INFO","msg":"filestream: request sent","status":"200 OK"}
+{"time":"2026-03-11T16:30:05.878079123-04:00","level":"INFO","msg":"stream: closing"}
+{"time":"2026-03-11T16:30:07.470004844-04:00","level":"ERROR","msg":"sender: sendSummary called after exit"}
+{"time":"2026-03-11T16:30:07.470899145-04:00","level":"WARN","msg":"sender: received Exit record more than once, ignoring"}
+{"time":"2026-03-11T16:30:08.279800338-04:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-11T16:30:08.280358475-04:00","level":"INFO","msg":"filestream: sending request","total_files":2,"console_offset":729,"console_lines":62,"uploaded_len":3,"complete":true,"exit_code":0}

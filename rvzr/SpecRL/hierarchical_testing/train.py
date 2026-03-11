@@ -1,0 +1,151 @@
+"""
+Train SpecRLHiModel (hierarchical action space).
+Run from SpecRL: python hierarchical_testing/train.py
+Or from hierarchical_testing: python train.py
+
+Wandb: set WANDB_MODE=offline for offline, or use --specrl-wandb-project/--specrl-wandb-run
+Debug: --specrl-debug-result to dump result structure on first train() iteration
+"""
+import sys
+import os
+
+_this_dir = os.path.dirname(os.path.abspath(__file__))
+_specrl_root = os.path.dirname(_this_dir)
+# Ensure SpecRL in path (for check, interfaces), then put hierarchical_testing first for local model
+if _specrl_root not in sys.path:
+    sys.path.insert(0, _specrl_root)
+if _this_dir not in sys.path:
+    sys.path.insert(0, _this_dir)  # local model, hi_SpecEnv, inst_space override parent
+
+from pprint import pprint
+import ray
+from ray.rllib.algorithms.ppo import PPOConfig
+from ray.rllib.utils.test_utils import add_rllib_example_script_args
+
+from hi_SpecEnv import SpecEnv
+from hi_model import register_specrl_hi_model, build_action_to_tuple
+
+parser = add_rllib_example_script_args(
+    default_reward=0.9, default_iters=50, default_timesteps=100000
+)
+parser.add_argument("--specrl-wandb-project", type=str, default="SpecRL-hierarchical", help="Wandb project name")
+parser.add_argument("--specrl-wandb-run", type=str, default=None, help="Wandb run name")
+parser.add_argument("--specrl-no-wandb", action="store_true", help="Disable wandb logging")
+
+# Hierarchical action space: (opcode, reg_src, reg_dst, imm) from inst_space
+action_to_tuple = build_action_to_tuple()
+print(f"Hierarchical action space size: {len(action_to_tuple)}")
+
+env_config = {
+    "action_to_tuple": action_to_tuple,
+    "sequence_size": 50,
+    "num_inputs": 20,
+}
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    ray.init()
+    register_specrl_hi_model()
+
+    train_config = {
+        "lr": 5e-5,
+        "train_batch_size": 128,
+        "gamma": 0.99,
+        "seq_size": 50,
+        "num_inputs": 20,
+        "hidden_dim": 256,
+        "action_space_size": len(action_to_tuple),
+    }
+
+    config = (
+        PPOConfig()
+        .api_stack(
+            enable_rl_module_and_learner=False,
+            enable_env_runner_and_connector_v2=False,
+        )
+        .environment(
+            env=SpecEnv,
+            env_config=env_config,
+        )
+        .env_runners(
+            num_env_runners=1,
+            num_envs_per_env_runner=1,
+        )
+        .training(
+            lr=train_config["lr"],
+            train_batch_size=train_config["train_batch_size"],
+            gamma=train_config["gamma"],
+            model={
+                "custom_model": "SpecRLHiModel",
+                "custom_model_config": {
+                    "seq_size": train_config["seq_size"],
+                    "num_inputs": train_config["num_inputs"],
+                    "action_to_tuple": action_to_tuple,
+                    "hidden_dim": train_config["hidden_dim"],
+                    "use_dict_obs": True,
+                    "instruction_embed_dim": 64,
+                    "trace_embed_dim": 32,
+                    "ar_embed_dim": 64,
+                    "head_hidden": 128,
+                },
+                "_disable_preprocessor_api": True,
+            },
+        )
+        .resources(num_gpus=0)
+    )
+
+    use_wandb = not args.specrl_no_wandb
+    if use_wandb:
+        import wandb
+        wandb.init(
+            project=args.specrl_wandb_project,
+            name=args.specrl_wandb_run,
+            config=train_config,
+        )
+
+    algo = config.build()
+    print(algo.get_policy().model)
+
+
+    try:
+        for i in range(1):
+            result = algo.train()
+            learner_info = result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {})
+            print_res = {
+                "episode_reward_mean": result.get("episode_reward_mean"),
+                "episodes_total": result.get("episodes_total"),
+                "training_iteration": result.get("training_iteration"),
+                "policy_loss": learner_info.get("policy_loss"),
+            }
+            pprint(print_res)
+
+            if use_wandb:
+                wandb_log = {
+                    "train/episode_reward_mean": result.get("episode_reward_mean"),
+                    "train/episodes_total": result.get("episodes_total"),
+                    "train/iter": result.get("training_iteration", i),
+                }
+                if learner_info.get("policy_loss") is not None:
+                    wandb_log["train/policy_loss"] = learner_info["policy_loss"]
+                if learner_info.get("vf_loss") is not None:
+                    wandb_log["train/vf_loss"] = learner_info["vf_loss"]
+                if learner_info.get("entropy") is not None:
+                    wandb_log["train/entropy"] = learner_info["entropy"]
+                wandb.log(wandb_log)
+
+            if i > 0 and i % 10 == 0:
+                checkpoint_result = algo.save()
+                path = getattr(checkpoint_result, "path", None) or getattr(checkpoint_result, "location", None)
+                checkpoint_path = str(path) if path is not None else str(checkpoint_result)
+                print(f"Iteration {i}: Checkpoint saved at {checkpoint_path}")
+                if use_wandb:
+                    wandb.log({"checkpoint_saved_at_iter": i})
+                    wandb.run.summary["last_checkpoint_dir"] = checkpoint_path
+
+    except KeyboardInterrupt:
+        print("Training interrupted by user.")
+    finally:
+        if use_wandb:
+            wandb.finish()
+        algo.stop()
+        ray.shutdown()

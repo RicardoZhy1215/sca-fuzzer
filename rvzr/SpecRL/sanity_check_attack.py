@@ -59,7 +59,6 @@ unique_instruction_names = set(spec.name.lower() for spec in instruction_set.ins
 opcode_vocab = list(unique_instruction_names)
 reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
 
-
 # regs = ["rax", "rbx", "rcx", "rdx"]
 # for dst in regs:
 #     for src in regs:
