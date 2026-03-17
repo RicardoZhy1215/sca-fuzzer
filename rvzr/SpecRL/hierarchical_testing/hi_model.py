@@ -180,13 +180,6 @@ class ObsEncoder(nn.Module):
        return row.mean(dim=1)
 
 
-
-
-# ---------------------------------------------------------------------------
-# AutoregressiveInstructionHead: mini-AlphaStar style, opcode -> reg_src -> reg_dst -> imm
-# ---------------------------------------------------------------------------
-
-
 def _normalize_reg(reg_name: str) -> str:
    m = {
        "eax": "rax", "ax": "rax", "al": "rax", "ah": "rax",

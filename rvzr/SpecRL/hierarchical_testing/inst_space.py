@@ -1,22 +1,13 @@
-"""
-Hierarchical instruction space: opcode + dst_reg + src_reg + imm.
-Combines action masking with autoregressive action structure.
-"""
-
 # Vocabulary
 OPERAND_SPACE = ["mov", "add", "mul", "xor", "cmp", "sbb"]
 DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
 SRC_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
-IMMS_SPACE = ["0", "1", "2", "3", "4", "5", "6", "7"]
+IMMS_SPACE = ["0", "1", "2", "3", "4", "5", "6", "7"] #todo: need to extend the IMM Space based on the Sandbox area.
 
 # Index 0 = empty/N/A for regs and imm
 EMPTY_REG_ID = 0
 EMPTY_IMM_ID = 0
 
-# Opcode operand spec: required | optional | forbidden
-# required: must have value (no empty)
-# optional: can be empty or have value
-# forbidden: must be empty
 OPCODE_OPERAND_SPEC = {
     "mov": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
     "add": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
@@ -122,54 +113,54 @@ def compute_flat_action_mask(action_to_tuple: list) -> list:
     return [is_action_legal(o, rs, rd, imm) for o, rs, rd, imm in action_to_tuple]
 
 
-def get_opcode_mask() -> list:
-    """Mask for opcode step: all opcodes + end_game are allowed."""
-    return [True] * (len(OPERAND_SPACE) + 1)
+# def get_opcode_mask() -> list:
+#     """Mask for opcode step: all opcodes + end_game are allowed."""
+#     return [True] * (len(OPERAND_SPACE) + 1)
 
 
-def get_reg_src_mask(opcode_id: int) -> list:
-    """Mask for reg_src given opcode_id. Length = n_regs + 1 (empty)."""
-    n_reg = len(SRC_REGS_SPACE)
-    if opcode_id == 0:
-        return [True] + [False] * n_reg
-    opcode_name = OPERAND_SPACE[opcode_id - 1]
-    spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
-    src_req = spec.get("src_reg", "optional")
-    if src_req == "required":
-        return [False] + [True] * n_reg
-    if src_req == "forbidden":
-        return [True] + [False] * n_reg
-    return [True] * (n_reg + 1)
+# def get_reg_src_mask(opcode_id: int) -> list:
+#     """Mask for reg_src given opcode_id. Length = n_regs + 1 (empty)."""
+#     n_reg = len(SRC_REGS_SPACE)
+#     if opcode_id == 0:
+#         return [True] + [False] * n_reg
+#     opcode_name = OPERAND_SPACE[opcode_id - 1]
+#     spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
+#     src_req = spec.get("src_reg", "optional")
+#     if src_req == "required":
+#         return [False] + [True] * n_reg
+#     if src_req == "forbidden":
+#         return [True] + [False] * n_reg
+#     return [True] * (n_reg + 1)
 
 
-def get_reg_dst_mask(opcode_id: int) -> list:
-    """Mask for reg_dst given opcode_id."""
-    n_reg = len(DST_REGS_SPACE)
-    if opcode_id == 0:
-        return [True] + [False] * n_reg
-    opcode_name = OPERAND_SPACE[opcode_id - 1]
-    spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
-    dst_req = spec.get("dst_reg", "optional")
-    if dst_req == "required":
-        return [False] + [True] * n_reg
-    if dst_req == "forbidden":
-        return [True] + [False] * n_reg
-    return [True] * (n_reg + 1)
+# def get_reg_dst_mask(opcode_id: int) -> list:
+#     """Mask for reg_dst given opcode_id."""
+#     n_reg = len(DST_REGS_SPACE)
+#     if opcode_id == 0:
+#         return [True] + [False] * n_reg
+#     opcode_name = OPERAND_SPACE[opcode_id - 1]
+#     spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
+#     dst_req = spec.get("dst_reg", "optional")
+#     if dst_req == "required":
+#         return [False] + [True] * n_reg
+#     if dst_req == "forbidden":
+#         return [True] + [False] * n_reg
+#     return [True] * (n_reg + 1)
 
 
-def get_imm_mask(opcode_id: int) -> list:
-    """Mask for imm given opcode_id. Length = n_imm + 1 (empty)."""
-    n_imm = len(IMMS_SPACE)
-    if opcode_id == 0:
-        return [True] + [False] * n_imm
-    opcode_name = OPERAND_SPACE[opcode_id - 1]
-    spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
-    imm_req = spec.get("imm", "optional")
-    if imm_req == "required":
-        return [False] + [True] * n_imm
-    if imm_req == "forbidden":
-        return [True] + [False] * n_imm
-    return [True] * (n_imm + 1)
+# def get_imm_mask(opcode_id: int) -> list:
+#     """Mask for imm given opcode_id. Length = n_imm + 1 (empty)."""
+#     n_imm = len(IMMS_SPACE)
+#     if opcode_id == 0:
+#         return [True] + [False] * n_imm
+#     opcode_name = OPERAND_SPACE[opcode_id - 1]
+#     spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
+#     imm_req = spec.get("imm", "optional")
+#     if imm_req == "required":
+#         return [False] + [True] * n_imm
+#     if imm_req == "forbidden":
+#         return [True] + [False] * n_imm
+#     return [True] * (n_imm + 1)
 
 
 def build_action_to_tuple_masked() -> tuple:

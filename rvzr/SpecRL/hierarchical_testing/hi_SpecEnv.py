@@ -79,6 +79,7 @@ class SpecEnv(gym.Env):
     counter: int
     step_counter: int
     succ_step_counter: int
+    end_game_counter: int
 
     bin_path = "my_test_case.o"
     asm_path = "my_test_case.asm"
@@ -90,6 +91,7 @@ class SpecEnv(gym.Env):
         self.counter = 0
         self.step_counter = 0
         self.succ_step_counter = 0
+        self.end_game_counter = 0
 
         # Hierarchical mode: action_to_tuple instead of instruction_space
         if "action_to_tuple" in env_config:
@@ -191,6 +193,9 @@ class SpecEnv(gym.Env):
     def step(self, action):
         end = action == self.end_game
         truncate = self.num_steps >= self.max_steps
+        if end:
+            self.end_game_counter += 1
+            print(f"NUMBER OF END_GAME: {self.end_game_counter}")
         if not end and not truncate:
             if self._use_hierarchical:
                 o, rs, rd, imm = self._action_to_tuple[action]
@@ -233,7 +238,7 @@ class SpecEnv(gym.Env):
         step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
-        return step_obs, step_reward, end, truncate, {"program": self.new_program}
+        return step_obs, step_reward, end, truncate, {"program": self.new_program, "end_game_count": self.end_game_counter}
 
 
     """
