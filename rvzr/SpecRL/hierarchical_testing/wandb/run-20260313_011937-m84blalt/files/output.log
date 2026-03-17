@@ -1,0 +1,122 @@
+2026-03-13 01:19:38,449	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=143195)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 308, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=143195)[0m
+[36m(RolloutWorker pid=143195)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 637158
+[36m(RolloutWorker pid=143195)[0m
+[36m(RolloutWorker pid=143195)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=143195)[0m
+[36m(RolloutWorker pid=143195)[0m Sandbox Base Address and Code Base Address (base 10): (18403379310434594816, 18403379310415859712)
+[36m(RolloutWorker pid=143195)[0m
+[36m(RolloutWorker pid=143195)[0m 2026-03-13 01:19:42,907	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 308, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 531079
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18403379310434594816, 18403379310415859712)
+2026-03-13 01:19:45,764	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 124, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 290, in _setup
+    self._local_env_runner = self._make_worker(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 1271, in _make_worker
+    return self.env_runner_cls(**kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 518, in __init__
+    self._update_policy_map(policy_dict=self.policy_dict)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1728, in _update_policy_map
+    self._build_policy_map(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1832, in _build_policy_map
+    new_policy = create_policy_for_framework(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/policy.py", line 108, in create_policy_for_framework
+    return policy_class(observation_space, action_space, merged_config)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 49, in __init__
+    TorchPolicyV2.__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/policy/torch_policy_v2.py", line 150, in __init__
+    self.model_gpu_towers.append(model_copy.to(self.devices[i]))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1369, in to
+    return self._apply(convert)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 955, in _apply
+    param_applied = fn(param)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1355, in convert
+    return t.to(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/cuda/__init__.py", line 412, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero.
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 124, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 290, in _setup
+    self._local_env_runner = self._make_worker(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 1271, in _make_worker
+    return self.env_runner_cls(**kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 518, in __init__
+    self._update_policy_map(policy_dict=self.policy_dict)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1728, in _update_policy_map
+    self._build_policy_map(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1832, in _build_policy_map
+    new_policy = create_policy_for_framework(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/policy.py", line 108, in create_policy_for_framework
+    return policy_class(observation_space, action_space, merged_config)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 49, in __init__
+    TorchPolicyV2.__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/policy/torch_policy_v2.py", line 150, in __init__
+    self.model_gpu_towers.append(model_copy.to(self.devices[i]))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1369, in to
+    return self._apply(convert)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 955, in _apply
+    param_applied = fn(param)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1355, in convert
+    return t.to(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/torch/cuda/__init__.py", line 412, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero.

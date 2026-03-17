@@ -1,0 +1,23 @@
+{
+  "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
+  "python": "CPython 3.9.25",
+  "startedAt": "2026-03-12T17:52:02.451597Z",
+  "args": [
+    "--specrl-wandb-project",
+    "my-specrl",
+    "--specrl-wandb-run",
+    "exp1"
+  ],
+  "program": "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py",
+  "codePath": "rvzr/SpecRL/hierarchical_testing/train.py",
+  "codePathLocal": "train.py",
+  "git": {
+    "remote": "git@github.com:RicardoZhy1215/sca-fuzzer.git",
+    "commit": "410aa92170ffbaa95240c4f30b1970c9f65b4b15"
+  },
+  "email": "hz25d@fsu.edu",
+  "root": "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing",
+  "host": "mluo-Precision-7960-Tower",
+  "executable": "/home/hz25d/miniconda3/envs/specrl/bin/python",
+  "writerId": "okd8e3vl5sz84ieoc6yj65si5bhtfwya"
+}

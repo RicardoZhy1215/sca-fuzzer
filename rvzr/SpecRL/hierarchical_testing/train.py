@@ -21,6 +21,7 @@ from pprint import pprint
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.utils.test_utils import add_rllib_example_script_args
+from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
 from hi_SpecEnv import SpecEnv
 from hi_model import register_specrl_hi_model, build_action_to_tuple
@@ -31,6 +32,19 @@ parser = add_rllib_example_script_args(
 parser.add_argument("--specrl-wandb-project", type=str, default="SpecRL-hierarchical", help="Wandb project name")
 parser.add_argument("--specrl-wandb-run", type=str, default=None, help="Wandb run name")
 parser.add_argument("--specrl-no-wandb", action="store_true", help="Disable wandb logging")
+
+
+class SpecRLCallbacks(DefaultCallbacks):
+    """Add end_game_count and step counters to custom_metrics for logging."""
+
+    def on_episode_end(self, *, episode, env=None, **kwargs):
+        if env is not None and hasattr(env, "end_game_counter"):
+            episode.custom_metrics["end_game_count"] = env.end_game_counter
+        if env is not None and hasattr(env, "step_counter"):
+            episode.custom_metrics["step_counter"] = env.step_counter
+        if env is not None and hasattr(env, "succ_step_counter"):
+            episode.custom_metrics["succ_step_counter"] = env.succ_step_counter
+
 
 # Hierarchical action space: (opcode, reg_src, reg_dst, imm) from inst_space
 action_to_tuple = build_action_to_tuple()
@@ -70,7 +84,11 @@ if __name__ == "__main__":
         .env_runners(
             num_env_runners=1,
             num_envs_per_env_runner=1,
+            # SpecEnv is slow (assembly, execution, trace analysis per step)
+            sample_timeout_s=7200,
+            rollout_fragment_length=16,
         )
+        .callbacks(SpecRLCallbacks)
         .training(
             lr=train_config["lr"],
             train_batch_size=train_config["train_batch_size"],
@@ -91,7 +109,7 @@ if __name__ == "__main__":
                 "_disable_preprocessor_api": True,
             },
         )
-        .resources(num_gpus=0)
+        .resources(num_gpus=1)
     )
 
     use_wandb = not args.specrl_no_wandb
@@ -108,21 +126,28 @@ if __name__ == "__main__":
 
 
     try:
-        for i in range(1):
+        for i in range(10):
             result = algo.train()
             learner_info = result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {})
+            env_runners = result.get("env_runners", {})
+            custom_metrics = result.get("custom_metrics", {})
+            # RLlib 2.x: episode stats under env_runners, top-level keys may be None
+            ep_reward = result.get("episode_reward_mean") or env_runners.get("episode_return_mean") or env_runners.get("episode_reward_mean")
+            ep_total = result.get("episodes_total") or env_runners.get("num_episodes", 0)
             print_res = {
-                "episode_reward_mean": result.get("episode_reward_mean"),
-                "episodes_total": result.get("episodes_total"),
+                "episode_reward_mean": ep_reward,
+                "episodes_total": ep_total,
                 "training_iteration": result.get("training_iteration"),
                 "policy_loss": learner_info.get("policy_loss"),
+                "end_game_count": custom_metrics.get("end_game_count"),
+                "num_env_steps_sampled": result.get("num_env_steps_sampled") or result.get("info", {}).get("num_env_steps_sampled"),
             }
             pprint(print_res)
 
             if use_wandb:
                 wandb_log = {
-                    "train/episode_reward_mean": result.get("episode_reward_mean"),
-                    "train/episodes_total": result.get("episodes_total"),
+                    "train/episode_reward_mean": ep_reward,
+                    "train/episodes_total": ep_total,
                     "train/iter": result.get("training_iteration", i),
                 }
                 if learner_info.get("policy_loss") is not None:
@@ -131,6 +156,8 @@ if __name__ == "__main__":
                     wandb_log["train/vf_loss"] = learner_info["vf_loss"]
                 if learner_info.get("entropy") is not None:
                     wandb_log["train/entropy"] = learner_info["entropy"]
+                if custom_metrics.get("end_game_count") is not None:
+                    wandb_log["train/end_game_count"] = custom_metrics["end_game_count"]
                 wandb.log(wandb_log)
 
             if i > 0 and i % 10 == 0:
