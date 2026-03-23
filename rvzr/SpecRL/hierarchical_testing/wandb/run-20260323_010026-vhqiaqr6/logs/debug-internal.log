@@ -1,0 +1,62 @@
+{"time":"2026-03-23T01:00:26.939363128-04:00","level":"INFO","msg":"wandb-core"}
+{"time":"2026-03-23T01:00:26.940174883-04:00","level":"INFO","msg":"stream: starting","core version":"0.25.1"}
+{"time":"2026-03-23T01:00:27.049668895-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:00:29.429953285-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:00:33.805901816-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:00:43.449608683-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:01:02.728209776-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:01:41.612514012-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:02:41.616443981-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:03:41.64605589-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": Forbidden"}
+{"time":"2026-03-23T01:04:41.646683252-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:05:41.647907835-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:06:41.649041539-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:07:41.650460876-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:08:41.651590493-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:09:41.652871991-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:10:41.654365174-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:11:41.655439583-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:12:41.65622131-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:13:41.65720454-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:14:41.659115087-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:15:41.660730412-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:41.662119249-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:41.662290319-04:00","level":"ERROR","msg":"featurechecker: failed to load features, all will be disabled","error":"POST https://api.wandb.ai/graphql giving up after 21 attempt(s): Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:41.662365603-04:00","level":"INFO","msg":"stream: created new stream","id":"vhqiaqr6"}
+{"time":"2026-03-23T01:16:41.662423344-04:00","level":"INFO","msg":"handler: started"}
+{"time":"2026-03-23T01:16:41.6625735-04:00","level":"INFO","msg":"stream: started"}
+{"time":"2026-03-23T01:16:41.662660258-04:00","level":"INFO","msg":"sender: started"}
+{"time":"2026-03-23T01:16:41.662678236-04:00","level":"INFO","msg":"stream: closing"}
+{"time":"2026-03-23T01:16:41.662670366-04:00","level":"INFO","msg":"writer: started","stream_id":"vhqiaqr6"}
+{"time":"2026-03-23T01:16:41.663573287-04:00","level":"WARN","msg":"runupserter: server does not expand metric globs but the x_server_side_expand_glob_metrics setting is set; ignoring"}
+{"time":"2026-03-23T01:16:41.664378222-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:43.994764078-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:48.827995831-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:16:58.593161498-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:17:15.325615102-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:17:48.11064703-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:18:48.11145415-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:19:48.112335055-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:20:48.114262833-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:21:48.116187891-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:22:48.117364507-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:23:48.118518524-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:24:48.119800518-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:25:48.121178755-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:26:41.663830358-04:00","level":"WARN","msg":"sender: taking a long time","seconds":600.000509873,"work":"RunUpdateWork; Control(mailbox_slot:\"ne84ro0gbfiw\" connection_id:\"1(@)\")"}
+{"time":"2026-03-23T01:26:48.122292235-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:27:48.12404369-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:28:48.125999633-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:29:48.127078895-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:30:48.128571211-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:31:48.129500483-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:32:48.131146362-04:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:32:48.131309317-04:00","level":"ERROR","msg":"runupserter: failed to init run","error":"POST https://api.wandb.ai/graphql giving up after 21 attempt(s): Post \"https://api.wandb.ai/graphql\": proxyconnect tcp: dial tcp 127.0.0.1:46397: connect: connection refused"}
+{"time":"2026-03-23T01:32:48.131479542-04:00","level":"INFO","msg":"sender: succeeded after taking longer than expected","seconds":966.468185172,"work":"RunUpdateWork; Control(mailbox_slot:\"ne84ro0gbfiw\" connection_id:\"1(@)\")"}
+{"time":"2026-03-23T01:32:48.131568404-04:00","level":"ERROR","msg":"sender: uploadConfigFile: runhandle: run not yet initialized"}
+{"time":"2026-03-23T01:32:48.132661858-04:00","level":"ERROR","msg":"runfiles: runhandle: run not yet initialized"}
+{"time":"2026-03-23T01:32:48.132963174-04:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-23T01:32:48.132994502-04:00","level":"INFO","msg":"handler: closed"}
+{"time":"2026-03-23T01:32:48.13304192-04:00","level":"INFO","msg":"sender: closed"}
+{"time":"2026-03-23T01:32:48.13304783-04:00","level":"INFO","msg":"stream: closed"}
+{"time":"2026-03-23T01:32:48.141238511-04:00","level":"ERROR","msg":"stream: runURL: runhandle: run not yet initialized"}

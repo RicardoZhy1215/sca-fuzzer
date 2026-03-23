@@ -93,24 +93,17 @@ class SpecEnv(gym.Env):
         self.succ_step_counter = 0
         self.end_game_counter = 0
 
-        # Hierarchical mode: action_to_tuple instead of instruction_space
-        if "action_to_tuple" in env_config:
-            self._action_to_tuple = env_config["action_to_tuple"]
-            self.end_game = len(self._action_to_tuple) - 1
-            self.action_space = spaces.Discrete(len(self._action_to_tuple))
-            self._use_hierarchical = True
-            from inst_space import tuple_to_instruction
-            self._tuple_to_instruction = tuple_to_instruction
-            self.instruction_space = [
-                Instruction("mov", False, "", False)
-                .add_op(RegisterOp("rax", 64, False, True))
-                .add_op(RegisterOp("rbx", 64, True, False))
-            ]
-        else:
-            self.instruction_space = env_config["instruction_space"]
-            self.end_game = len(self.instruction_space)
-            self.action_space = spaces.Discrete(len(self.instruction_space) + 1)
-            self._use_hierarchical = False
+        # Hierarchical tuple: action = (opcode, reg_src, reg_dst, imm)
+        from hi_model import get_hierarchical_action_space
+        from inst_space import tuple_to_instruction
+        self.action_space = get_hierarchical_action_space()
+        self._tuple_to_instruction = tuple_to_instruction
+        self.end_game = (0, 0, 0, 0)
+        self.instruction_space = [
+            Instruction("mov", False, "", False)
+            .add_op(RegisterOp("rax", 64, False, True))
+            .add_op(RegisterOp("rbx", 64, True, False))
+        ]
 
         self.num_steps = 0
         self.max_steps = self.seq_size
@@ -137,9 +130,10 @@ class SpecEnv(gym.Env):
         min_address = np.iinfo(np.int64).min # need to figure out what's going on with htrace/ctrace addresses, as base_address and htrace addresses don't match
         max_address = np.iinfo(np.int64).max # so for now just giving (h/c)traces the set {-1, 0, 1, 2...}
         self.max_trace_len = self.seq_size * self.num_inputs
+        instr_high = 500
         self.observation_space = spaces.Dict(
             {
-                "instruction": spaces.Box(low = -1, high = len(self._action_to_tuple) + 1, shape = (self.seq_size, 4), dtype=np.int64),
+                "instruction": spaces.Box(low = -1, high = instr_high, shape = (self.seq_size, 4), dtype=np.int64),
                 # "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 # "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
@@ -191,20 +185,20 @@ class SpecEnv(gym.Env):
     most of the logic is implemented in _get_obs, _reward, etc...
     """
     def step(self, action):
-        end = action == self.end_game
+        # action = (opcode, reg_src, reg_dst, imm)
+        parts = (action[0], action[1], action[2], action[3]) if isinstance(action, (tuple, list)) else action
+        o = int(parts[0].item() if hasattr(parts[0], "item") else parts[0])
+        rs = int(parts[1].item() if hasattr(parts[1], "item") else parts[1])
+        rd = int(parts[2].item() if hasattr(parts[2], "item") else parts[2])
+        imm = int(parts[3].item() if hasattr(parts[3], "item") else parts[3])
+        end = (o, rs, rd, imm) == (0, 0, 0, 0)
+        inst_action = self._tuple_to_instruction(o, rs, rd, imm) if not end else None
+
         truncate = self.num_steps >= self.max_steps
         if end:
             self.end_game_counter += 1
             print(f"NUMBER OF END_GAME: {self.end_game_counter}")
-        if not end and not truncate:
-            if self._use_hierarchical:
-                o, rs, rd, imm = self._action_to_tuple[action]
-                inst_action = self._tuple_to_instruction(o, rs, rd, imm)
-                # if inst_action is None:
-                #     step_obs = self._get_obs()
-                #     return step_obs, -20, end, truncate, {"program": self.new_program}
-            else:
-                inst_action = self.instruction_space[action]
+        if not end and not truncate and inst_action is not None:
 
             self.step_counter += 1
             print(f"NUMBER OF STEPS: {self.step_counter}")

@@ -1,5 +1,5 @@
 """
-Train SpecRLHiModel (hierarchical action space).
+Train SpecRL with hierarchical tuple action: (opcode, reg_src, reg_dst, imm).
 Run from SpecRL: python hierarchical_testing/train.py
 Or from hierarchical_testing: python train.py
 
@@ -24,7 +24,7 @@ from ray.rllib.utils.test_utils import add_rllib_example_script_args
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
 from hi_SpecEnv import SpecEnv
-from hi_model import register_specrl_hi_model, build_action_to_tuple
+from hi_model import register_specrl_hierarchical_model
 
 parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=50, default_timesteps=100000
@@ -46,12 +46,7 @@ class SpecRLCallbacks(DefaultCallbacks):
             episode.custom_metrics["succ_step_counter"] = env.succ_step_counter
 
 
-# Hierarchical action space: (opcode, reg_src, reg_dst, imm) from inst_space
-action_to_tuple = build_action_to_tuple()
-print(f"Hierarchical action space size: {len(action_to_tuple)}")
-
 env_config = {
-    "action_to_tuple": action_to_tuple,
     "sequence_size": 50,
     "num_inputs": 20,
 }
@@ -59,7 +54,7 @@ env_config = {
 if __name__ == "__main__":
     args = parser.parse_args()
     ray.init()
-    register_specrl_hi_model()
+    register_specrl_hierarchical_model()
 
     train_config = {
         "lr": 5e-5,
@@ -68,7 +63,22 @@ if __name__ == "__main__":
         "seq_size": 50,
         "num_inputs": 20,
         "hidden_dim": 256,
-        "action_space_size": len(action_to_tuple),
+    }
+
+    model_config = {
+        "custom_model": "SpecRLHierarchicalModel",
+        "custom_model_config": {
+            "seq_size": train_config["seq_size"],
+            "num_inputs": train_config["num_inputs"],
+            "hidden_dim": train_config["hidden_dim"],
+            "use_dict_obs": True,
+            "instruction_embed_dim": 64,
+            "trace_embed_dim": 32,
+            "ar_embed_dim": 64,
+            "head_hidden": 128,
+        },
+        "custom_action_dist": "TorchHierarchicalAutoregressiveDistribution",
+        "_disable_preprocessor_api": True,
     }
 
     config = (
@@ -84,7 +94,6 @@ if __name__ == "__main__":
         .env_runners(
             num_env_runners=1,
             num_envs_per_env_runner=1,
-            # SpecEnv is slow (assembly, execution, trace analysis per step)
             sample_timeout_s=7200,
             rollout_fragment_length=16,
         )
@@ -93,21 +102,7 @@ if __name__ == "__main__":
             lr=train_config["lr"],
             train_batch_size=train_config["train_batch_size"],
             gamma=train_config["gamma"],
-            model={
-                "custom_model": "SpecRLHiModel",
-                "custom_model_config": {
-                    "seq_size": train_config["seq_size"],
-                    "num_inputs": train_config["num_inputs"],
-                    "action_to_tuple": action_to_tuple,
-                    "hidden_dim": train_config["hidden_dim"],
-                    "use_dict_obs": True,
-                    "instruction_embed_dim": 64,
-                    "trace_embed_dim": 32,
-                    "ar_embed_dim": 64,
-                    "head_hidden": 128,
-                },
-                "_disable_preprocessor_api": True,
-            },
+            model=model_config,
         )
         .resources(num_gpus=1)
     )
