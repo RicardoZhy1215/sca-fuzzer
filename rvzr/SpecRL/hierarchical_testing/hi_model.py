@@ -92,7 +92,7 @@ class ObsEncoder(nn.Module):
                     opcode_size + 2,
                     reg_size + 2,
                     reg_size + 2,
-                    4,
+                    8,
                 ]
             self.instr_embeds = nn.ModuleList([
                 nn.Embedding(max(2, s), instruction_embed_dim, padding_idx=0)
@@ -241,7 +241,7 @@ class HierarchicalActionHead(nn.Module):
         mask_t = torch.tensor(mask, dtype=torch.bool, device=device)
         if mask_t.dim() == 1:
             mask_t = mask_t.unsqueeze(0).expand(logits.shape[0], -1)
-        return logits.masked_fill(~mask_t, float("-inf"))
+        return logits.masked_fill(~mask_t, -1e9)
 
     def forward_logits(
         self,
@@ -301,18 +301,31 @@ class HierarchicalActionHead(nn.Module):
         deterministic: bool = False,
         return_logits: bool = True,
     ) -> dict:
+
         B = features.shape[0]
         device = features.device
 
         log_probs = []
         entropies = []
         all_logits = {}
-
+        # if torch.isnan(features).any():
+        #     raise ValueError("CRITICAL: Input features contain NaN! Check your Observation scaling.")
         opcode_logits = self.opcode_head(features)
         opcode_logits = self._apply_mask(opcode_logits, get_opcode_mask(), device)
         all_logits["opcode"] = opcode_logits
         opcode_logp = F.log_softmax(opcode_logits, dim=-1)
         opcode_probs = opcode_logp.exp()
+
+        for name, p in self.opcode_head.named_parameters():
+            if torch.isnan(p).any() or torch.isinf(p).any():
+                print(f"!!! FOUND IT: {name} in opcode_head is {p.max()} (NaN/Inf)")
+
+        # --- 检查当前的 Logits ---
+        opcode_logits = self.opcode_head(features)
+        print(f"Opcode Logits - Max: {opcode_logits.max().item()}, Min: {opcode_logits.min().item()}")
+
+        # --- 检查 Probs ---
+        print(f"Opcode Probs NaN: {torch.isnan(opcode_probs).any()}")
 
         if deterministic:
             opcode_id = opcode_probs.argmax(dim=-1)
@@ -356,6 +369,10 @@ class HierarchicalActionHead(nn.Module):
         all_logits["reg_dst"] = reg_dst_logits
         reg_dst_logp = F.log_softmax(reg_dst_logits, dim=-1)
         reg_dst_probs = reg_dst_logp.exp()
+        if torch.isnan(reg_src_probs).any():
+            print(f"WARNING: reg_src_probs is NaN. Forcing uniform distribution.")
+            reg_src_probs = torch.ones_like(reg_src_probs) / reg_src_probs.size(-1)
+
         if deterministic:
             reg_dst_id = reg_dst_probs.argmax(dim=-1)
         else:
@@ -533,6 +550,7 @@ class SpecRLHierarchicalModel(TorchModelV2, nn.Module):
             )
             enc_dim = self.encoder.encoder_out_dim
         else:
+            print("WARNING: Using flat backbone without ObsEncoder. Make sure your observations are properly flattened and scaled!")
             self.encoder = None
             enc_dim = hidden_dim
 

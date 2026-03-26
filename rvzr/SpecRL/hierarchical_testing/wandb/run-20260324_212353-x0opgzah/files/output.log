@@ -1,0 +1,169 @@
+2026-03-24 21:23:55,239	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=2033817)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 775991
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=2033817)[0m 2026-03-24 21:23:59,135	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m WARNING: Using flat backbone without ObsEncoder. Make sure your observations are properly flattened and scaled!
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=2033817)[0m /home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/torch_utils.py:372: UserWarning: var(): degrees of freedom is <= 0. Correction should be strictly less than the reduction factor (input numel divided by output numel). (Triggered internally at /pytorch/aten/src/ATen/native/ReduceOps.cpp:1839.)
+[36m(RolloutWorker pid=2033817)[0m   y_var = torch.var(squeezed_y, dim=0)
+[36m(RolloutWorker pid=2033817)[0m /home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/torch_utils.py:373: UserWarning: var(): degrees of freedom is <= 0. Correction should be strictly less than the reduction factor (input numel divided by output numel). (Triggered internally at /pytorch/aten/src/ATen/native/ReduceOps.cpp:1839.)
+[36m(RolloutWorker pid=2033817)[0m   diff_var = torch.var(squeezed_y - pred.squeeze(), dim=0)
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 654063
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+
+WARNING: Using flat backbone without ObsEncoder. Make sure your observations are properly flattened and scaled!
+2026-03-24 21:24:00,995	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/torch_utils.py:372: UserWarning: var(): degrees of freedom is <= 0. Correction should be strictly less than the reduction factor (input numel divided by output numel). (Triggered internally at /pytorch/aten/src/ATen/native/ReduceOps.cpp:1839.)
+  y_var = torch.var(squeezed_y, dim=0)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/torch_utils.py:373: UserWarning: var(): degrees of freedom is <= 0. Correction should be strictly less than the reduction factor (input numel divided by output numel). (Triggered internally at /pytorch/aten/src/ATen/native/ReduceOps.cpp:1839.)
+  diff_var = torch.var(squeezed_y - pred.squeeze(), dim=0)
+2026-03-24 21:24:01,822	WARNING util.py:61 -- Install gputil for GPU system monitoring.
+SpecRLHierarchicalModel(
+  (flat_backbone): Sequential(
+    (0): Linear(in_features=4200, out_features=256, bias=True)
+    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (2): ReLU()
+    (3): Linear(in_features=256, out_features=256, bias=True)
+    (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (5): ReLU()
+  )
+  (hierarchical_head): HierarchicalActionHead(
+    (opcode_embed): Embedding(7, 64, padding_idx=0)
+    (reg_embed): Embedding(7, 64, padding_idx=0)
+    (imm_embed): Embedding(9, 64, padding_idx=0)
+    (opcode_head): Sequential(
+      (0): Linear(in_features=256, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_src_head): Sequential(
+      (0): Linear(in_features=320, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_dst_head): Sequential(
+      (0): Linear(in_features=384, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (imm_head): Sequential(
+      (0): Linear(in_features=448, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=9, bias=True)
+    )
+  )
+  (value_head): Linear(in_features=256, out_features=1, bias=True)
+)
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=2033817)[0m NUMBER OF END_GAME: 1
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m program:
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 89209
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=2033817)[0m total instructions in program:  2
+[36m(RolloutWorker pid=2033817)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add dl, -117 # instrumentation']
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m INFO: [fuzzer] Starting at 21:24:03
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m Test Cases: 1
+[36m(RolloutWorker pid=2033817)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=2033817)[0m Violations: 0
+[36m(RolloutWorker pid=2033817)[0m Effectiveness:
+[36m(RolloutWorker pid=2033817)[0m   Total Cls: 0.0
+[36m(RolloutWorker pid=2033817)[0m   Effective Cls: 0.0
+[36m(RolloutWorker pid=2033817)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=2033817)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=2033817)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=2033817)[0m   Fast Path: 0
+[36m(RolloutWorker pid=2033817)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Priming Check: 0
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m Duration: 0.2
+[36m(RolloutWorker pid=2033817)[0m Finished at 21:24:03
+[36m(RolloutWorker pid=2033817)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=2033817)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=2033817)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=2033817)[0m reward: 19
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m NUMBER OF TEST CASES: 2
+[36m(RolloutWorker pid=2033817)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=2033817)[0m adding step mul [r14 + rsi]
+[36m(RolloutWorker pid=2033817)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#
+[36m(RolloutWorker pid=2033817)[0m program:
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m iteration 1 observations:
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 655561
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=2033817)[0m total instructions in program:  4
+[36m(RolloutWorker pid=2033817)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add cl, -59 # instrumentation', 'and rsi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rsi] ']
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m INFO: [fuzzer] Starting at 21:24:04
+1     ( 1%)| Stats: Cls:0/0,In:40,R:40,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=2033817)[0m run the fuzzing round
+2026-03-24 21:24:05,495	WARNING deprecation.py:50 -- DeprecationWarning: `ray.rllib.execution.train_ops.multi_gpu_train_one_step` has been deprecated. This will raise an error in the future!
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m Test Cases: 2
+[36m(RolloutWorker pid=2033817)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=2033817)[0m Violations: 0
+[36m(RolloutWorker pid=2033817)[0m Effectiveness:
+[36m(RolloutWorker pid=2033817)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=2033817)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=2033817)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=2033817)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=2033817)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=2033817)[0m   Fast Path: 1
+[36m(RolloutWorker pid=2033817)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=2033817)[0m   Priming Check: 0
+[36m(RolloutWorker pid=2033817)[0m
+[36m(RolloutWorker pid=2033817)[0m Duration: 0.5
+[36m(RolloutWorker pid=2033817)[0m Finished at 21:24:05
+[36m(RolloutWorker pid=2033817)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=2033817)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=2033817)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=2033817)[0m reward: 19
+[36m(RolloutWorker pid=2033817)[0m #=======================================================#

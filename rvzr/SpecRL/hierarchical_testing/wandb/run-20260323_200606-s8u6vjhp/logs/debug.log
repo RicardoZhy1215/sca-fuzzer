@@ -1,0 +1,24 @@
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_setup.py:_flush():81] Current SDK version is 0.25.1
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_setup.py:_flush():81] Configure stats pid to 1071882
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_init.py:setup_run_log_directory():717] Logging user logs to /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/wandb/run-20260323_200606-s8u6vjhp/logs/debug.log
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_init.py:setup_run_log_directory():718] Logging internal logs to /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/wandb/run-20260323_200606-s8u6vjhp/logs/debug-internal.log
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_init.py:init():844] calling init triggers
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_init.py:init():849] wandb.init called with sweep_config: {}
+config: {'lr': 5e-05, 'train_batch_size': 128, 'gamma': 0.99, 'seq_size': 50, 'num_inputs': 20, 'hidden_dim': 256, '_wandb': {}}
+2026-03-23 20:06:06,937 INFO    MainThread:1071882 [wandb_init.py:init():892] starting backend
+2026-03-23 20:06:07,178 INFO    MainThread:1071882 [wandb_init.py:init():895] sending inform_init request
+2026-03-23 20:06:07,205 INFO    MainThread:1071882 [wandb_init.py:init():903] backend started and connected
+2026-03-23 20:06:07,208 INFO    MainThread:1071882 [wandb_init.py:init():973] updated telemetry
+2026-03-23 20:06:07,230 INFO    MainThread:1071882 [wandb_init.py:init():997] communicating run to backend with 90.0 second timeout
+2026-03-23 20:06:07,832 INFO    MainThread:1071882 [wandb_init.py:init():1042] starting run threads in backend
+2026-03-23 20:06:07,912 INFO    MainThread:1071882 [wandb_run.py:_console_start():2524] atexit reg
+2026-03-23 20:06:07,912 INFO    MainThread:1071882 [wandb_run.py:_redirect():2373] redirect: wrap_raw
+2026-03-23 20:06:07,912 INFO    MainThread:1071882 [wandb_run.py:_redirect():2442] Wrapping output streams.
+2026-03-23 20:06:07,912 INFO    MainThread:1071882 [wandb_run.py:_redirect():2465] Redirects installed.
+2026-03-23 20:06:07,915 INFO    MainThread:1071882 [wandb_init.py:init():1082] run started, returning control to user process
+2026-03-23 20:29:40,672 INFO    MainThread:1071882 [wandb_run.py:_finish():2291] finishing run hz25d-florida-state-university/SpecRL-hierarchical/s8u6vjhp
+2026-03-23 20:29:40,673 INFO    MainThread:1071882 [wandb_run.py:_atexit_cleanup():2490] got exitcode: 0
+2026-03-23 20:29:40,673 INFO    MainThread:1071882 [wandb_run.py:_restore():2472] restore
+2026-03-23 20:29:40,673 INFO    MainThread:1071882 [wandb_run.py:_restore():2478] restore done
+2026-03-23 20:29:41,720 INFO    MainThread:1071882 [wandb_run.py:_footer_sync_info():3868] logging synced files

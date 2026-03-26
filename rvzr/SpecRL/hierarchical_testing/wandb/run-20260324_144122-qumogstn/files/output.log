@@ -1,0 +1,39 @@
+2026-03-24 14:41:23,263	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 134, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 470, in __init__
+    config.validate()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo.py", line 293, in validate
+    self.validate_train_batch_size_vs_rollout_fragment_length()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4324, in validate_train_batch_size_vs_rollout_fragment_length
+    self._value_error(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4815, in _value_error
+    raise ValueError(msg)
+ValueError: Your desired `total_train_batch_size` (4=0 learners x 4) or a value 10% off of that cannot be achieved with your other settings (num_env_runners=1; num_envs_per_env_runner=1; rollout_fragment_length=16)! Try setting `rollout_fragment_length` to 'auto' OR to a value of 4.
+To suppress all validation errors, set `config.experimental(_validate_config=False)` at your own risk.
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 134, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 470, in __init__
+    config.validate()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo.py", line 293, in validate
+    self.validate_train_batch_size_vs_rollout_fragment_length()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4324, in validate_train_batch_size_vs_rollout_fragment_length
+    self._value_error(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4815, in _value_error
+    raise ValueError(msg)
+ValueError: Your desired `total_train_batch_size` (4=0 learners x 4) or a value 10% off of that cannot be achieved with your other settings (num_env_runners=1; num_envs_per_env_runner=1; rollout_fragment_length=16)! Try setting `rollout_fragment_length` to 'auto' OR to a value of 4.
+To suppress all validation errors, set `config.experimental(_validate_config=False)` at your own risk.

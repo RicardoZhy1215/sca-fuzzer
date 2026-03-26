@@ -1,0 +1,65 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            2tt4yum3i35dd35jv293inqg7lph8lio:
+                codePath: rvzr/SpecRL/hierarchical_testing/train.py
+                codePathLocal: train.py
+                cpu_count: 12
+                cpu_count_logical: 24
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "2001491361792"
+                        used: "270558453760"
+                email: hz25d@fsu.edu
+                executable: /home/hz25d/miniconda3/envs/specrl/bin/python
+                git:
+                    commit: 216b1f441e35bed73548c25fa274096a0d5ff0a4
+                    remote: git@github.com:RicardoZhy1215/sca-fuzzer.git
+                gpu: NVIDIA RTX 6000 Ada Generation
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 18176
+                      memoryTotal: "51527024640"
+                      name: NVIDIA RTX 6000 Ada Generation
+                      uuid: GPU-a302c61e-1812-c6a6-6605-9beb2971aa55
+                host: mluo-Precision-7960-Tower
+                memory:
+                    total: "134269030400"
+                os: Linux-6.8.0-101-generic-x86_64-with-glibc2.35
+                program: /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py
+                python: CPython 3.9.25
+                root: /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing
+                startedAt: "2026-03-23T23:13:50.736027Z"
+                writerId: 2tt4yum3i35dd35jv293inqg7lph8lio
+        m: []
+        python_version: 3.9.25
+        t:
+            "1":
+                - 1
+                - 30
+            "2":
+                - 1
+                - 30
+            "3":
+                - 2
+                - 16
+                - 41
+            "4": 3.9.25
+            "5": 0.25.1
+            "12": 0.25.1
+            "13": linux-x86_64
+gamma:
+    value: 0.99
+hidden_dim:
+    value: 256
+lr:
+    value: 5e-05
+num_inputs:
+    value: 20
+seq_size:
+    value: 50
+train_batch_size:
+    value: 128

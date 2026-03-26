@@ -1,0 +1,110 @@
+2026-03-23 20:54:43,646	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=1169255)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=1169255)[0m
+[36m(RolloutWorker pid=1169255)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 711011
+[36m(RolloutWorker pid=1169255)[0m
+[36m(RolloutWorker pid=1169255)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=1169255)[0m 2026-03-23 20:54:47,493	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+[36m(RolloutWorker pid=1169255)[0m
+[36m(RolloutWorker pid=1169255)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=1169255)[0m
+2026-03-23 20:54:48,321	ERROR actor_manager.py:973 -- Ray error (The actor died because of an error raised in its creation task, [36mray::RolloutWorker.__init__()[39m (pid=1169255, ip=192.168.123.81, actor_id=e7786d7ab54a4dc87971135301000000, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x72e7b2f64550>)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 518, in __init__
+    self._update_policy_map(policy_dict=self.policy_dict)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1728, in _update_policy_map
+    self._build_policy_map(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1832, in _build_policy_map
+    new_policy = create_policy_for_framework(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/policy.py", line 108, in create_policy_for_framework
+    return policy_class(observation_space, action_space, merged_config)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 64, in __init__
+    self._initialize_loss_from_dummy_batch()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/policy/policy.py", line 1435, in _initialize_loss_from_dummy_batch
+    self.loss(self.model, self.dist_class, train_batch)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 112, in loss
+    curr_action_dist.logp(train_batch[SampleBatch.ACTIONS])
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 475, in logp
+    return self.model.hierarchical_head.forward_log_prob(
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 420, in forward_log_prob
+    logits = self.forward_logits(features, opcode_id, reg_src_id, reg_dst_id)
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 263, in forward_logits
+    print("opcode_mask shape:", opcode_mask.shape)
+AttributeError: 'list' object has no attribute 'shape'), taking actor 1 out of service.
+2026-03-23 20:54:48,321	ERROR env_runner_group.py:793 -- Validation of EnvRunner failed! Error=The actor died because of an error raised in its creation task, [36mray::RolloutWorker.__init__()[39m (pid=1169255, ip=192.168.123.81, actor_id=e7786d7ab54a4dc87971135301000000, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x72e7b2f64550>)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 518, in __init__
+    self._update_policy_map(policy_dict=self.policy_dict)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1728, in _update_policy_map
+    self._build_policy_map(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 1832, in _build_policy_map
+    new_policy = create_policy_for_framework(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/policy.py", line 108, in create_policy_for_framework
+    return policy_class(observation_space, action_space, merged_config)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 64, in __init__
+    self._initialize_loss_from_dummy_batch()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/policy/policy.py", line 1435, in _initialize_loss_from_dummy_batch
+    self.loss(self.model, self.dist_class, train_batch)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo_torch_policy.py", line 112, in loss
+    curr_action_dist.logp(train_batch[SampleBatch.ACTIONS])
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 475, in logp
+    return self.model.hierarchical_head.forward_log_prob(
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 420, in forward_log_prob
+    logits = self.forward_logits(features, opcode_id, reg_src_id, reg_dst_id)
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_model.py", line 263, in forward_logits
+    print("opcode_mask shape:", opcode_mask.shape)
+AttributeError: 'list' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 119, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 284, in _setup
+    spaces = self.get_spaces()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 312, in get_spaces
+    spaces = self.foreach_env_runner(
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 119, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 284, in _setup
+    spaces = self.get_spaces()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 312, in get_spaces
+    spaces = self.foreach_env_runner(
+IndexError: list index out of range

@@ -1,0 +1,35 @@
+2026-03-24 14:42:57,869	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 134, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 470, in __init__
+    config.validate()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo.py", line 302, in validate
+    self._value_error(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4815, in _value_error
+    raise ValueError(msg)
+ValueError: `minibatch_size` (128) must be <= `train_batch_size` (16). In PPO, the train batch will be split into 128 chunks, each of which is iterated over (used for updating the policy) 30 times.
+To suppress all validation errors, set `config.experimental(_validate_config=False)` at your own risk.
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 134, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 470, in __init__
+    config.validate()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/ppo/ppo.py", line 302, in validate
+    self._value_error(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 4815, in _value_error
+    raise ValueError(msg)
+ValueError: `minibatch_size` (128) must be <= `train_batch_size` (16). In PPO, the train batch will be split into 128 chunks, each of which is iterated over (used for updating the policy) 30 times.
+To suppress all validation errors, set `config.experimental(_validate_config=False)` at your own risk.

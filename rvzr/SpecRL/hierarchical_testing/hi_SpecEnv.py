@@ -329,7 +329,8 @@ class SpecEnv(gym.Env):
                 temp_htrace = np.array(temp_obs[1], dtype=np.int64)
                 obs["htrace"][count - 1, : temp_htrace.shape[0]] = temp_htrace[: self.num_inputs]
 
-                temp_ctrace = np.array(temp_obs[2], dtype=np.uint64)
+                # temp_ctrace = np.array(temp_obs[2], dtype=np.int64)
+                temp_ctrace = np.array(temp_obs[2], dtype=np.uint64).view(np.int64)
                 obs["ctrace"][count - 1, : temp_ctrace.shape[0]] = temp_ctrace[: self.num_inputs]
 
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
