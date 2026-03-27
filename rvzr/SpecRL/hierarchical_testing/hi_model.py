@@ -320,13 +320,6 @@ class HierarchicalActionHead(nn.Module):
             if torch.isnan(p).any() or torch.isinf(p).any():
                 print(f"!!! FOUND IT: {name} in opcode_head is {p.max()} (NaN/Inf)")
 
-        # --- 检查当前的 Logits ---
-        opcode_logits = self.opcode_head(features)
-        print(f"Opcode Logits - Max: {opcode_logits.max().item()}, Min: {opcode_logits.min().item()}")
-
-        # --- 检查 Probs ---
-        print(f"Opcode Probs NaN: {torch.isnan(opcode_probs).any()}")
-
         if deterministic:
             opcode_id = opcode_probs.argmax(dim=-1)
         else:
