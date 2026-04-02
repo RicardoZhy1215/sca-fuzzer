@@ -1,6 +1,6 @@
 # Vocabulary
-OPERAND_SPACE = ["mov", "add", "mul", "xor", "cmp", "sbb"]
-DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
+OPERAND_SPACE = ["mov", "add", "mul", "div", "xor", "cmp", "sbb"]
+DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"] # add more regs like al, bl,eax, etc.
 SRC_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
 IMMS_SPACE = ["0", "1", "2", "3", "4", "5", "6", "7"] #todo: need to extend the IMM Space based on the Sandbox area.
 
@@ -12,6 +12,7 @@ OPCODE_OPERAND_SPEC = {
     "mov": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
     "add": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
     "mul": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
+    "div": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
     "xor": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
     "cmp": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
     "sbb": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
@@ -135,7 +136,7 @@ def compute_action_space_stats() -> dict:
     n_op = len(OPERAND_SPACE)
     n_reg = len(DST_REGS_SPACE)
     n_imm = len(IMMS_SPACE)
-    # Raw: opcode 1..6, reg_src 0..n_reg, reg_dst 0..n_reg, imm 0..n_imm
+    # Raw: opcode 1..len(OPERAND_SPACE), reg_src 0..n_reg, reg_dst 0..n_reg, imm 0..n_imm
     total_raw = n_op * (n_reg + 1) * (n_reg + 1) * (n_imm + 1)
 
     pass_r1 = 0
@@ -329,10 +330,20 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
             MemoryOp(rs, 32, False, True)
         )
 
+    if opcode == "div":
+        return Instruction("div", False, "", False).add_op(
+            MemoryOp(rs, 8, False, True)
+        )
+
     if opcode == "xor":
         return Instruction("xor", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
+
+    # if opcode == "cmp":
+    #     return Instruction("cmp", False, "", False).add_op(
+    #         MemoryOp(rd, 32, True, True)
+    #     ).add_op(RegisterOp(rs, 64, True, False))
 
     if opcode == "cmp":
         return Instruction("cmp", False, "", False).add_op(

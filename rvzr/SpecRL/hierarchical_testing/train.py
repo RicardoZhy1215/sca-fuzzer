@@ -11,7 +11,11 @@ import os
 
 _this_dir = os.path.dirname(os.path.abspath(__file__))
 _specrl_root = os.path.dirname(_this_dir)
+_rvzr_root = os.path.dirname(_specrl_root)
+_repo_root = os.path.dirname(_rvzr_root)
 # Ensure SpecRL in path (for check, interfaces), then put hierarchical_testing first for local model
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
 if _specrl_root not in sys.path:
     sys.path.insert(0, _specrl_root)
 if _this_dir not in sys.path:
@@ -25,13 +29,40 @@ from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
 from hi_SpecEnv import SpecEnv
 from hi_model import register_specrl_hierarchical_model
+from rvzr.config import CONF
 
 parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=50, default_timesteps=100000
 )
+parser.add_argument(
+    "-c",
+    "--config",
+    type=str,
+    required=False,
+    help="Path to the configuration file (YAML).",
+)
+parser.add_argument(
+    "-I",
+    "--include-dir",
+    type=str,
+    default=".",
+    required=False,
+    help="Path to the directory containing files included by --config.",
+)
 parser.add_argument("--specrl-wandb-project", type=str, default="SpecRL-hierarchical", help="Wandb project name")
 parser.add_argument("--specrl-wandb-run", type=str, default=None, help="Wandb run name")
-parser.add_argument("--specrl-no-wandb", action="store_true", help="Disable wandb logging")
+parser.add_argument(
+    "--specrl-no-wandb",
+    "--no-wandb",
+    dest="specrl_no_wandb",
+    action="store_true",
+    help="Disable wandb logging",
+)
+parser.add_argument(
+    "--specrl-local-debug",
+    action="store_true",
+    help="Run Ray/RLlib in local debug mode (single process, CPU-only, easier to debug).",
+)
 
 
 class SpecRLCallbacks(DefaultCallbacks):
@@ -53,7 +84,14 @@ env_config = {
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    ray.init()
+    if getattr(args, "config", None):
+        CONF.load(args.config, args.include_dir)
+    local_debug = args.specrl_local_debug
+    ray.init(
+        local_mode=local_debug,
+        include_dashboard=not local_debug,
+        ignore_reinit_error=True,
+    )
     register_specrl_hierarchical_model()
 
     train_config = {
@@ -64,6 +102,9 @@ if __name__ == "__main__":
         "num_inputs": 20,
         "hidden_dim": 256,
     }
+    if local_debug:
+        # Keep local debug runs lightweight and fully synchronous.
+        train_config["train_batch_size"] = 128
 
     model_config = {
         "custom_model": "SpecRLHierarchicalModel",
@@ -81,6 +122,22 @@ if __name__ == "__main__":
         "_disable_preprocessor_api": True,
     }
 
+    env_runner_kwargs = {
+        "num_env_runners": 1,
+        "num_envs_per_env_runner": 1,
+        "sample_timeout_s": 7200,
+        "rollout_fragment_length": 16,
+    }
+    if local_debug:
+        env_runner_kwargs.update(
+            {
+                "num_env_runners": 0,
+                "rollout_fragment_length": 1,
+            }
+        )
+
+    num_gpus = 0 if local_debug else 1
+
     config = (
         PPOConfig()
         .api_stack(
@@ -91,12 +148,7 @@ if __name__ == "__main__":
             env=SpecEnv,
             env_config=env_config,
         )
-        .env_runners(
-            num_env_runners=1,
-            num_envs_per_env_runner=1,
-            sample_timeout_s=7200,
-            rollout_fragment_length=16,
-        )
+        .env_runners(**env_runner_kwargs)
         .callbacks(SpecRLCallbacks)
         .training(
             lr=train_config["lr"],
@@ -104,8 +156,12 @@ if __name__ == "__main__":
             gamma=train_config["gamma"],
             model=model_config,
         )
-        .resources(num_gpus=1)
+        .resources(num_gpus=num_gpus)
     )
+
+    if local_debug:
+        print("Running in local Ray debug mode.")
+        print("Overrides: local_mode=True, num_env_runners=0, rollout_fragment_length=1, num_gpus=0")
 
     use_wandb = not args.specrl_no_wandb
     if use_wandb:
@@ -121,7 +177,7 @@ if __name__ == "__main__":
 
 
     try:
-        for i in range(10):
+        for i in range(50):
             result = algo.train()
             learner_info = result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {})
             env_runners = result.get("env_runners", {})

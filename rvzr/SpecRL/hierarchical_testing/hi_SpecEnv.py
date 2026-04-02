@@ -48,6 +48,7 @@ _X86SandboxPass,_X86PatchUndefinedFlagsPass,_X86PatchUndefinedResultPass,_X86U2K
 import tempfile
 import os
 import shutil
+from datetime import datetime
 from subprocess import run
 
 
@@ -205,6 +206,7 @@ class SpecEnv(gym.Env):
 
             target_desc = X86TargetDesc()
             self.generator._insert_bb_index = random.choice([0, 1])
+            # self.generator._insert_bb_index = 0
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
             passed_loop = True
@@ -496,6 +498,7 @@ class SpecEnv(gym.Env):
             return None
 
         print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+        self._save_violation_asm(temp, debug_path)
         os.remove(fenced.name)
         os.remove(fenced_obj.name)
         os.remove(asm.name)
@@ -542,6 +545,20 @@ class SpecEnv(gym.Env):
         # Violation survived priming. Report it
         self.leak = True
         return violations
+
+    def _save_violation_asm(self, program: TestCaseProgram, debug_path: str) -> Optional[str]:
+        """
+        Persist the current test case as ASM when a violation is detected.
+        Writes to debug_path/violation_<timestamp>.asm
+        """
+        os.makedirs(debug_path, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        out_path = os.path.join(debug_path, f"violation_{ts}.asm")
+        p = copy.deepcopy(program)
+        p._asm_path = out_path
+        self.printer.print(p)
+        print(f"[SpecEnv] Saved violation ASM -> {out_path}")
+        return out_path
 
     def _infiniteLoopCheck(self, prog: TestCaseProgram, instr: Instruction, timeout: int) -> bool:
         prog_ = copy.deepcopy(prog)

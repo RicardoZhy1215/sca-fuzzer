@@ -236,9 +236,9 @@ class Conf:
     # Contract Model
     model_backend: str = 'unicorn'
     """ model_backend: The backend used to collect contract traces on generated test cases """
-    contract_execution_clause: List[str] = ["seq"]
+    contract_execution_clause: List[str] = ["delayed-exception-handling"]
     """ contract_execution_clause: """
-    contract_observation_clause: str = 'ct'
+    contract_observation_clause: str = 'loads+stores+pc'
     """ contract_observation_clause: """
     model_min_nesting: int = 1
     """ model_max_nesting: """

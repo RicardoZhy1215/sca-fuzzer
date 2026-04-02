@@ -1,0 +1,159 @@
+2026-03-31 18:12:22,987	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=7570)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=7570)[0m
+[36m(RolloutWorker pid=7570)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 246905
+[36m(RolloutWorker pid=7570)[0m
+[36m(RolloutWorker pid=7570)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=7570)[0m
+[36m(RolloutWorker pid=7570)[0m Sandbox Base Address and Code Base Address (base 10): (18395671960481181696, 18395671960464478208)
+[36m(RolloutWorker pid=7570)[0m
+[36m(RolloutWorker pid=7570)[0m 2026-03-31 18:12:27,484	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 612839
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18395671960481181696, 18395671960464478208)
+2026-03-31 18:12:30,249	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-31 18:12:31,777	WARNING util.py:61 -- Install gputil for GPU system monitoring.
+
+SpecRLHierarchicalModel(
+  (flat_backbone): Sequential(
+    (0): Linear(in_features=4200, out_features=256, bias=True)
+    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (2): ReLU()
+    (3): Linear(in_features=256, out_features=256, bias=True)
+    (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (5): ReLU()
+  )
+  (encoder): ObsEncoder(
+    (instr_embeds): ModuleList(
+      (0): Embedding(366, 64, padding_idx=0)
+      (1-2): 2 x Embedding(25, 64, padding_idx=0)
+      (3): Embedding(8, 64, padding_idx=0)
+    )
+    (instr_proj): Linear(in_features=256, out_features=256, bias=True)
+    (htrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (ctrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (recovery_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (transient_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (row_fusion): Sequential(
+      (0): Linear(in_features=384, out_features=256, bias=True)
+      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+  )
+  (hierarchical_head): HierarchicalActionHead(
+    (opcode_embed): Embedding(8, 64, padding_idx=0)
+    (reg_embed): Embedding(7, 64, padding_idx=0)
+    (imm_embed): Embedding(9, 64, padding_idx=0)
+    (opcode_head): Sequential(
+      (0): Linear(in_features=256, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=8, bias=True)
+    )
+    (reg_src_head): Sequential(
+      (0): Linear(in_features=320, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_dst_head): Sequential(
+      (0): Linear(in_features=384, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (imm_head): Sequential(
+      (0): Linear(in_features=448, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=9, bias=True)
+    )
+  )
+  (value_head): Linear(in_features=256, out_features=1, bias=True)
+)
+[36m(RolloutWorker pid=7570)[0m #=======================================================#
+[36m(RolloutWorker pid=7570)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=7570)[0m #=======================================================#
+[36m(RolloutWorker pid=7570)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=7570)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=7570)[0m adding step cmp [r14 + rcx], rdi
+[36m(RolloutWorker pid=7570)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=7570)[0m
+[36m(RolloutWorker pid=7570)[0m #=======================================================#
+[36m(RolloutWorker pid=7570)[0m program:
+[33m(raylet)[0m A worker died or was killed while executing a task by an unexpected system error. To troubleshoot the problem, check the logs for the dead worker. Lease ID: 00000000292dbf5f17e4280732074a0d535b62a43eaae88713528307808a7907 Worker ID: dbb6bab915139ef52aebfa8155a58f0f58557657bb80ca857d1a7b44 Node ID: e21374256d84eb25c9d539ec74ef42cbc2c08e699351cf9225888240 Worker IP address: 192.168.123.81 Worker port: 45903 Worker PID: 7570 Worker exit type: SYSTEM_ERROR Worker exit detail: Worker exits unexpectedly. Worker exits with an exit code 1.
+[36m(RolloutWorker pid=7570)[0m Error appeared while assembling the test case:
+[36m(RolloutWorker pid=7570)[0m  Assembler messages:
+[36m(RolloutWorker pid=7570)[0m   Line 7: Error: operand type mismatch for `cmp'
+[36m(RolloutWorker pid=7570)[0m     (the line was parsed as cmp dword ptr [r14 + rcx], rdi )
+2026-03-31 18:12:33,722	ERROR actor_manager.py:973 -- Ray error (The actor 7a5f1a567ec847cde987cb6701000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.), taking actor 1 out of service.
+2026-03-31 18:12:33,723	ERROR actor_manager.py:771 -- The actor 7a5f1a567ec847cde987cb6701000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.
+NoneType: None
+2026-03-31 18:12:33,723	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 1}
+[36m(RolloutWorker pid=7571)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=7571)[0m
+[36m(RolloutWorker pid=7571)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 513270
+[36m(RolloutWorker pid=7571)[0m
+[36m(RolloutWorker pid=7571)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=7571)[0m
+[36m(RolloutWorker pid=7571)[0m Sandbox Base Address and Code Base Address (base 10): (18395671960481181696, 18395671960464478208)
+[36m(RolloutWorker pid=7571)[0m
+2026-03-31 18:12:35,723	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 2}
+[36m(RolloutWorker pid=7571)[0m 2026-03-31 18:12:36,291	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-31 18:12:37,724	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 3}
+2026-03-31 18:12:37,736	WARNING actor_manager.py:986 -- Bringing previously unhealthy, now-healthy actor 1 back into service.
+[36m(RolloutWorker pid=7571)[0m adding step xor rbx, rbx
+[36m(RolloutWorker pid=7571)[0m
+[36m(RolloutWorker pid=7571)[0m #=======================================================#[32m [repeated 3x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(RolloutWorker pid=7571)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=7571)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=7571)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=7571)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=7571)[0m program:
+Training interrupted by user.

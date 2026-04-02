@@ -1,0 +1,52 @@
+.intel_syntax noprefix
+.section .data.main
+.function_0:
+.bb_0.0:
+.macro.measurement_start: nop qword ptr [rax + 0xff]
+add al, -106 # instrumentation
+and rsi, 0b1111111111111 # instrumentation
+sbb qword ptr [r14 + rsi], rdi
+xor rcx, rax
+xor rcx, rax
+and rbx, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rbx]
+mov rsi, rdx
+xor rsi, rdi
+add rax, rcx
+and rdx, 0b1111111111111 # instrumentation
+sbb qword ptr [r14 + rdx], rbx
+cmp rdi, rcx
+cmp rsi, rbx
+xor rbx, rbx
+cmp rdi, rbx
+mov rsi, rdx
+add rsi, 3
+and rbx, 0b1111111111111 # instrumentation
+sbb qword ptr [r14 + rbx], rax
+and rdi, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rdi]
+mov rsi, rbx
+js .bb_0.1
+jmp .exit_0
+.bb_0.1:
+and rcx, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rcx]
+xor rdi, rcx
+and rbx, 0b1111111111111 # instrumentation
+mul dword ptr [r14 + rbx]
+mov rsi, rbx
+mov rcx, rbx
+mov rsi, rbx
+mov rcx, rax
+and rax, 0b1111111111111 # instrumentation
+sbb qword ptr [r14 + rax], rdx
+mov rcx, rdi
+mov rsi, rax
+mov rax, rdi
+mov rsi, rax
+mov rax, rdx
+.exit_0:
+.macro.measurement_end: nop qword ptr [rax + 0xff]
+jmp .test_case_exit
+.section .data.main
+.test_case_exit:nop

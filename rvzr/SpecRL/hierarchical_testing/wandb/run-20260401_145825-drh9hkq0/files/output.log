@@ -1,0 +1,74 @@
+2026-04-01 14:58:26,670	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=15008)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+2026-04-01 14:58:30,413	ERROR actor_manager.py:973 -- Ray error (The actor died because of an error raised in its creation task, [36mray::RolloutWorker.__init__()[39m (pid=15008, ip=192.168.123.81, actor_id=ff563750b4fb48e17eec5f1d01000000, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x7561c7af82b0>)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 395, in __init__
+    self.env = env_creator(copy.deepcopy(self.env_context))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/utils/__init__.py", line 109, in _gym_env_creator
+    env = env_descriptor(env_context)
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 156, in __init__
+    self.reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
+AttributeError: 'InstructionSet' object has no attribute 'get_reg64_spec'), taking actor 1 out of service.
+2026-04-01 14:58:30,413	ERROR env_runner_group.py:793 -- Validation of EnvRunner failed! Error=The actor died because of an error raised in its creation task, [36mray::RolloutWorker.__init__()[39m (pid=15008, ip=192.168.123.81, actor_id=ff563750b4fb48e17eec5f1d01000000, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x7561c7af82b0>)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 395, in __init__
+    self.env = env_creator(copy.deepcopy(self.env_context))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/utils/__init__.py", line 109, in _gym_env_creator
+    env = env_descriptor(env_context)
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 156, in __init__
+    self.reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
+AttributeError: 'InstructionSet' object has no attribute 'get_reg64_spec'
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 175, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 284, in _setup
+    spaces = self.get_spaces()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 312, in get_spaces
+    spaces = self.foreach_env_runner(
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/train.py", line 175, in <module>
+    algo = config.build()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/_common/deprecation.py", line 128, in _ctor
+    return obj(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 5814, in build
+    return self.build_algo(*args, **kwargs)
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1004, in build_algo
+    return algo_class(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 578, in __init__
+    super().__init__(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 824, in setup
+    self.env_runner_group = EnvRunnerGroup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 196, in __init__
+    self._setup(
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 284, in _setup
+    spaces = self.get_spaces()
+  File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/env_runner_group.py", line 312, in get_spaces
+    spaces = self.foreach_env_runner(
+IndexError: list index out of range

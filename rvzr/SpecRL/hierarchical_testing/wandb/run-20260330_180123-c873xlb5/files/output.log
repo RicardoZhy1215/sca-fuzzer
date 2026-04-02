@@ -1,0 +1,353 @@
+2026-03-30 18:01:24,603	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 392875
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+2026-03-30 18:01:26,454	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-30 18:01:27,123	WARNING util.py:61 -- Install gputil for GPU system monitoring.
+
+SpecRLHierarchicalModel(
+  (flat_backbone): Sequential(
+    (0): Linear(in_features=4200, out_features=256, bias=True)
+    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (2): ReLU()
+    (3): Linear(in_features=256, out_features=256, bias=True)
+    (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (5): ReLU()
+  )
+  (encoder): ObsEncoder(
+    (instr_embeds): ModuleList(
+      (0): Embedding(366, 64, padding_idx=0)
+      (1-2): 2 x Embedding(25, 64, padding_idx=0)
+      (3): Embedding(8, 64, padding_idx=0)
+    )
+    (instr_proj): Linear(in_features=256, out_features=256, bias=True)
+    (htrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (ctrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (recovery_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (transient_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (row_fusion): Sequential(
+      (0): Linear(in_features=384, out_features=256, bias=True)
+      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+  )
+  (hierarchical_head): HierarchicalActionHead(
+    (opcode_embed): Embedding(7, 64, padding_idx=0)
+    (reg_embed): Embedding(7, 64, padding_idx=0)
+    (imm_embed): Embedding(9, 64, padding_idx=0)
+    (opcode_head): Sequential(
+      (0): Linear(in_features=256, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_src_head): Sequential(
+      (0): Linear(in_features=320, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_dst_head): Sequential(
+      (0): Linear(in_features=384, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (imm_head): Sequential(
+      (0): Linear(in_features=448, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=9, bias=True)
+    )
+  )
+  (value_head): Linear(in_features=256, out_features=1, bias=True)
+)
+#=======================================================#
+#                     RESETTING                         #
+#=======================================================#
+NUMBER OF TEST CASES: 1
+NUMBER OF STEPS: 1
+adding step mul [r14 + rbx]
+NUMBER OF SUCCESSFUL STEPS: 1
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 605087
+
+WARNING: [executor] SMT is on! You may experience false positives.
+total instructions in program:  3
+all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rbx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rbx] ']
+
+INFO: [fuzzer] Starting at 18:01:28
+run the fuzzing round
+
+================================ Statistics ===================================
+
+Test Cases: 1
+Inputs per test case: 40.0
+Violations: 0
+Effectiveness:
+  Total Cls: 20.0
+  Effective Cls: 20.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 0
+  Fast Path: 1
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 0.6
+Finished at 18:01:29
+misspec: False, reward: -30
+observable: True, reward: 20
+step penalty, reward: 19
+reward: 19
+#=======================================================#
+NUMBER OF STEPS: 2
+adding step sbb [r14 + rax], rsi
+NUMBER OF SUCCESSFUL STEPS: 2
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+iteration 2 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 653558
+
+WARNING: [executor] SMT is on! You may experience false positives.
+total instructions in program:  5
+all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rsi ', 'and rbx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rbx] ']
+
+INFO: [fuzzer] Starting at 18:01:31
+1     ( 1%)| Stats: Cls:20/20,In:40,R:51,SF:0,OF:0,Fst:1,CN:0,CT:0,P1:0,CS:0,P2:0,V:0run the fuzzing round
+1     ( 1%)| Stats: Cls:20/20,In:40,R:51,SF:0,OF:0,Fst:1,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+================================ Statistics ===================================
+
+Test Cases: 2
+Inputs per test case: 40.0
+Violations: 0
+Effectiveness:
+  Total Cls: 20.0
+  Effective Cls: 20.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 0
+  Fast Path: 1
+  Max Nesting Check: 1
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 0.9
+Finished at 18:01:32
+misspec: False, reward: -30
+observable: True, reward: 20
+step penalty, reward: 19
+reward: 19
+#=======================================================#
+NUMBER OF STEPS: 3
+adding step cmp rbx, rdx
+NUMBER OF SUCCESSFUL STEPS: 3
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+iteration 2 observations:
+
+iteration 3 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 108095
+
+WARNING: [executor] SMT is on! You may experience false positives.
+total instructions in program:  6
+all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rsi ', 'cmp rbx, rdx ', 'and rbx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rbx] ']
+
+INFO: [fuzzer] Starting at 18:01:34
+2     ( 1%)| Stats: Cls:20/20,In:40,R:49,SF:0,OF:0,Fst:1,CN:1,CT:0,P1:0,CS:0,P2:0,V:0run the fuzzing round
+
+================================ Statistics ===================================
+
+Test Cases: 3
+Inputs per test case: 40.0
+Violations: 0
+Effectiveness:
+  Total Cls: 20.0
+  Effective Cls: 20.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 0
+  Fast Path: 2
+  Max Nesting Check: 1
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 0.6
+Finished at 18:01:34
+misspec: False, reward: -30
+observable: True, reward: 20
+step penalty, reward: 19
+reward: 19
+#=======================================================#
+NUMBER OF STEPS: 4
+adding step cmp rsi, rdi
+NUMBER OF SUCCESSFUL STEPS: 4
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+iteration 2 observations:
+
+iteration 3 observations:
+
+iteration 4 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 18442
+
+WARNING: [executor] SMT is on! You may experience false positives.
+total instructions in program:  7
+all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rsi ', 'cmp rbx, rdx ', 'and rbx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rbx] ', 'cmp rsi, rdi ']
+
+INFO: [fuzzer] Starting at 18:01:37
+3     ( 1%)| Stats: Cls:20/20,In:40,R:45,SF:0,OF:0,Fst:2,CN:1,CT:0,P1:0,CS:0,P2:0,V:0
+================================ Statistics ===================================
+
+Test Cases: 4
+Inputs per test case: 40.0
+Violations: 0
+Effectiveness:
+  Total Cls: 20.0
+  Effective Cls: 20.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1
+  Fast Path: 2
+  Max Nesting Check: 1
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 0.3
+Finished at 18:01:37
+misspec: False, reward: -30
+observable: True, reward: 20
+step penalty, reward: 19
+reward: 19
+#=======================================================#
+NUMBER OF STEPS: 5
+adding step sbb [r14 + rdi], rbx
+NUMBER OF SUCCESSFUL STEPS: 5
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+iteration 2 observations:
+
+iteration 3 observations:
+
+iteration 4 observations:
+
+iteration 5 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 723121
+
+WARNING: [executor] SMT is on! You may experience false positives.
+total instructions in program:  9
+all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rsi ', 'cmp rbx, rdx ', 'and rbx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rbx] ', 'cmp rsi, rdi ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ']
+
+INFO: [fuzzer] Starting at 18:01:39
+4     ( 1%)| Stats: Cls:20/20,In:40,R:40,SF:0,OF:1,Fst:2,CN:1,CT:0,P1:0,CS:0,P2:0,V:0run the fuzzing round
+4     ( 1%)| Stats: Cls:20/20,In:40,R:40,SF:0,OF:1,Fst:2,CN:1,CT:0,P1:0,CS:0,P2:0,V:0> Increasing sample size... to 50
+================================ Statistics ===================================
+
+Test Cases: 5
+Inputs per test case: 40.0
+Violations: 0
+Effectiveness:
+  Total Cls: 20.0
+  Effective Cls: 20.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1
+  Fast Path: 2
+  Max Nesting Check: 1
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 1
+  Priming Check: 0
+
+Duration: 2.8
+Finished at 18:01:42
+misspec: False, reward: -30
+observable: True, reward: 20
+step penalty, reward: 19
+reward: 19
+#=======================================================#
+NUMBER OF STEPS: 6
+adding step cmp rsi, rcx
+NUMBER OF SUCCESSFUL STEPS: 6
+
+#=======================================================#
+program:
+
+iteration 1 observations:
+
+iteration 2 observations:
+
+iteration 3 observations:
+
+iteration 4 observations:
+
+iteration 5 observations:
+
+iteration 6 observations:
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 511325
+
+WARNING: [executor] SMT is on! You may experience false positives.
+Training interrupted by user.

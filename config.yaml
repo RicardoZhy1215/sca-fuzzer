@@ -1,14 +1,18 @@
-# tested instructions
-instruction_categories:
-  - BASE-BINARY
-  - BASE-COND_BR
-
 # contract
 contract_observation_clause: loads+stores+pc
 contract_execution_clause:
-  - no_speculation
+  - delayed-exception-handling
 
-# enable perf. optimizations
+# tested instructions
+instruction_categories:
+  - BASE-BINARY
+  # - BASE-COND_BR
+
+actors:
+  - main:
+    - data_properties:
+      - present: false
+
 enable_speculation_filter: true
 enable_observation_filter: true
 enable_fast_path_model: true

@@ -1,0 +1,392 @@
+2026-03-30 18:51:03,931	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=428745)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 480174
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m 2026-03-30 18:51:08,402	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 341762
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+2026-03-30 18:51:11,008	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-30 18:51:12,383	WARNING util.py:61 -- Install gputil for GPU system monitoring.
+
+SpecRLHierarchicalModel(
+  (flat_backbone): Sequential(
+    (0): Linear(in_features=4200, out_features=256, bias=True)
+    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (2): ReLU()
+    (3): Linear(in_features=256, out_features=256, bias=True)
+    (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (5): ReLU()
+  )
+  (encoder): ObsEncoder(
+    (instr_embeds): ModuleList(
+      (0): Embedding(366, 64, padding_idx=0)
+      (1-2): 2 x Embedding(25, 64, padding_idx=0)
+      (3): Embedding(8, 64, padding_idx=0)
+    )
+    (instr_proj): Linear(in_features=256, out_features=256, bias=True)
+    (htrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (ctrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (recovery_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (transient_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (row_fusion): Sequential(
+      (0): Linear(in_features=384, out_features=256, bias=True)
+      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+  )
+  (hierarchical_head): HierarchicalActionHead(
+    (opcode_embed): Embedding(7, 64, padding_idx=0)
+    (reg_embed): Embedding(7, 64, padding_idx=0)
+    (imm_embed): Embedding(9, 64, padding_idx=0)
+    (opcode_head): Sequential(
+      (0): Linear(in_features=256, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_src_head): Sequential(
+      (0): Linear(in_features=320, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_dst_head): Sequential(
+      (0): Linear(in_features=384, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (imm_head): Sequential(
+      (0): Linear(in_features=448, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=9, bias=True)
+    )
+  )
+  (value_head): Linear(in_features=256, out_features=1, bias=True)
+)
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=428745)[0m NUMBER OF END_GAME: 1
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m program:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 942562
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428745)[0m total instructions in program:  1
+[36m(RolloutWorker pid=428745)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]']
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [fuzzer] Starting at 18:51:13
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Test Cases: 1
+[36m(RolloutWorker pid=428745)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=428745)[0m Violations: 0
+[36m(RolloutWorker pid=428745)[0m Effectiveness:
+[36m(RolloutWorker pid=428745)[0m   Total Cls: 0.0
+[36m(RolloutWorker pid=428745)[0m   Effective Cls: 0.0
+[36m(RolloutWorker pid=428745)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=428745)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=428745)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=428745)[0m   Fast Path: 0
+[36m(RolloutWorker pid=428745)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=428745)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=428745)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=428745)[0m   Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Duration: 0.2
+[36m(RolloutWorker pid=428745)[0m Finished at 18:51:14
+[36m(RolloutWorker pid=428745)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=428745)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=428745)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=428745)[0m reward: 19
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m NUMBER OF TEST CASES: 2
+[36m(RolloutWorker pid=428745)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=428745)[0m adding step sbb [r14 + rcx], rbx
+[36m(RolloutWorker pid=428745)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m program:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m iteration 1 observations:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 787539
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428745)[0m total instructions in program:  3
+[36m(RolloutWorker pid=428745)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rbx ']
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [fuzzer] Starting at 18:51:15
+1     ( 1%)| Stats: Cls:0/0,In:40,R:40,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=428745)[0m run the fuzzing round
+1     ( 1%)| Stats: Cls:0/0,In:40,R:40,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Test Cases: 2
+[36m(RolloutWorker pid=428745)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=428745)[0m Violations: 0
+[36m(RolloutWorker pid=428745)[0m Effectiveness:
+[36m(RolloutWorker pid=428745)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=428745)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=428745)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=428745)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=428745)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=428745)[0m   Fast Path: 0
+[36m(RolloutWorker pid=428745)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=428745)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=428745)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=428745)[0m   Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Duration: 0.8
+[36m(RolloutWorker pid=428745)[0m Finished at 18:51:16
+[36m(RolloutWorker pid=428745)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=428745)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=428745)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=428745)[0m reward: 19
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m NUMBER OF STEPS: 2
+[36m(RolloutWorker pid=428745)[0m adding step add rsi, rdi
+[36m(RolloutWorker pid=428745)[0m NUMBER OF SUCCESSFUL STEPS: 2
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m program:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m iteration 1 observations:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m iteration 2 observations:
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 729764
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428745)[0m total instructions in program:  4
+[36m(RolloutWorker pid=428745)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rbx ', 'add rsi, rdi ']
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m INFO: [fuzzer] Starting at 18:51:18
+2     ( 1%)| Stats: Cls:20/20,In:40,R:43,SF:0,OF:1,Fst:0,CN:1,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Test Cases: 3
+[36m(RolloutWorker pid=428745)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=428745)[0m Violations: 0
+[36m(RolloutWorker pid=428745)[0m Effectiveness:
+[36m(RolloutWorker pid=428745)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=428745)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=428745)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=428745)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=428745)[0m   Observation Filter: 2
+[36m(RolloutWorker pid=428745)[0m   Fast Path: 0
+[36m(RolloutWorker pid=428745)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=428745)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=428745)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=428745)[0m   Priming Check: 0
+[36m(RolloutWorker pid=428745)[0m
+[36m(RolloutWorker pid=428745)[0m Duration: 0.2
+[36m(RolloutWorker pid=428745)[0m Finished at 18:51:18
+[36m(RolloutWorker pid=428745)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=428745)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=428745)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=428745)[0m reward: 19
+[36m(RolloutWorker pid=428745)[0m #=======================================================#
+[36m(RolloutWorker pid=428745)[0m NUMBER OF STEPS: 3
+[36m(RolloutWorker pid=428745)[0m 2026-03-30 18:51:18,256	ERROR actor_manager.py:186 -- Worker exception caught during `apply()`: list index out of range
+[36m(RolloutWorker pid=428745)[0m Traceback (most recent call last):
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 182, in apply
+[36m(RolloutWorker pid=428745)[0m     return func(self, *args, **kwargs)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 108, in <lambda>
+[36m(RolloutWorker pid=428745)[0m     (lambda w: w.sample(**random_action_kwargs))
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/util/tracing/tracing_helper.py", line 461, in _resume_span
+[36m(RolloutWorker pid=428745)[0m     return method(self, *_args, **_kwargs)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 678, in sample
+[36m(RolloutWorker pid=428745)[0m     batches = [self.input_reader.next()]
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 59, in next
+[36m(RolloutWorker pid=428745)[0m     batches = [self.get_data()]
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 225, in get_data
+[36m(RolloutWorker pid=428745)[0m     item = next(self._env_runner)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 330, in run
+[36m(RolloutWorker pid=428745)[0m     outputs = self.step()
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 386, in step
+[36m(RolloutWorker pid=428745)[0m     self._base_env.send_actions(actions_to_send)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 462, in send_actions
+[36m(RolloutWorker pid=428745)[0m     ) = self.vector_env.vector_step(action_vector)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 358, in vector_step
+[36m(RolloutWorker pid=428745)[0m     raise e
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 351, in vector_step
+[36m(RolloutWorker pid=428745)[0m     results = self.envs[i].step(actions[i])
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 223, in step
+[36m(RolloutWorker pid=428745)[0m     self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/sca-fuzzer/rvzr/code_generator.py", line 441, in insert_instruction_in_test_case_randomly
+[36m(RolloutWorker pid=428745)[0m     self._function_generator._insert_instruction_in_function_randomly(main_func, inst, bb_index)
+[36m(RolloutWorker pid=428745)[0m   File "/home/hz25d/sca-fuzzer/rvzr/code_generator.py", line 869, in _insert_instruction_in_function_randomly
+[36m(RolloutWorker pid=428745)[0m     bb = bb_list[bb_index]
+[36m(RolloutWorker pid=428745)[0m IndexError: list index out of range
+[33m(raylet)[0m A worker died or was killed while executing a task by an unexpected system error. To troubleshoot the problem, check the logs for the dead worker. Lease ID: 000000003732c7442652d9ce4fede68ea389d2320fc4c712de4a93b7aee924a2 Worker ID: 9e80656c08bb656278c31d15c8485dde92d9fd17db6c0336cb958cb4 Node ID: b0028e821f69dc0d5f7f059586d1788c8e94fa7bb5b63fa72331b9f0 Worker IP address: 192.168.123.81 Worker port: 41687 Worker PID: 428745 Worker exit type: SYSTEM_ERROR Worker exit detail: Worker exits unexpectedly. Worker exits with an exit code 1.
+2026-03-30 18:52:19,682	ERROR actor_manager.py:973 -- Ray error (The actor 2d4ba79402f49f2d8946830201000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.), taking actor 1 out of service.
+2026-03-30 18:52:19,682	ERROR actor_manager.py:771 -- The actor 2d4ba79402f49f2d8946830201000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.
+NoneType: None
+2026-03-30 18:52:19,683	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 1}
+2026-03-30 18:52:21,682	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 2}
+[36m(RolloutWorker pid=428752)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 872582
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m 2026-03-30 18:52:23,262	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-30 18:52:23,683	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 3}
+2026-03-30 18:52:25,683	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 0,
+ 'policy_loss': None,
+ 'training_iteration': 4}
+2026-03-30 18:52:25,697	WARNING actor_manager.py:986 -- Bringing previously unhealthy, now-healthy actor 1 back into service.
+[36m(RolloutWorker pid=428752)[0m #=======================================================#
+[36m(RolloutWorker pid=428752)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=428752)[0m #=======================================================#
+[36m(RolloutWorker pid=428752)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=428752)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=428752)[0m adding step mov rbx, rdi
+[36m(RolloutWorker pid=428752)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m #=======================================================#
+[36m(RolloutWorker pid=428752)[0m program:
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m iteration 1 observations:
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 624555
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=428752)[0m total instructions in program:  2
+[36m(RolloutWorker pid=428752)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'mov rbx, rdi ']
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m INFO: [fuzzer] Starting at 18:52:27
+[36m(RolloutWorker pid=428752)[0m run the fuzzing round
+[36m(RolloutWorker pid=428752)[0m > Entering slow path...
+[36m(RolloutWorker pid=428752)[0m 2026-03-30 18:52:28,454	ERROR actor_manager.py:186 -- Worker exception caught during `apply()`: list index out of range
+[36m(RolloutWorker pid=428752)[0m Traceback (most recent call last):
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 182, in apply
+[36m(RolloutWorker pid=428752)[0m     return func(self, *args, **kwargs)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 108, in <lambda>
+[36m(RolloutWorker pid=428752)[0m     (lambda w: w.sample(**random_action_kwargs))
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/util/tracing/tracing_helper.py", line 461, in _resume_span
+[36m(RolloutWorker pid=428752)[0m     return method(self, *_args, **_kwargs)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 678, in sample
+[36m(RolloutWorker pid=428752)[0m     batches = [self.input_reader.next()]
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 59, in next
+[36m(RolloutWorker pid=428752)[0m     batches = [self.get_data()]
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 225, in get_data
+[36m(RolloutWorker pid=428752)[0m     item = next(self._env_runner)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 330, in run
+[36m(RolloutWorker pid=428752)[0m     outputs = self.step()
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 386, in step
+[36m(RolloutWorker pid=428752)[0m     self._base_env.send_actions(actions_to_send)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 462, in send_actions
+[36m(RolloutWorker pid=428752)[0m     ) = self.vector_env.vector_step(action_vector)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 358, in vector_step
+[36m(RolloutWorker pid=428752)[0m     raise e
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 351, in vector_step
+[36m(RolloutWorker pid=428752)[0m     results = self.envs[i].step(actions[i])
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 223, in step
+[36m(RolloutWorker pid=428752)[0m     self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/sca-fuzzer/rvzr/code_generator.py", line 441, in insert_instruction_in_test_case_randomly
+[36m(RolloutWorker pid=428752)[0m     self._function_generator._insert_instruction_in_function_randomly(main_func, inst, bb_index)
+[36m(RolloutWorker pid=428752)[0m   File "/home/hz25d/sca-fuzzer/rvzr/code_generator.py", line 869, in _insert_instruction_in_function_randomly
+[36m(RolloutWorker pid=428752)[0m     bb = bb_list[bb_index]
+[36m(RolloutWorker pid=428752)[0m IndexError: list index out of range
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m Test Cases: 1
+[36m(RolloutWorker pid=428752)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=428752)[0m Violations: 0
+[36m(RolloutWorker pid=428752)[0m Effectiveness:
+[36m(RolloutWorker pid=428752)[0m   Total Cls: 1.0
+[36m(RolloutWorker pid=428752)[0m   Effective Cls: 1.0
+[36m(RolloutWorker pid=428752)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=428752)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=428752)[0m   Observation Filter: 0
+[36m(RolloutWorker pid=428752)[0m   Fast Path: 0
+[36m(RolloutWorker pid=428752)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=428752)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=428752)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=428752)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=428752)[0m   Priming Check: 0
+[36m(RolloutWorker pid=428752)[0m
+[36m(RolloutWorker pid=428752)[0m Duration: 1.1
+[36m(RolloutWorker pid=428752)[0m Finished at 18:52:28
+[36m(RolloutWorker pid=428752)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=428752)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=428752)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=428752)[0m reward: 19
+[36m(RolloutWorker pid=428752)[0m #=======================================================#
+[36m(RolloutWorker pid=428752)[0m NUMBER OF STEPS: 2
+Training interrupted by user.

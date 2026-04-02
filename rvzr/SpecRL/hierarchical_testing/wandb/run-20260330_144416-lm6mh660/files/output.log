@@ -1,0 +1,2428 @@
+2026-03-30 14:44:18,112	WARNING deprecation.py:50 -- DeprecationWarning: `build` has been deprecated. Use `AlgorithmConfig.build_algo` instead. This will raise an error in the future!
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py:526: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[36m(RolloutWorker pid=317074)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 319378
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m 2026-03-30 14:44:22,601	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 863132
+
+WARNING: [executor] SMT is on! You may experience false positives.
+
+Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+2026-03-30 14:44:25,204	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-30 14:44:26,594	WARNING util.py:61 -- Install gputil for GPU system monitoring.
+
+SpecRLHierarchicalModel(
+  (flat_backbone): Sequential(
+    (0): Linear(in_features=4200, out_features=256, bias=True)
+    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (2): ReLU()
+    (3): Linear(in_features=256, out_features=256, bias=True)
+    (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+    (5): ReLU()
+  )
+  (encoder): ObsEncoder(
+    (instr_embeds): ModuleList(
+      (0): Embedding(366, 64, padding_idx=0)
+      (1-2): 2 x Embedding(25, 64, padding_idx=0)
+      (3): Embedding(8, 64, padding_idx=0)
+    )
+    (instr_proj): Linear(in_features=256, out_features=256, bias=True)
+    (htrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (ctrace_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (recovery_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (transient_proj): Sequential(
+      (0): Linear(in_features=20, out_features=32, bias=True)
+      (1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+    (row_fusion): Sequential(
+      (0): Linear(in_features=384, out_features=256, bias=True)
+      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (2): ReLU()
+    )
+  )
+  (hierarchical_head): HierarchicalActionHead(
+    (opcode_embed): Embedding(7, 64, padding_idx=0)
+    (reg_embed): Embedding(7, 64, padding_idx=0)
+    (imm_embed): Embedding(9, 64, padding_idx=0)
+    (opcode_head): Sequential(
+      (0): Linear(in_features=256, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_src_head): Sequential(
+      (0): Linear(in_features=320, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (reg_dst_head): Sequential(
+      (0): Linear(in_features=384, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=7, bias=True)
+    )
+    (imm_head): Sequential(
+      (0): Linear(in_features=448, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=128, out_features=9, bias=True)
+    )
+  )
+  (value_head): Linear(in_features=256, out_features=1, bias=True)
+)
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=317074)[0m adding step mov rsi, rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 368263
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  3
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'mov rsi, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:28
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 1
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 0.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 0.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:28
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 2
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rdi], rbx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 2
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 210543
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  5
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'mov rsi, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:30
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Priming  1
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Increasing sample size... to 50
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 2
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 2.5
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:32
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 3
+[36m(RolloutWorker pid=317074)[0m adding step add rcx, rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 3
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 912953
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  6
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'mov rsi, rdi ', 'add rcx, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:34
+2     ( 1%)| Stats: Cls:20/20,In:40,R:74,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 3
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 2
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:34
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 4
+[36m(RolloutWorker pid=317074)[0m adding step add rsi, rcx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 4
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 51362
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  7
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'add rsi, rcx ', 'mov rsi, rdi ', 'add rcx, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:36
+3     ( 1%)| Stats: Cls:20/20,In:40,R:58,SF:0,OF:2,Fst:0,CN:0,CT:0,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+3     ( 1%)| Stats: Cls:20/20,In:40,R:58,SF:0,OF:2,Fst:0,CN:0,CT:0,P1:0,CS:1,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 4
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 2
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 1.1
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:38
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 5
+[36m(RolloutWorker pid=317074)[0m adding step xor rbx, rcx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 5
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 988952
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  8
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'add rsi, rcx ', 'mov rsi, rdi ', 'add rcx, rdi ', 'xor rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:40
+4     ( 1%)| Stats: Cls:20/20,In:40,R:58,SF:0,OF:2,Fst:0,CN:0,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 5
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 3
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:40
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 6
+[36m(RolloutWorker pid=317074)[0m adding step xor rsi, rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 6
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 354448
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  9
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'add rsi, rcx ', 'xor rsi, rdi ', 'mov rsi, rdi ', 'add rcx, rdi ', 'xor rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:42
+5     ( 1%)| Stats: Cls:20/20,In:40,R:52,SF:0,OF:3,Fst:0,CN:0,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 6
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 4
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:42
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 7
+[36m(RolloutWorker pid=317074)[0m adding step xor rcx, rdx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 7
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 396716
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  10
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'add rsi, rcx ', 'xor rsi, rdi ', 'xor rcx, rdx ', 'mov rsi, rdi ', 'add rcx, rdi ', 'xor rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:45
+6     ( 1%)| Stats: Cls:20/20,In:40,R:48,SF:0,OF:4,Fst:0,CN:0,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 7
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 4
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 1
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.6
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:45
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF END_GAME: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 88374
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  10
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 10 # instrumentation', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rbx ', 'add rsi, rcx ', 'xor rsi, rdi ', 'xor rcx, rdx ', 'mov rsi, rdi ', 'add rcx, rdi ', 'xor rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:48
+7     ( 1%)| Stats: Cls:20/20,In:40,R:46,SF:0,OF:4,Fst:1,CN:0,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+7     ( 1%)| Stats: Cls:20/20,In:40,R:46,SF:0,OF:4,Fst:1,CN:0,CT:1,P1:0,CS:1,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 8
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 4
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 1
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.9
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:49
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF TEST CASES: 2
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 8
+[36m(RolloutWorker pid=317074)[0m adding step add rbx, rcx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 8
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 884540
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  3
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'add rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:50
+8     ( 1%)| Stats: Cls:20/20,In:40,R:46,SF:0,OF:4,Fst:1,CN:1,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 9
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 16.2
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 16.2
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 4
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 2
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.5
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:51
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 9
+[36m(RolloutWorker pid=317074)[0m adding step mul [r14 + rdx]
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 9
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 274625
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  5
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:53
+9     ( 1%)| Stats: Cls:16/16,In:40,R:45,SF:0,OF:4,Fst:2,CN:1,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 10
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 16.2
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 16.2
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 5
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 2
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:53
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 10
+[36m(RolloutWorker pid=317074)[0m adding step xor rcx, rcx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 10
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 602345
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  6
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:55
+10    ( 1%)| Stats: Cls:16/16,In:40,R:43,SF:0,OF:5,Fst:2,CN:1,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 11
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 13.7
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 13.7
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 5
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.6
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:55
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 11
+[36m(RolloutWorker pid=317074)[0m adding step xor rsi, rsi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 11
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 836522
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  7
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:44:57
+11    ( 1%)| Stats: Cls:13/13,In:40,R:42,SF:0,OF:5,Fst:3,CN:1,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+11    ( 1%)| Stats: Cls:13/13,In:40,R:42,SF:0,OF:5,Fst:3,CN:1,CT:1,P1:0,CS:1,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 12
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 5
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.8
+[36m(RolloutWorker pid=317074)[0m Finished at 14:44:58
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 12
+[36m(RolloutWorker pid=317074)[0m adding step add rcx, 7
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 12
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 172312
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  8
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:00
+12    ( 1%)| Stats: Cls:11/11,In:40,R:43,SF:0,OF:5,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 13
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 6
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:00
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 13
+[36m(RolloutWorker pid=317074)[0m adding step xor rax, rbx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 13
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 318137
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  9
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:03
+13    ( 1%)| Stats: Cls:11/11,In:40,R:42,SF:0,OF:6,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 14
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 7
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:03
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 14
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rdi], rdx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 14
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 360705
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  11
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:05
+14    ( 1%)| Stats: Cls:11/11,In:40,R:41,SF:0,OF:7,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 15
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 8
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:06
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 15
+[36m(RolloutWorker pid=317074)[0m adding step cmp rdx, rbx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 15
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 429082
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  12
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:08
+15    ( 1%)| Stats: Cls:11/11,In:40,R:40,SF:0,OF:8,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 16
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 9
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:08
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 16
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rax], rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 16
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 199077
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  14
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:11
+16    ( 1%)| Stats: Cls:11/11,In:40,R:39,SF:0,OF:9,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 17
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 10
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 3
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:12
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 17
+[36m(RolloutWorker pid=317074)[0m adding step mov rsi, rax
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 17
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 719038
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  15
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:14
+17    ( 1%)| Stats: Cls:11/11,In:40,R:39,SF:0,OF:10,Fst:3,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 18
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 10
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.6
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:15
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 18
+[36m(RolloutWorker pid=317074)[0m adding step xor rbx, rax
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 18
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 11 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 686603
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  16
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ', 'xor rbx, rax ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:18
+18    ( 1%)| Stats: Cls:11/11,In:40,R:39,SF:0,OF:10,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 19
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 11
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:18
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 19
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rdi], rax
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 19
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 11 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 12 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 332273
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  18
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ', 'xor rbx, rax ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rax ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:21
+19    ( 1%)| Stats: Cls:11/11,In:40,R:38,SF:0,OF:11,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 20
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 11.9
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 12
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:21
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 20
+[36m(RolloutWorker pid=317074)[0m adding step add rsi, rax
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 20
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 11 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 12 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 13 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 523087
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  19
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rsi, rax ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ', 'xor rbx, rax ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rax ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:24
+20    ( 1%)| Stats: Cls:11/11,In:40,R:38,SF:0,OF:12,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+20    ( 1%)| Stats: Cls:11/11,In:40,R:38,SF:0,OF:12,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:0,V:0> Entering slow path...
+20    ( 1%)| Stats: Cls:11/11,In:40,R:38,SF:0,OF:12,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:0,V:0> Priming  1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 21
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 12
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 1.8
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:26
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 21
+[36m(RolloutWorker pid=317074)[0m adding step cmp rdi, rsi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 21
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 11 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 12 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 13 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 14 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 755353
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  20
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rsi, rax ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ', 'xor rbx, rax ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rax ', 'cmp rdi, rsi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:29
+21    ( 1%)| Stats: Cls:12/12,In:40,R:40,SF:0,OF:12,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 22
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 13
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:30
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF END_GAME: 2
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 9 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 10 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 11 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 12 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 13 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 14 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 259899
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  20
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add bl, -24 # instrumentation', 'xor rcx, rcx ', 'cmp rdx, rbx ', 'add rsi, rax ', 'add rbx, rcx ', 'and rdx, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdx] ', 'xor rsi, rsi ', 'add rcx, 7 ', 'xor rax, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rdx ', 'and rax, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rax], rdi ', 'mov rsi, rax ', 'xor rbx, rax ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rax ', 'cmp rdi, rsi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:33
+22    ( 1%)| Stats: Cls:12/12,In:40,R:40,SF:0,OF:13,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 23
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 12.8
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 14
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 4
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:33
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF TEST CASES: 3
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 22
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rcx], rsi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 22
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 459694
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  4
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -107 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rsi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:35
+23    ( 1%)| Stats: Cls:12/12,In:40,R:39,SF:0,OF:14,Fst:4,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 24
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 14
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 5
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.6
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:36
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF END_GAME: 3
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 352029
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  4
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -107 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rsi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:37
+24    ( 1%)| Stats: Cls:13/13,In:40,R:39,SF:0,OF:14,Fst:5,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 25
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 15
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 5
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:38
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF TEST CASES: 4
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 23
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rcx], rdx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 23
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 945436
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  4
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:39
+25    ( 1%)| Stats: Cls:13/13,In:40,R:38,SF:0,OF:15,Fst:5,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 26
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 13.5
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 16
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 5
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:40
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 24
+[36m(RolloutWorker pid=317074)[0m adding step cmp rbx, rcx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 24
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 68828
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  5
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:41
+26    ( 1%)| Stats: Cls:13/13,In:40,R:38,SF:0,OF:16,Fst:5,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 27
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 14.1
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 14.1
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 16
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.6
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:42
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 25
+[36m(RolloutWorker pid=317074)[0m adding step cmp rsi, rdx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 25
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 25185
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  6
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'cmp rsi, rdx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:44
+27    ( 1%)| Stats: Cls:14/14,In:40,R:38,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:1,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+27    ( 1%)| Stats: Cls:14/14,In:40,R:38,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:1,P2:1,V:0> Entering slow path...
+27    ( 1%)| Stats: Cls:14/14,In:40,R:38,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:1,P2:1,V:0> Priming  3
+27    ( 1%)| Stats: Cls:14/14,In:40,R:38,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:1,P2:1,V:0> Increasing sample size... to 50
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 28
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 14.6
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 14.6
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 16
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 2.8
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:47
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 26
+[36m(RolloutWorker pid=317074)[0m adding step xor rdi, rdx
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 26
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 154465
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  7
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'xor rdi, rdx ', 'cmp rsi, rdx ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:49
+28    ( 1%)| Stats: Cls:14/14,In:40,R:41,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:2,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+28    ( 1%)| Stats: Cls:14/14,In:40,R:41,SF:0,OF:16,Fst:6,CN:2,CT:1,P1:0,CS:2,P2:1,V:0> Entering slow path...
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 29
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 15.0
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 15.0
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 16
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.9
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:50
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 27
+[36m(RolloutWorker pid=317074)[0m adding step mul [r14 + rsi]
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 27
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 192919
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  9
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'xor rdi, rdx ', 'cmp rsi, rdx ', 'and rsi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rsi] ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:52
+29    ( 1%)| Stats: Cls:15/15,In:40,R:41,SF:0,OF:16,Fst:6,CN:3,CT:1,P1:0,CS:2,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+29    ( 1%)| Stats: Cls:15/15,In:40,R:41,SF:0,OF:16,Fst:6,CN:3,CT:1,P1:0,CS:2,P2:1,V:0> Entering slow path...
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 30
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 16
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 1.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:53
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 28
+[36m(RolloutWorker pid=317074)[0m adding step cmp rax, rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 28
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 610076
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  10
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'xor rdi, rdx ', 'cmp rsi, rdx ', 'and rsi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rsi] ', 'cmp rax, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:55
+30    ( 1%)| Stats: Cls:15/15,In:40,R:41,SF:0,OF:16,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 31
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 17
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:56
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 29
+[36m(RolloutWorker pid=317074)[0m adding step xor rcx, rdi
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 29
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 970763
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  11
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'xor rdi, rdx ', 'cmp rsi, rdx ', 'and rsi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rsi] ', 'cmp rax, rdi ', 'xor rcx, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:45:58
+31    ( 1%)| Stats: Cls:15/15,In:40,R:41,SF:0,OF:17,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 32
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 0
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 15.4
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 18
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 0.3
+[36m(RolloutWorker pid=317074)[0m Finished at 14:45:58
+[36m(RolloutWorker pid=317074)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317074)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317074)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317074)[0m reward: 19
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m NUMBER OF STEPS: 30
+[36m(RolloutWorker pid=317074)[0m adding step sbb [r14 + rdi], rax
+[36m(RolloutWorker pid=317074)[0m NUMBER OF SUCCESSFUL STEPS: 30
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m #=======================================================#
+[36m(RolloutWorker pid=317074)[0m program:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 715883
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317074)[0m total instructions in program:  13
+[36m(RolloutWorker pid=317074)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, -48 # instrumentation', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rdx ', 'cmp rbx, rcx ', 'xor rdi, rdx ', 'and rdi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rdi], rax ', 'cmp rsi, rdx ', 'and rsi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rsi] ', 'cmp rax, rdi ', 'xor rcx, rdi ']
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m INFO: [fuzzer] Starting at 14:46:01
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0
+[36m(RolloutWorker pid=317074)[0m run the fuzzing round
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Entering slow path...
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Priming  7
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Increasing sample size... to 50
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Increasing sample size... to 100
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Increasing sample size... to 500
+32    ( 1%)| Stats: Cls:15/15,In:40,R:40,SF:0,OF:18,Fst:6,CN:3,CT:2,P1:0,CS:2,P2:1,V:0> Priming  7
+[36m(RolloutWorker pid=317074)[0m 2026-03-30 14:47:14,537	ERROR actor_manager.py:186 -- Worker exception caught during `apply()`: [Errno 2] No such file or directory: '/tmp/tmpbf3bx0jc'
+[36m(RolloutWorker pid=317074)[0m Traceback (most recent call last):
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 182, in apply
+[36m(RolloutWorker pid=317074)[0m     return func(self, *args, **kwargs)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 108, in <lambda>
+[36m(RolloutWorker pid=317074)[0m     (lambda w: w.sample(**random_action_kwargs))
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/util/tracing/tracing_helper.py", line 461, in _resume_span
+[36m(RolloutWorker pid=317074)[0m     return method(self, *_args, **_kwargs)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 678, in sample
+[36m(RolloutWorker pid=317074)[0m     batches = [self.input_reader.next()]
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 59, in next
+[36m(RolloutWorker pid=317074)[0m     batches = [self.get_data()]
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 225, in get_data
+[36m(RolloutWorker pid=317074)[0m     item = next(self._env_runner)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 330, in run
+[36m(RolloutWorker pid=317074)[0m     outputs = self.step()
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 386, in step
+[36m(RolloutWorker pid=317074)[0m     self._base_env.send_actions(actions_to_send)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 462, in send_actions
+[36m(RolloutWorker pid=317074)[0m     ) = self.vector_env.vector_step(action_vector)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 358, in vector_step
+[36m(RolloutWorker pid=317074)[0m     raise e
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 351, in vector_step
+[36m(RolloutWorker pid=317074)[0m     results = self.envs[i].step(actions[i])
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 233, in step
+[36m(RolloutWorker pid=317074)[0m     step_reward = self._reward()
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 407, in _reward
+[36m(RolloutWorker pid=317074)[0m     self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 510, in _full_obs_program
+[36m(RolloutWorker pid=317074)[0m     manager = _RoundManager(self.fuzzer, temp, inputs)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 136, in __init__
+[36m(RolloutWorker pid=317074)[0m     self.fuzzer.model.load_test_case(self.test_case)
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/model_unicorn/model.py", line 272, in load_test_case
+[36m(RolloutWorker pid=317074)[0m     code = test_case_obj.to_bytes(
+[36m(RolloutWorker pid=317074)[0m   File "/home/hz25d/sca-fuzzer/rvzr/tc_components/test_case_binary.py", line 82, in to_bytes
+[36m(RolloutWorker pid=317074)[0m     with open(self.obj_path, 'rb') as bin_file:
+[36m(RolloutWorker pid=317074)[0m FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpbf3bx0jc'
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Violations detected ==========================
+[36m(RolloutWorker pid=317074)[0m Violation Details:
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m -----------------------------------------------------------------------------------
+[36m(RolloutWorker pid=317074)[0m                              HTrace                              | ID:3   | ID:23 |
+[36m(RolloutWorker pid=317074)[0m -----------------------------------------------------------------------------------
+[36m(RolloutWorker pid=317074)[0m ^.....................^.................^.^..................... | 431    | 0     |
+[36m(RolloutWorker pid=317074)[0m ^.......................................^.^..................... | 190    | 411   |
+[36m(RolloutWorker pid=317074)[0m ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | 1      | 5     |
+[36m(RolloutWorker pid=317074)[0m ^.....................^.................^.^..^..^^^^^^^^^^^^^^^^ | 1      | 0     |
+[36m(RolloutWorker pid=317074)[0m ^............^^^.^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | 1      | 0     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^.^^^^^...........^.................^.^..................... | 1      | 0     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | 1      | 0     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^...................................^.^..................... | 1      | 0     |
+[36m(RolloutWorker pid=317074)[0m ^..........^............................^.^..................... | 0      | 200   |
+[36m(RolloutWorker pid=317074)[0m ^......^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^..^^^^........ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^.^^^^^^^^^^^^......................^.^..................... | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^.^^^^^^^^^^^^^^^^^^^^.^.^^^^.^^.^^^^^^^^^^^.^^.^^^^^^...... | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^.....................................^^^^^^^^^^.^^.^^^^^^^^^^^^ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^..........^............................^.^..^^^...^^^^^^^^^^^^^ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^............................^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^..........^............................^.^........^^^^^^^^^^^^^ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^......................................^.^....^................ | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^..... | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m ^^^^^^^^^^^^^^^^^^^^^^^^^^.^.^^^^.^^.^^^^^^^^^^^.^^.^^^^^^^..... | 0      | 1     |
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Test Cases: 33
+[36m(RolloutWorker pid=317074)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317074)[0m Violations: 1
+[36m(RolloutWorker pid=317074)[0m Effectiveness:
+[36m(RolloutWorker pid=317074)[0m   Total Cls: 15.7
+[36m(RolloutWorker pid=317074)[0m   Effective Cls: 15.7
+[36m(RolloutWorker pid=317074)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317074)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317074)[0m   Observation Filter: 18
+[36m(RolloutWorker pid=317074)[0m   Fast Path: 6
+[36m(RolloutWorker pid=317074)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317074)[0m   Tainting Check: 2
+[36m(RolloutWorker pid=317074)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317074)[0m   Large Sample Check: 2
+[36m(RolloutWorker pid=317074)[0m   Priming Check: 1
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m Duration: 73.2
+[36m(RolloutWorker pid=317074)[0m Finished at 14:47:14
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m FOUND VIOLATION!!!
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m
+[36m(RolloutWorker pid=317074)[0m [SpecEnv] Saved violation ASM -> /home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm/violation_20260330_144714_534249.asm
+[33m(raylet)[0m A worker died or was killed while executing a task by an unexpected system error. To troubleshoot the problem, check the logs for the dead worker. Lease ID: 00000000508c14db5ade31624dac5e1d428a9cd16236ae136a06e3210d98eadf Worker ID: 7f7f9247075a10b05cc0fd5ae8ef6a1a2dcdb8941d4a85fcca912804 Node ID: 886bfdb5d5f572a51e27b75290939950fc44c49391d1b285f377e69d Worker IP address: 192.168.123.81 Worker port: 37597 Worker PID: 317074 Worker exit type: SYSTEM_ERROR Worker exit detail: Worker exits unexpectedly. Worker exits with an exit code 1.
+2026-03-30 14:48:16,623	ERROR actor_manager.py:973 -- Ray error (The actor ee048f88e50a9c012765b13a01000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.), taking actor 1 out of service.
+2026-03-30 14:48:16,624	ERROR actor_manager.py:771 -- The actor ee048f88e50a9c012765b13a01000000 is unavailable: The actor is temporarily unavailable: UnexpectedSystemExit: Worker exits with an exit code 1.. The task may or may not have been executed on the actor.
+NoneType: None
+2026-03-30 14:48:16,624	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+2026-03-30 14:48:16,625	WARNING deprecation.py:50 -- DeprecationWarning: `ray.rllib.execution.train_ops.multi_gpu_train_one_step` has been deprecated. This will raise an error in the future!
+2026-03-30 14:48:17,433	WARNING ppo.py:545 -- The mean reward returned from the environment is 19.0 but the vf_clip_param is set to 10.0. Consider increasing it for policy: default_policy to improve value function convergence.
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 16,
+ 'policy_loss': np.float64(-0.17301102181275685),
+ 'training_iteration': 1}
+[36m(RolloutWorker pid=317080)[0m observation space: Dict('ctrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'htrace': Box(-9223372036854775808, 9223372036854775807, (50, 20), int64), 'instruction': Box(-1, 500, (50, 4), int64), 'recovery_cycles': Box(-1, 2147483647, (50, 20), int64), 'transient_uops': Box(-1, 2147483647, (50, 20), int64))
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 716897
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+2026-03-30 14:48:18,623	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 16,
+ 'policy_loss': None,
+ 'training_iteration': 2}
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Sandbox Base Address and Code Base Address (base 10): (18397645481851727872, 18397645481830862848)
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m 2026-03-30 14:48:19,339	WARNING catalog.py:548 -- Custom ModelV2 should accept all custom options as **kwargs, instead of expecting them in config['custom_model_config']!
+2026-03-30 14:48:20,625	WARNING rollout_ops.py:121 -- No samples returned from remote workers. If you have a slow environment or model, consider increasing the `sample_timeout_s` or decreasing the `rollout_fragment_length` in `AlgorithmConfig.env_runners().
+{'end_game_count': None,
+ 'episode_reward_mean': nan,
+ 'episodes_total': 0,
+ 'num_env_steps_sampled': 16,
+ 'policy_loss': None,
+ 'training_iteration': 3}
+2026-03-30 14:48:20,637	WARNING actor_manager.py:986 -- Bringing previously unhealthy, now-healthy actor 1 back into service.
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m #                     RESETTING                         #
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF TEST CASES: 1
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 1
+[36m(RolloutWorker pid=317080)[0m adding step add rdx, rbx
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 1
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 872401
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  3
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:22
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 1
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 0.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 0.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 0
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 0.2
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:22
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 2
+[36m(RolloutWorker pid=317080)[0m adding step mul [r14 + rdi]
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 2
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 929989
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  5
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:24
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+1     ( 1%)| Stats: Cls:0/0,In:40,R:41,SF:0,OF:1,Fst:0,CN:0,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 2
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 1
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 0.8
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:24
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 3
+[36m(RolloutWorker pid=317080)[0m adding step sbb [r14 + rcx], rax
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 3
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 886349
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  7
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:26
+2     ( 1%)| Stats: Cls:20/20,In:40,R:44,SF:0,OF:1,Fst:0,CN:1,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+2     ( 1%)| Stats: Cls:20/20,In:40,R:44,SF:0,OF:1,Fst:0,CN:1,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 3
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 0
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 0.8
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:27
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 4
+[36m(RolloutWorker pid=317080)[0m adding step mov [r14 + rax], 2
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 4
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 726073
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  9
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ', 'and rax, 0b1111111111111 # instrumentation', 'mov qword ptr [r14 + rax], 2 ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:29
+3     ( 1%)| Stats: Cls:20/20,In:40,R:45,SF:0,OF:1,Fst:0,CN:2,CT:0,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+3     ( 1%)| Stats: Cls:20/20,In:40,R:45,SF:0,OF:1,Fst:0,CN:2,CT:0,P1:0,CS:0,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 4
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 0
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 1.2
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:31
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 5
+[36m(RolloutWorker pid=317080)[0m adding step add rcx, rsi
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 5
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 209708
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  10
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ', 'and rax, 0b1111111111111 # instrumentation', 'mov qword ptr [r14 + rax], 2 ', 'add rcx, rsi ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:32
+4     ( 1%)| Stats: Cls:20/20,In:40,R:48,SF:0,OF:1,Fst:0,CN:2,CT:1,P1:0,CS:0,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+4     ( 1%)| Stats: Cls:20/20,In:40,R:48,SF:0,OF:1,Fst:0,CN:2,CT:1,P1:0,CS:0,P2:0,V:0> Entering slow path...
+4     ( 1%)| Stats: Cls:20/20,In:40,R:48,SF:0,OF:1,Fst:0,CN:2,CT:1,P1:0,CS:0,P2:0,V:0> Priming  4
+4     ( 1%)| Stats: Cls:20/20,In:40,R:48,SF:0,OF:1,Fst:0,CN:2,CT:1,P1:0,CS:0,P2:0,V:0> Increasing sample size... to 50
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 5
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 1
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 2.8
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:35
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 6
+[36m(RolloutWorker pid=317080)[0m adding step add rdi, rcx
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 6
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 618330
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  11
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ', 'and rax, 0b1111111111111 # instrumentation', 'mov qword ptr [r14 + rax], 2 ', 'add rdi, rcx ', 'add rcx, rsi ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:38
+5     ( 1%)| Stats: Cls:20/20,In:40,R:62,SF:0,OF:1,Fst:0,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 6
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 2
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 2
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 0.2
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:38
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 7
+[36m(RolloutWorker pid=317080)[0m adding step sbb [r14 + rsi], rax
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 7
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 328169
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  13
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ', 'and rax, 0b1111111111111 # instrumentation', 'mov qword ptr [r14 + rax], 2 ', 'add rdi, rcx ', 'and rsi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rsi], rax ', 'add rcx, rsi ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:40
+6     ( 1%)| Stats: Cls:20/20,In:40,R:56,SF:0,OF:2,Fst:0,CN:2,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+6     ( 1%)| Stats: Cls:20/20,In:40,R:56,SF:0,OF:2,Fst:0,CN:2,CT:1,P1:0,CS:1,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m ================================ Statistics ===================================
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Test Cases: 7
+[36m(RolloutWorker pid=317080)[0m Inputs per test case: 40.0
+[36m(RolloutWorker pid=317080)[0m Violations: 0
+[36m(RolloutWorker pid=317080)[0m Effectiveness:
+[36m(RolloutWorker pid=317080)[0m   Total Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m   Effective Cls: 20.0
+[36m(RolloutWorker pid=317080)[0m Discarded Test Cases:
+[36m(RolloutWorker pid=317080)[0m   Speculation Filter: 0
+[36m(RolloutWorker pid=317080)[0m   Observation Filter: 2
+[36m(RolloutWorker pid=317080)[0m   Fast Path: 0
+[36m(RolloutWorker pid=317080)[0m   Max Nesting Check: 3
+[36m(RolloutWorker pid=317080)[0m   Tainting Check: 1
+[36m(RolloutWorker pid=317080)[0m   Early Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m   Large Sample Check: 1
+[36m(RolloutWorker pid=317080)[0m   Priming Check: 0
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m Duration: 0.9
+[36m(RolloutWorker pid=317080)[0m Finished at 14:48:41
+[36m(RolloutWorker pid=317080)[0m misspec: False, reward: -30
+[36m(RolloutWorker pid=317080)[0m observable: True, reward: 20
+[36m(RolloutWorker pid=317080)[0m step penalty, reward: 19
+[36m(RolloutWorker pid=317080)[0m reward: 19
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m NUMBER OF STEPS: 8
+[36m(RolloutWorker pid=317080)[0m adding step mul [r14 + rdi]
+[36m(RolloutWorker pid=317080)[0m NUMBER OF SUCCESSFUL STEPS: 8
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m #=======================================================#
+[36m(RolloutWorker pid=317080)[0m program:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 1 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 2 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 3 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 4 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 5 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 6 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 7 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m iteration 8 observations:
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [prog_gen] Setting program_generator_seed to random value: 168715
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m WARNING: [executor] SMT is on! You may experience false positives.
+[36m(RolloutWorker pid=317080)[0m total instructions in program:  15
+[36m(RolloutWorker pid=317080)[0m all instructions:  ['.macro.measurement_start: nop qword ptr [rax + 0xff]', 'add al, 58 # instrumentation', 'add rdx, rbx ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ', 'and rcx, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rcx], rax ', 'and rax, 0b1111111111111 # instrumentation', 'mov qword ptr [r14 + rax], 2 ', 'add rdi, rcx ', 'and rsi, 0b1111111111111 # instrumentation', 'sbb qword ptr [r14 + rsi], rax ', 'add rcx, rsi ', 'and rdi, 0b1111111111111 # instrumentation', 'mul dword ptr [r14 + rdi] ']
+[36m(RolloutWorker pid=317080)[0m
+[36m(RolloutWorker pid=317080)[0m INFO: [fuzzer] Starting at 14:48:44
+7     ( 1%)| Stats: Cls:20/20,In:40,R:55,SF:0,OF:2,Fst:0,CN:3,CT:1,P1:0,CS:1,P2:0,V:0
+[36m(RolloutWorker pid=317080)[0m run the fuzzing round
+7     ( 1%)| Stats: Cls:20/20,In:40,R:55,SF:0,OF:2,Fst:0,CN:3,CT:1,P1:0,CS:1,P2:0,V:0> Entering slow path...
+[36m(RolloutWorker pid=317080)[0m 2026-03-30 14:48:45,085	ERROR actor_manager.py:186 -- Worker exception caught during `apply()`: Command 'taskset -c 0 cat /sys/rvzr_executor/trace' died with <Signals.SIGINT: 2>.
+[36m(RolloutWorker pid=317080)[0m Traceback (most recent call last):
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 182, in apply
+[36m(RolloutWorker pid=317080)[0m     return func(self, *args, **kwargs)
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 108, in <lambda>
+[36m(RolloutWorker pid=317080)[0m     (lambda w: w.sample(**random_action_kwargs))
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/util/tracing/tracing_helper.py", line 461, in _resume_span
+[36m(RolloutWorker pid=317080)[0m     return method(self, *_args, **_kwargs)
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 678, in sample
+[36m(RolloutWorker pid=317080)[0m     batches = [self.input_reader.next()]
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 59, in next
+[36m(RolloutWorker pid=317080)[0m     batches = [self.get_data()]
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 225, in get_data
+[36m(RolloutWorker pid=317080)[0m     item = next(self._env_runner)
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 330, in run
+[36m(RolloutWorker pid=317080)[0m     outputs = self.step()
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 386, in step
+[36m(RolloutWorker pid=317080)[0m     self._base_env.send_actions(actions_to_send)
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 462, in send_actions
+[36m(RolloutWorker pid=317080)[0m     ) = self.vector_env.vector_step(action_vector)
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 358, in vector_step
+[36m(RolloutWorker pid=317080)[0m     raise e
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/site-packages/ray/rllib/env/vector_env.py", line 351, in vector_step
+[36m(RolloutWorker pid=317080)[0m     results = self.envs[i].step(actions[i])
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 233, in step
+[36m(RolloutWorker pid=317080)[0m     step_reward = self._reward()
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 407, in _reward
+[36m(RolloutWorker pid=317080)[0m     self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/hi_SpecEnv.py", line 495, in _full_obs_program
+[36m(RolloutWorker pid=317080)[0m     violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 588, in start_SpecRL
+[36m(RolloutWorker pid=317080)[0m     violation = self.fuzzing_round(test_case, inputs, [])
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 663, in fuzzing_round
+[36m(RolloutWorker pid=317080)[0m     round_manager.execute_stage("taint_mistake")
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 168, in execute_stage
+[36m(RolloutWorker pid=317080)[0m     self._normal_stage()
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 216, in _normal_stage
+[36m(RolloutWorker pid=317080)[0m     self._collect_htraces()
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/fuzzer.py", line 261, in _collect_htraces
+[36m(RolloutWorker pid=317080)[0m     new_htraces = self.fuzzer.executor.trace_test_case(self.boosted_inputs,
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/executor.py", line 320, in trace_test_case
+[36m(RolloutWorker pid=317080)[0m     for rep_id, input_id, readings in _read_trace(n_reps, n_inputs, arch_mode=self._enable_mismatch_check_mode):
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/sca-fuzzer/rvzr/executor.py", line 153, in _read_trace
+[36m(RolloutWorker pid=317080)[0m     output = subprocess.check_output(
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/subprocess.py", line 424, in check_output
+[36m(RolloutWorker pid=317080)[0m     return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+[36m(RolloutWorker pid=317080)[0m   File "/home/hz25d/miniconda3/envs/specrl/lib/python3.9/subprocess.py", line 528, in run
+[36m(RolloutWorker pid=317080)[0m     raise CalledProcessError(retcode, process.args,
+[36m(RolloutWorker pid=317080)[0m subprocess.CalledProcessError: Command 'taskset -c 0 cat /sys/rvzr_executor/trace' died with <Signals.SIGINT: 2>.
+Training interrupted by user.
