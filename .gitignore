@@ -19,3 +19,4 @@ site
 dist/
 .cache/
 .claude/
+wandb/
