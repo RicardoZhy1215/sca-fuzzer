@@ -1,5 +1,28 @@
 # Vocabulary
-OPERAND_SPACE = ["mov", "add", "mul", "div", "xor", "cmp", "sbb"]
+# Split mov into explicit operand-mode variants so each opcode has stable semantics.
+OPERAND_SPACE = [
+    "mov_rr",  # mov reg, reg
+    "mov_ri",  # mov reg, imm
+    "mov_rm",  # mov reg, [reg]
+    "mov_mr",  # mov [reg], reg
+    "mov_mi",  # mov [reg], imm
+    "add_rr",  # add reg, reg
+    "add_ri",  # add reg, imm
+    "add_rm",  # add reg, [reg]
+    "add_mr",  # add [reg], reg
+    "add_mi",  # add [reg], imm
+    "mul",
+    "div",
+    "xor",
+    "cmp_rr",  # cmp reg, reg
+    "cmp_rm",  # cmp reg, [reg]
+    "cmp_mr",  # cmp [reg], reg
+    "sbb_rr",  # sbb reg, reg
+    "sbb_ri",  # sbb reg, imm
+    "sbb_rm",  # sbb reg, [reg]
+    "sbb_mr",  # sbb [reg], reg
+    "sbb_mi",  # sbb [reg], imm
+]
 DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"] # add more regs like al, bl,eax, etc.
 SRC_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
 IMMS_SPACE = ["0", "1", "2", "3", "4", "5", "6", "7"] #todo: need to extend the IMM Space based on the Sandbox area.
@@ -9,19 +32,31 @@ EMPTY_REG_ID = 0
 EMPTY_IMM_ID = 0
 
 OPCODE_OPERAND_SPEC = {
-    "mov": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
-    "add": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
+    "mov_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "mov_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "add_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "add_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "add_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "add_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "add_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
     "mul": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
     "div": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
     "xor": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "cmp": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "sbb": {"dst_reg": "required", "src_reg": "optional", "imm": "optional"},
+    "cmp_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "cmp_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "cmp_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "sbb_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "sbb_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "sbb_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "sbb_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "sbb_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
 }
-# Constraint: for mov/add/sbb with optional src_reg and optional imm, at least one of src_reg or imm must be non-empty
-OPCODE_NEEDS_SRC_OR_IMM = ["mov", "add", "sbb"]
 # Exclude dst_reg == src_reg for these opcodes (redundant: mov rax,rax no-op, cmp rax,rax pointless).
 # xor rax,rax is kept - it's a useful zeroing idiom.
-OPCODE_EXCLUDE_DST_EQ_SRC = ["mov", "add", "cmp", "sbb"]
+OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr", "add_rr", "cmp_rr", "sbb_rr"]
 
 
 def _is_reg_empty(reg_id: int) -> bool:
@@ -59,17 +94,7 @@ def _check_rule_operand_spec(opcode_id: int, reg_src_id: int, reg_dst_id: int, i
 
 
 def _check_rule_src_or_imm(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_id: int) -> bool:
-    """Rule 2: OPCODE_NEEDS_SRC_OR_IMM - mov/add/sbb need src_reg XOR imm (one and only one)."""
-    if opcode_id < 1 or opcode_id > len(OPERAND_SPACE):
-        return True
-    opcode_name = OPERAND_SPACE[opcode_id - 1]
-    spec = OPCODE_OPERAND_SPEC.get(opcode_name, {})
-    if opcode_name not in OPCODE_NEEDS_SRC_OR_IMM or (spec.get("src_reg") != "optional" or spec.get("imm") != "optional"):
-        return True
-    if _is_reg_empty(reg_src_id) and _is_imm_empty(imm_id):
-        return False
-    if not _is_reg_empty(reg_src_id) and not _is_imm_empty(imm_id):
-        return False
+    """Rule 2: reserved for opcodes with coupled src/imm semantics."""
     return True
 
 
@@ -115,13 +140,7 @@ def is_action_legal(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_id: in
         return False
     if not check(imm_req, _is_imm_empty(imm_id)):
         return False
-    # mov/add/sbb: src is EITHER reg OR imm, not both (mutually exclusive)
-    if opcode_name in OPCODE_NEEDS_SRC_OR_IMM and (src_req == "optional" and imm_req == "optional"):
-        if _is_reg_empty(reg_src_id) and _is_imm_empty(imm_id):
-            return False
-        if not _is_reg_empty(reg_src_id) and not _is_imm_empty(imm_id):
-            return False
-    # Exclude dst_reg == src_reg for opcodes where it's redundant (mov/cmp) or pointless
+    # Exclude dst_reg == src_reg for opcodes where it's redundant (mov_rr/cmp_rr) or pointless
     if opcode_name in OPCODE_EXCLUDE_DST_EQ_SRC:
         if not _is_reg_empty(reg_src_id) and not _is_reg_empty(reg_dst_id) and reg_src_id == reg_dst_id:
             return False
@@ -252,7 +271,7 @@ def get_reg_dst_mask(opcode_id: int, reg_src_id: int = 0) -> list:
         base = [False] + [True] * n_reg
     elif dst_req == "forbidden":
         base = [True] + [False] * n_reg
-    # Exclude dst==src for mov/add/cmp/sbb
+    # Exclude dst==src for mov_rr/add/cmp/sbb
     if opcode_name in OPCODE_EXCLUDE_DST_EQ_SRC and reg_src_id > 0:
         if reg_src_id <= n_reg and base[reg_src_id]:
             base = base[:]
@@ -263,7 +282,6 @@ def get_reg_dst_mask(opcode_id: int, reg_src_id: int = 0) -> list:
 def get_imm_mask(opcode_id: int, reg_src_id: int = 0) -> list:
     """
     Mask for imm given opcode_id and reg_src_id.
-    For mov/add/sbb (OPCODE_NEEDS_SRC_OR_IMM): src XOR imm - if reg_src non-empty, imm must be empty.
     """
     n_imm = len(IMMS_SPACE)
     if opcode_id == 0:
@@ -275,11 +293,6 @@ def get_imm_mask(opcode_id: int, reg_src_id: int = 0) -> list:
         return [False] + [True] * n_imm
     if imm_req == "forbidden":
         return [True] + [False] * n_imm
-    # mov/add/sbb: src and imm mutually exclusive
-    if opcode_name in OPCODE_NEEDS_SRC_OR_IMM:
-        if reg_src_id != 0:
-            return [True] + [False] * n_imm  # imm must be empty
-        return [False] + [True] * n_imm  # reg_src empty -> imm must be non-empty
     return [True] * (n_imm + 1)
 
 
@@ -307,23 +320,55 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
     rs = SRC_REGS_SPACE[reg_src_id - 1] if reg_src_id else None
     imm_val = IMMS_SPACE[imm_id - 1] if imm_id else None
 
-    if opcode == "mov":
-        if imm_val is not None:
-            return Instruction("mov", False, "", False).add_op(
-                MemoryOp(rd, 64, False, True)
-            ).add_op(ImmediateOp(imm_val, 64))
+    if opcode == "mov_rr":
         return Instruction("mov", False, "", False).add_op(
             RegisterOp(rd, 64, False, True)
         ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "add":
-        if imm_val is not None:
-            return Instruction("add", False, "", False).add_op(
-                RegisterOp(rd, 64, False, True)
-            ).add_op(ImmediateOp(imm_val, 64))
+    if opcode == "mov_ri":
+        return Instruction("mov", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(ImmediateOp(imm_val, 64))
+
+    if opcode == "mov_rm":
+        return Instruction("mov", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(MemoryOp(rs, 64, True, False))
+
+    if opcode == "mov_mr":
+        return Instruction("mov", False, "", False).add_op(
+            MemoryOp(rd, 64, False, True)
+        ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "mov_mi":
+        return Instruction("mov", False, "", False).add_op(
+            MemoryOp(rd, 64, False, True)
+        ).add_op(ImmediateOp(imm_val, 64))
+
+    if opcode == "add_rr":
         return Instruction("add", False, "", False).add_op(
             RegisterOp(rd, 64, False, True)
         ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "add_ri":
+        return Instruction("add", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(ImmediateOp(imm_val, 64))
+
+    if opcode == "add_rm":
+        return Instruction("add", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(MemoryOp(rs, 64, True, False))
+
+    if opcode == "add_mr":
+        return Instruction("add", False, "", False).add_op(
+            MemoryOp(rd, 64, False, True)
+        ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "add_mi":
+        return Instruction("add", False, "", False).add_op(
+            MemoryOp(rd, 64, False, True)
+        ).add_op(ImmediateOp(imm_val, 64))
 
     if opcode == "mul":
         return Instruction("mul", False, "", False).add_op(
@@ -345,19 +390,45 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
     #         MemoryOp(rd, 32, True, True)
     #     ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "cmp":
+    if opcode == "cmp_rr":
         return Instruction("cmp", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "sbb":
-        if imm_val is not None:
-            return Instruction("sbb", False, "", False).add_op(
-                MemoryOp(rd, 64, True, True)
-            ).add_op(ImmediateOp(imm_val, 8))
+    if opcode == "cmp_rm":
+        return Instruction("cmp", False, "", False).add_op(
+            RegisterOp(rd, 64, True, True)
+        ).add_op(MemoryOp(rs, 64, True, False))
+
+    if opcode == "cmp_mr":
+        return Instruction("cmp", False, "", False).add_op(
+            MemoryOp(rd, 64, True, True)
+        ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "sbb_rr":
+        return Instruction("sbb", False, "", False).add_op(
+            RegisterOp(rd, 64, True, True)
+        ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "sbb_ri":
+        return Instruction("sbb", False, "", False).add_op(
+            RegisterOp(rd, 64, True, True)
+        ).add_op(ImmediateOp(imm_val, 8))
+
+    if opcode == "sbb_rm":
+        return Instruction("sbb", False, "", False).add_op(
+            RegisterOp(rd, 64, True, True)
+        ).add_op(MemoryOp(rs, 64, True, False))
+
+    if opcode == "sbb_mr":
         return Instruction("sbb", False, "", False).add_op(
             MemoryOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "sbb_mi":
+        return Instruction("sbb", False, "", False).add_op(
+            MemoryOp(rd, 64, True, True)
+        ).add_op(ImmediateOp(imm_val, 8))
 
     return None
 

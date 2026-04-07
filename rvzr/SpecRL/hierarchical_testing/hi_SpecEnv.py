@@ -50,6 +50,7 @@ import os
 import shutil
 from datetime import datetime
 from subprocess import run
+from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
 
 
 
@@ -149,11 +150,9 @@ class SpecEnv(gym.Env):
         target_desc = X86TargetDesc()
         self.printer = _X86Printer(target_desc)
         instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
-        unique_instruction_names = set(spec.name.lower() for spec in instruction_set.instructions)
-        # self.opcode_vocab = list(dict.fromkeys(inst.name.lower() for inst in self.instruction_space))
-        self.opcode_vocab = list(unique_instruction_names)
-        # self.reg_vocab = instruction_set.get_reg64_spec()
-        self.reg_vocab = sorted(list(instruction_set.get_reg64_spec()))
+        # Keep observation opcode IDs aligned with the hierarchical action space.
+        self.opcode_vocab = list(OPERAND_SPACE)
+        self.reg_vocab = list(DST_REGS_SPACE)
         # print("opcode_vocab", self.opcode_vocab)
 
         self.asm_parser = X86AsmParser(instruction_set, target_desc)
@@ -438,113 +437,118 @@ class SpecEnv(gym.Env):
         self.fuzzer.executor = self.executor
         asm = tempfile.NamedTemporaryFile(delete=False)
         bin = tempfile.NamedTemporaryFile(delete=False)
+        fenced = None
+        fenced_obj = None
 
-        temp = copy.deepcopy(program)
+        def _safe_remove(path: Optional[str]) -> None:
+            if path and os.path.exists(path):
+                os.remove(path)
 
-        all_instructions = []
-        for bb in temp.iter_basic_blocks():
-            for instr in list(bb):
-                instr._section_id = -1
-                all_instructions.append(instr)
-        total_instructions_num = len(all_instructions)
-        print("total instructions in program: ", total_instructions_num)
-        print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
+        try:
+            temp = copy.deepcopy(program)
 
+            all_instructions = []
+            for bb in temp.iter_basic_blocks():
+                for instr in list(bb):
+                    instr._section_id = -1
+                    all_instructions.append(instr)
+            total_instructions_num = len(all_instructions)
+            print("total instructions in program: ", total_instructions_num)
+            print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
 
-        temp.assign_obj(bin.name)
-        assemble(temp)
-        self.elf_parser.populate_elf_data(temp.get_obj(), temp)
+            temp.assign_obj(bin.name)
+            assemble(temp)
+            self.elf_parser.populate_elf_data(temp.get_obj(), temp)
 
-
-        manager = _RoundManager(self.fuzzer, temp, inputs)
-        manager._boost_inputs()
-        boosted_inputs = manager.boosted_inputs
-
-        # check for violations
-        ctraces = self.model.trace_test_case(boosted_inputs, 1)
-        htraces = self.executor.trace_test_case(boosted_inputs, 10)
-
-        # check if misspec occurs, updates flag
-        pfc_feedback = [ht.get_max_pfc() for ht in htraces]
-        for i, pfc_values in enumerate(pfc_feedback):
-            if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
-                self.misspec = True
-
-        # check if it's observable, updates flag
-
-        fenced = tempfile.NamedTemporaryFile(delete=False)
-        fenced_obj = tempfile.NamedTemporaryFile(delete=False)
-
-        debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
-        os.makedirs(debug_path, exist_ok=True)
-        fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
-
-        self.executor.load_test_case(fenced_test_case)
-        fenced_htraces = self.executor.trace_test_case(inputs, n_reps=10)
-
-
-        if fenced_htraces != htraces:
-            self.observable = True
-
-        traces_match = True
-        for i, _ in enumerate(inputs):
-            if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
-                traces_match = False
-                break
-        # print("traces_match ***************", traces_match)
-
-        violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
-        if not violations:  # nothing detected? -> we are done here, move to next test case
-            return None
-
-        print("\n\n\nFOUND VIOLATION!!!\n\n\n")
-        self._save_violation_asm(temp, debug_path)
-        os.remove(fenced.name)
-        os.remove(fenced_obj.name)
-        os.remove(asm.name)
-        os.remove(bin.name)
-
-        # 2. Repeat with with max nesting
-        if 'seq' not in CONF.contract_execution_clause:
-            # self.LOG.fuzzer_nesting_increased()
-            #boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
             manager = _RoundManager(self.fuzzer, temp, inputs)
-            boosted_inputs = manager._boost_inputs()
-            ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
-            htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
-            violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
-            if not violations:
-                print("\n\n\n FAILED MAX NESTING \n\n\n")
+            manager._boost_inputs()
+            boosted_inputs = manager.boosted_inputs
+
+            # check for violations
+            ctraces = self.model.trace_test_case(boosted_inputs, 1)
+            htraces = self.executor.trace_test_case(boosted_inputs, 10)
+
+            # check if misspec occurs, updates flag
+            pfc_feedback = [ht.get_max_pfc() for ht in htraces]
+            for i, pfc_values in enumerate(pfc_feedback):
+                if pfc_values[0] > pfc_values[1] or pfc_values[2] > 0:
+                    self.misspec = True
+
+            # check if it's observable, updates flag
+            fenced = tempfile.NamedTemporaryFile(delete=False)
+            fenced_obj = tempfile.NamedTemporaryFile(delete=False)
+
+            debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
+            os.makedirs(debug_path, exist_ok=True)
+            fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
+
+            self.executor.load_test_case(fenced_test_case)
+            fenced_htraces = self.executor.trace_test_case(inputs, n_reps=10)
+
+            if fenced_htraces != htraces:
+                self.observable = True
+
+            traces_match = True
+            for i, _ in enumerate(inputs):
+                if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
+                    traces_match = False
+                    break
+            # print("traces_match ***************", traces_match)
+
+            violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
+            if not violations:  # nothing detected? -> we are done here, move to next test case
                 return None
 
-        # 3. Check if the violation is reproducible
-        # if self.fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
-        #     # STAT.flaky_violations += 1
-        #     if CONF.ignore_flaky_violations:
-        #         print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
-        #         return None
+            print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+            self._save_violation_asm(temp, debug_path)
 
-        # # 4. Check if the violation survives priming
-        # if not CONF.enable_priming:
-        #     return violations[-1]
-        # # STAT.required_priming += 1
+            # 2. Repeat with with max nesting
+            # if 'seq' not in CONF.contract_execution_clause:
+                # self.LOG.fuzzer_nesting_increased()
+                #boosted_inputs = fuzzer.boost_inputs(inputs, CONF.model_max_nesting)
+                # manager = _RoundManager(self.fuzzer, temp, inputs)
+                # manager._boost_inputs()
+                # boosted_inputs = manager.boosted_inputs
+                # ctraces = self.model.trace_test_case(boosted_inputs, CONF.model_max_nesting)
+                # htraces = self.executor.trace_test_case(boosted_inputs, CONF.executor_repetitions)
+                # violations = self.fuzzer.analyser.filter_violations(boosted_inputs, ctraces, htraces, True)
+                # if not violations:
+                #     print("\n\n\n FAILED MAX NESTING \n\n\n")
+                #     return None
 
-        # violation_stack = list(violations)  # make a copy
-        # while violation_stack:
-        #     # self.LOG.fuzzer_priming(len(violation_stack))
-        #     violation: EquivalenceClass = violation_stack.pop()
-        #     if self.fuzzer.priming(violation, boosted_inputs):
-        #         break
-        # else:
-        #     # All violations were cleared by priming.
-        #     print("\n\n\n FAILED PRIMING \n\n\n")
-        #     return None
+            # 3. Check if the violation is reproducible
+            # if self.fuzzer.check_if_reproducible(violations, boosted_inputs, htraces):
+            #     # STAT.flaky_violations += 1
+            #     if CONF.ignore_flaky_violations:
+            #         print("\n\n\n FAILED REPRODUCIBLE \n\n\n")
+            #         return None
 
-        print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+            # # 4. Check if the violation survives priming
+            # if not CONF.enable_priming:
+            #     return violations[-1]
+            # # STAT.required_priming += 1
 
-        # Violation survived priming. Report it
-        self.leak = True
-        return violations
+            # violation_stack = list(violations)  # make a copy
+            # while violation_stack:
+            #     # self.LOG.fuzzer_priming(len(violation_stack))
+            #     violation: EquivalenceClass = violation_stack.pop()
+            #     if self.fuzzer.priming(violation, boosted_inputs):
+            #         break
+            # else:
+            #     # All violations were cleared by priming.
+            #     print("\n\n\n FAILED PRIMING \n\n\n")
+            #     return None
+
+            print("\n\n\nFOUND VIOLATION!!!\n\n\n")
+
+            # Violation survived priming. Report it
+            self.leak = True
+            return violations
+        finally:
+            _safe_remove(fenced.name if fenced is not None else None)
+            _safe_remove(fenced_obj.name if fenced_obj is not None else None)
+            _safe_remove(asm.name)
+            _safe_remove(bin.name)
 
     def _save_violation_asm(self, program: TestCaseProgram, debug_path: str) -> Optional[str]:
         """
@@ -629,6 +633,64 @@ class SpecEnv(gym.Env):
                 'rip': 'rip',
             }
         return mapping.get(reg_name, reg_name)
+
+    def _get_instruction_variant_name(self, instr: Instruction) -> str:
+        """Map a concrete instruction back to the action-space opcode variant."""
+        name_lower = instr.name.lower()
+        if name_lower not in {"mov", "add", "cmp", "sbb"}:
+            return name_lower
+
+        has_mem = len(instr.get_mem_operands()) > 0
+        has_imm = len(instr.get_imm_operands()) > 0
+        reg_ops = instr.get_reg_operands(include_implicit=False)
+        has_reg_src = any(op.src for op in reg_ops)
+        has_reg_dst = any(op.dest for op in reg_ops)
+
+        if name_lower == "mov":
+            if has_reg_dst and has_reg_src and not has_mem and not has_imm:
+                return "mov_rr"
+            if has_reg_dst and has_imm and not has_mem:
+                return "mov_ri"
+            if has_reg_dst and has_mem:
+                return "mov_rm"
+            if has_mem and has_reg_src:
+                return "mov_mr"
+            if has_mem and has_imm:
+                return "mov_mi"
+
+        if name_lower == "add":
+            if has_reg_dst and has_reg_src and not has_mem and not has_imm:
+                return "add_rr"
+            if has_reg_dst and has_imm and not has_mem:
+                return "add_ri"
+            if has_reg_dst and has_mem:
+                return "add_rm"
+            if has_mem and has_reg_src:
+                return "add_mr"
+            if has_mem and has_imm:
+                return "add_mi"
+
+        if name_lower == "cmp":
+            if has_reg_dst and has_reg_src and not has_mem and not has_imm:
+                return "cmp_rr"
+            if has_reg_dst and has_mem:
+                return "cmp_rm"
+            if has_mem and has_reg_src:
+                return "cmp_mr"
+
+        if name_lower == "sbb":
+            if has_reg_dst and has_reg_src and not has_mem and not has_imm:
+                return "sbb_rr"
+            if has_reg_dst and has_imm and not has_mem:
+                return "sbb_ri"
+            if has_reg_dst and has_mem:
+                return "sbb_rm"
+            if has_mem and has_reg_src:
+                return "sbb_mr"
+            if has_mem and has_imm:
+                return "sbb_mi"
+
+        return name_lower
     
     def _extract_last_instr_info(self, program: TestCaseProgram) -> List[int]:
         """Return [opname_id, reg_src_id, reg_dst_id, imm_id] for last instruction."""
@@ -636,8 +698,8 @@ class SpecEnv(gym.Env):
         if last_instr is None:
             return [-1, -1, -1, -1]
 
-        name_lower = last_instr.name.lower()
-        opname_id = self.opcode_vocab.index(name_lower) if name_lower in self.opcode_vocab else -1
+        variant_name = self._get_instruction_variant_name(last_instr)
+        opname_id = self.opcode_vocab.index(variant_name) if variant_name in self.opcode_vocab else -1
 
         reg_ops = last_instr.get_reg_operands(include_implicit=True)
         reg_src_id = -1

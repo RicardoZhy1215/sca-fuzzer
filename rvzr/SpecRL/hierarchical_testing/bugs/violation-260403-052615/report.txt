@@ -1,0 +1,53 @@
+# Violation Report
+
+* Test Case ID: 4284
+* Detected: 03.04.26 at 05:26:15
+
+* Time to detection: 28.879975
+* Statistics:
+Test Cases: 4285
+Inputs per test case: 40.0
+Violations: 152
+Effectiveness: 
+  Total Cls: 19.0
+  Effective Cls: 19.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1323
+  Fast Path: 1038
+  Max Nesting Check: 640
+  Tainting Check: 366
+  Early Priming Check: 0
+  Large Sample Check: 451
+  Priming Check: 294
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 10
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #6
+* Hardware trace:
+ ^...^..............^....^.^.^^....^...^........^................ [497]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+^...^..............^....^.^.^^....^...^........^.........^^^^^^^ [1]
+
+* Contract trace (hash): 15720574290921891542
+* Contract trace (detailed): [pc: 0x8, pc: 0xa, pc: 0x11, mem: 0x2603, mem: 0x2603, pc: 0x15, pc: 0x1b, mem: 0x2bf4, pc: 0x1f, pc: 0x25, mem: 0x2890, mem: 0x2890, pc: 0x2a, pc: 0x2d, pc: 0x33, mem: 0x2890, pc: 0x37, pc: 0x3a, pc: 0x3d, pc: 0x40, pc: 0x43, pc: 0x4a, mem: 0x1000, pc: 0x52, pc: 0x59, mem: 0x1000, pc: 0x5d, pc: 0x64, mem: 0x1003, pc: 0x68, pc: 0x6a, pc: 0xef]
+
+Input #26
+* Hardware trace:
+ ^...^...^..............^^.....^.^.^............^^.......^....... [495]
+^...^...^..............^^.....^.^.^............^^.......^^...... [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^.^^^^^^^^^^.^^^^^^^^^^^^.^^.^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^ [1]
+^...^..^^.^^..^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+* Contract trace (hash): 15720574290921891542
+* Contract trace (detailed): [pc: 0x8, pc: 0xa, pc: 0x11, mem: 0x2603, mem: 0x2603, pc: 0x15, pc: 0x1b, mem: 0x2bf4, pc: 0x1f, pc: 0x25, mem: 0x2890, mem: 0x2890, pc: 0x2a, pc: 0x2d, pc: 0x33, mem: 0x2890, pc: 0x37, pc: 0x3a, pc: 0x3d, pc: 0x40, pc: 0x43, pc: 0x4a, mem: 0x1000, pc: 0x52, pc: 0x59, mem: 0x1000, pc: 0x5d, pc: 0x64, mem: 0x1003, pc: 0x68, pc: 0x6a, pc: 0xef]

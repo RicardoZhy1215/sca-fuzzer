@@ -78,10 +78,9 @@ class ObsEncoder(nn.Module):
         self.num_inputs = num_inputs
         self.hidden_dim = hidden_dim
 
-        from rvzr.isa_spec import InstructionSet
-        instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
-        opcode_size = len(set(spec.name.lower() for spec in instruction_set.instructions))
-        reg_size = len(instruction_set.get_reg64_spec())
+        opcode_size = get_num_opcodes() - 1
+        reg_size = get_num_regs() - 1
+        imm_size = get_num_imms() - 1
 
         instr_box = obs_space.spaces.get("instruction")
         if instr_box is not None:
@@ -92,7 +91,7 @@ class ObsEncoder(nn.Module):
                     opcode_size + 2,
                     reg_size + 2,
                     reg_size + 2,
-                    8,
+                    imm_size + 2,
                 ]
             self.instr_embeds = nn.ModuleList([
                 nn.Embedding(max(2, s), instruction_embed_dim, padding_idx=0)

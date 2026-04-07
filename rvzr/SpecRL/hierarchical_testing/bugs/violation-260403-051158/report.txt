@@ -1,0 +1,62 @@
+# Violation Report
+
+* Test Case ID: 4204
+* Detected: 03.04.26 at 05:11:58
+
+* Time to detection: 63.297136
+* Statistics:
+Test Cases: 4205
+Inputs per test case: 40.0
+Violations: 145
+Effectiveness: 
+  Total Cls: 19.0
+  Effective Cls: 19.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1297
+  Fast Path: 1023
+  Max Nesting Check: 629
+  Tainting Check: 357
+  Early Priming Check: 0
+  Large Sample Check: 443
+  Priming Check: 292
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 10
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #16
+* Hardware trace:
+ ^...^.........^^..^.^........^..^.............^^..^.^.^......... [624]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+* Contract trace (hash): 16545108168088770374
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x149d, mem: 0x149d, pc: 0x17, pc: 0x1e, mem: 0x149d, pc: 0x22, pc: 0x25, pc: 0x2b, mem: 0x2bce, pc: 0x2f, pc: 0x36, mem: 0x1da4, mem: 0x1da4, pc: 0x3b, pc: 0x3f, mem: 0x1da4, pc: 0x43, pc: 0x46, pc: 0x4c, mem: 0x1ca4, pc: 0x50, pc: 0x57, mem: 0x1534, mem: 0x1534, pc: 0x5c, pc: 0x60, mem: 0x1534, pc: 0x64, pc: 0x6a, mem: 0x1100, pc: 0x6e, pc: 0x71, pc: 0x77, mem: 0x2d00, pc: 0x7b, pc: 0x7e, pc: 0x84, mem: 0x1800, pc: 0x88, pc: 0x8e, mem: 0x1000, pc: 0x92, pc: 0x95, pc: 0x98, pc: 0x9e, mem: 0x1000, pc: 0xa2, pc: 0xa9, mem: 0x1534, pc: 0xad, pc: 0xb4, mem: 0x1000, mem: 0x1000, pc: 0xb9, pc: 0xbd, mem: 0x1000, pc: 0xc1, pc: 0xc8, mem: 0x23bf, mem: 0x23bf, pc: 0xcc, pc: 0xd3, mem: 0x1000, mem: 0x1000, pc: 0xd8, pc: 0xdb, pc: 0xe1, mem: 0x1100, pc: 0xe5, pc: 0xe8, pc: 0xee, mem: 0x2d00, pc: 0xf2, pc: 0xf8, mem: 0x1800, pc: 0xfc, pc: 0x102, mem: 0x1000, pc: 0x106, pc: 0x109, pc: 0x10f, mem: 0x1000, pc: 0x113, pc: 0x119, mem: 0x1000, pc: 0x11d, pc: 0x11f, pc: 0x1be]
+
+Input #36
+* Hardware trace:
+ ^...^.........^^.^^.^...........^....^........^^..^.^.^......... [612]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+^...^^.^...^^.^^^^^.^^^.^^^^^^..^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^.^^^^^^^^^^^^^..^^^^^^^^^^^^^.^^^^ [1]
+^^^^^^..^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^........^^.^^.^...........^....^........^^..^.^.^......... [1]
+^^^^^^^^^^^^^^^^^^^^^...........^....^........^^..^.^.^......... [1]
+^...^.........^^.^^.^...........^....^...^^.^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^.^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^...^.........^^.^^.^...........^....^.^......^^..^.^.^........^ [1]
+^^..^..^......^^.^^.^...........^....^........^^..^.^.^......... [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^.^....^........^^..^.^.^.....^... [1]
+^...^.........^^.^^.^...........^....^........^^..^^^^^^^^^^^^^^ [1]
+^...^.........^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+* Contract trace (hash): 16545108168088770374
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x149d, mem: 0x149d, pc: 0x17, pc: 0x1e, mem: 0x149d, pc: 0x22, pc: 0x25, pc: 0x2b, mem: 0x2bce, pc: 0x2f, pc: 0x36, mem: 0x1da4, mem: 0x1da4, pc: 0x3b, pc: 0x3f, mem: 0x1da4, pc: 0x43, pc: 0x46, pc: 0x4c, mem: 0x1ca4, pc: 0x50, pc: 0x57, mem: 0x1534, mem: 0x1534, pc: 0x5c, pc: 0x60, mem: 0x1534, pc: 0x64, pc: 0x6a, mem: 0x1100, pc: 0x6e, pc: 0x71, pc: 0x77, mem: 0x2d00, pc: 0x7b, pc: 0x7e, pc: 0x84, mem: 0x1800, pc: 0x88, pc: 0x8e, mem: 0x1000, pc: 0x92, pc: 0x95, pc: 0x98, pc: 0x9e, mem: 0x1000, pc: 0xa2, pc: 0xa9, mem: 0x1534, pc: 0xad, pc: 0xb4, mem: 0x1000, mem: 0x1000, pc: 0xb9, pc: 0xbd, mem: 0x1000, pc: 0xc1, pc: 0xc8, mem: 0x23bf, mem: 0x23bf, pc: 0xcc, pc: 0xd3, mem: 0x1000, mem: 0x1000, pc: 0xd8, pc: 0xdb, pc: 0xe1, mem: 0x1100, pc: 0xe5, pc: 0xe8, pc: 0xee, mem: 0x2d00, pc: 0xf2, pc: 0xf8, mem: 0x1800, pc: 0xfc, pc: 0x102, mem: 0x1000, pc: 0x106, pc: 0x109, pc: 0x10f, mem: 0x1000, pc: 0x113, pc: 0x119, mem: 0x1000, pc: 0x11d, pc: 0x11f, pc: 0x1be]

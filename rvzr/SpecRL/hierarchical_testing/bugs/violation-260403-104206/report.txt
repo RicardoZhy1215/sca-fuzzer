@@ -1,0 +1,66 @@
+# Violation Report
+
+* Test Case ID: 5806
+* Detected: 03.04.26 at 10:42:06
+
+* Time to detection: 63.359305
+* Statistics:
+Test Cases: 5807
+Inputs per test case: 40.0
+Violations: 237
+Effectiveness: 
+  Total Cls: 19.2
+  Effective Cls: 19.2
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1761
+  Fast Path: 1376
+  Max Nesting Check: 836
+  Tainting Check: 492
+  Early Priming Check: 0
+  Large Sample Check: 584
+  Priming Check: 404
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 10
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #16
+* Hardware trace:
+ ^..^^.......^^^^^.^..^..^...^^..^^..........^.^^.^..^.^....^.... [611]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+^^.^^.......^^^^^^^..^..^...^^..^^..........^.^^.^..^.^....^.... [2]
+^..^^.......^^^^^.^..^..^...^^..^^..........^.^^.^.^^^^^^^^^^^^^ [2]
+^..^^.......^^^^^.^..^..^...^^..^^..........^.^^.^..^.^^^^^^^^^^ [1]
+^.^^^^^^^^^^^^^^^^^^^^.^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^.^ [1]
+^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^.^^^^^^^.^.^^.^.^^^^^^^^^^^^^^.^.^ [1]
+^..^^.......^^^^^.^..^..^...^^..^^..........^^^^^^^.^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^..^^^^^^^^^^^^^^^..^.^^.^..^.^....^.... [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^..^^^....^.... [1]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^.^.^.^^^^^^.^^.^..^^^^^^..^^^^^^.^.^^^^.^^^^^^^^^^^^^^.^.^ [1]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^^ [1]
+
+* Contract trace (hash): 4491501160129772460
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xe, pc: 0x14, mem: 0x260a, pc: 0x18, pc: 0x1e, mem: 0x1856, pc: 0x22, pc: 0x29, mem: 0x173e, pc: 0x2d, pc: 0x34, mem: 0x154c, pc: 0x38, pc: 0x3e, mem: 0x182c, pc: 0x42, pc: 0x48, mem: 0x1334, pc: 0x4c, pc: 0x4f, pc: 0x55, mem: 0x10e8, pc: 0x59, pc: 0x60, mem: 0x1da4, pc: 0x68, pc: 0x6e, mem: 0x1c78, pc: 0x72, pc: 0x79, mem: 0x1871, mem: 0x1871, pc: 0x7e, pc: 0x82, mem: 0x1871, pc: 0x86, pc: 0x8d, mem: 0x1871, pc: 0x91, pc: 0x97, mem: 0x1b00, pc: 0x9b, pc: 0xa1, mem: 0x2400, pc: 0xa5, pc: 0xac, mem: 0x136b, pc: 0xb0, pc: 0xb7, mem: 0x248d, pc: 0xbb, pc: 0xc1, mem: 0x1000, pc: 0xc5, pc: 0xcb, mem: 0x1000, pc: 0xcf, pc: 0xd6, mem: 0x136b, pc: 0xda, pc: 0xe1, mem: 0x1871, mem: 0x1871, pc: 0xe5, pc: 0xeb, mem: 0x1000, pc: 0xef, pc: 0xf5, mem: 0x1000, pc: 0xf9, pc: 0x100, mem: 0x136b, mem: 0x136b, pc: 0x105, pc: 0x109, mem: 0x136b, pc: 0x10d, pc: 0x113, mem: 0x1100, pc: 0x117, pc: 0x11a, pc: 0x120, mem: 0x2d00, pc: 0x124, pc: 0x12a, mem: 0x1800, pc: 0x12e, pc: 0x134, mem: 0x1000, pc: 0x138, pc: 0x13a, pc: 0x21a]
+
+Input #36
+* Hardware trace:
+ ^..^^.......^^..^.^..^..^...^^..^^........^^^.^^.^..^.^....^.... [618]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^........^^^.^^.^..^.^....^.... [1]
+^..^^...^...^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^..^^^.^...^^^.^^.^.^^^.^^^^^^..^^^^^^^^^^^^^.^^^^..^^^^^^^^.^^^ [1]
+^..^^^^^.^.^^^^^^^^.^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^...^^^.^^.^..^.^....^.... [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^.^..^.^....^.... [1]
+
+* Contract trace (hash): 4491501160129772460
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xe, pc: 0x14, mem: 0x260a, pc: 0x18, pc: 0x1e, mem: 0x1856, pc: 0x22, pc: 0x29, mem: 0x173e, pc: 0x2d, pc: 0x34, mem: 0x154c, pc: 0x38, pc: 0x3e, mem: 0x182c, pc: 0x42, pc: 0x48, mem: 0x1334, pc: 0x4c, pc: 0x4f, pc: 0x55, mem: 0x10e8, pc: 0x59, pc: 0x60, mem: 0x1da4, pc: 0x68, pc: 0x6e, mem: 0x1c78, pc: 0x72, pc: 0x79, mem: 0x1871, mem: 0x1871, pc: 0x7e, pc: 0x82, mem: 0x1871, pc: 0x86, pc: 0x8d, mem: 0x1871, pc: 0x91, pc: 0x97, mem: 0x1b00, pc: 0x9b, pc: 0xa1, mem: 0x2400, pc: 0xa5, pc: 0xac, mem: 0x136b, pc: 0xb0, pc: 0xb7, mem: 0x248d, pc: 0xbb, pc: 0xc1, mem: 0x1000, pc: 0xc5, pc: 0xcb, mem: 0x1000, pc: 0xcf, pc: 0xd6, mem: 0x136b, pc: 0xda, pc: 0xe1, mem: 0x1871, mem: 0x1871, pc: 0xe5, pc: 0xeb, mem: 0x1000, pc: 0xef, pc: 0xf5, mem: 0x1000, pc: 0xf9, pc: 0x100, mem: 0x136b, mem: 0x136b, pc: 0x105, pc: 0x109, mem: 0x136b, pc: 0x10d, pc: 0x113, mem: 0x1100, pc: 0x117, pc: 0x11a, pc: 0x120, mem: 0x2d00, pc: 0x124, pc: 0x12a, mem: 0x1800, pc: 0x12e, pc: 0x134, mem: 0x1000, pc: 0x138, pc: 0x13a, pc: 0x21a]

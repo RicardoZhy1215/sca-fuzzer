@@ -1,0 +1,57 @@
+# Violation Report
+
+* Test Case ID: 3729
+* Detected: 03.04.26 at 03:28:07
+
+* Time to detection: 63.227731
+* Statistics:
+Test Cases: 3730
+Inputs per test case: 40.0
+Violations: 104
+Effectiveness: 
+  Total Cls: 18.8
+  Effective Cls: 18.8
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1175
+  Fast Path: 923
+  Max Nesting Check: 553
+  Tainting Check: 322
+  Early Priming Check: 0
+  Large Sample Check: 399
+  Priming Check: 244
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 10
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #15
+* Hardware trace:
+ ^^..^....^^............^.^.^.......^^...........^...^........^.^ [622]
+^^^^^^^^^^^^...........^.^.^.......^^...........^...^........^.^ [1]
+^^..^....^^............^.^.^.......^^...........^...^..^.....^.^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^.^....^^.......^....^.^.^.......^^...........^...^...^....^.^ [1]
+^^..^...^^^...^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^ [1]
+
+* Contract trace (hash): 5690462223154180988
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x124c, pc: 0x15, pc: 0x1c, mem: 0x1047, mem: 0x1047, pc: 0x21, pc: 0x28, mem: 0x25c8, pc: 0x2c, pc: 0x32, mem: 0x1930, pc: 0x36, pc: 0x39, pc: 0x3f, mem: 0x1641, pc: 0x43, pc: 0x49, mem: 0x2f58, pc: 0x4d, pc: 0x54, mem: 0x1d31, mem: 0x1d31, pc: 0x58, pc: 0x5f, mem: 0x2c14, pc: 0x63, pc: 0x66, pc: 0x6d, mem: 0x165e, mem: 0x165e, pc: 0x71, pc: 0x77, mem: 0x18f0, pc: 0x7b, pc: 0x81, mem: 0x2fd0, pc: 0x85, pc: 0x88, pc: 0x8f, mem: 0x1000, mem: 0x1000, pc: 0x94, pc: 0x98, mem: 0x1000, pc: 0x9c, pc: 0xa2, mem: 0x1100, pc: 0xa6, pc: 0xac, mem: 0x1000, pc: 0xb0, pc: 0xb6, mem: 0x1000, pc: 0xba, pc: 0xbc, pc: 0x153]
+
+Input #35
+* Hardware trace:
+ ^^..^..^^^............^^.^.........^^...........^...^........^.^ [621]
+^^^^^^^^^^^^^^^^^^^^^^^^^^.........^^...........^...^........^.^ [1]
+^^^^^^^^^^^^.^^^^^^^^^^^^^.^.^^^^^^^^^^^^^^^^^^^^...^.^......^.^ [1]
+^^..^..^^^............^^.^.........^^........^.^^.^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^..^^.^.........^^...........^...^........^.^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^..^^^^^^^^^^^^^.^^^^ [1]
+
+* Contract trace (hash): 5690462223154180988
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x124c, pc: 0x15, pc: 0x1c, mem: 0x1047, mem: 0x1047, pc: 0x21, pc: 0x28, mem: 0x25c8, pc: 0x2c, pc: 0x32, mem: 0x1930, pc: 0x36, pc: 0x39, pc: 0x3f, mem: 0x1641, pc: 0x43, pc: 0x49, mem: 0x2f58, pc: 0x4d, pc: 0x54, mem: 0x1d31, mem: 0x1d31, pc: 0x58, pc: 0x5f, mem: 0x2c14, pc: 0x63, pc: 0x66, pc: 0x6d, mem: 0x165e, mem: 0x165e, pc: 0x71, pc: 0x77, mem: 0x18f0, pc: 0x7b, pc: 0x81, mem: 0x2fd0, pc: 0x85, pc: 0x88, pc: 0x8f, mem: 0x1000, mem: 0x1000, pc: 0x94, pc: 0x98, mem: 0x1000, pc: 0x9c, pc: 0xa2, mem: 0x1100, pc: 0xa6, pc: 0xac, mem: 0x1000, pc: 0xb0, pc: 0xb6, mem: 0x1000, pc: 0xba, pc: 0xbc, pc: 0x153]

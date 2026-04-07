@@ -1,0 +1,4 @@
+# Original violation used a default config, hence this file is empty
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 10

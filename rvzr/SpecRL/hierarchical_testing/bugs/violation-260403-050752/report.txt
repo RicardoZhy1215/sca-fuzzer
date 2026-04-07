@@ -1,0 +1,65 @@
+# Violation Report
+
+* Test Case ID: 4198
+* Detected: 03.04.26 at 05:07:52
+
+* Time to detection: 63.260366
+* Statistics:
+Test Cases: 4199
+Inputs per test case: 40.0
+Violations: 145
+Effectiveness: 
+  Total Cls: 19.0
+  Effective Cls: 19.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1297
+  Fast Path: 1023
+  Max Nesting Check: 629
+  Tainting Check: 356
+  Early Priming Check: 0
+  Large Sample Check: 443
+  Priming Check: 290
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 10
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #15
+* Hardware trace:
+ ^...^.....^.....^......^...^...^..^^...............^............ [617]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+^...^.....^.....^.....^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^.^^^^^^^^.^^^^^^..^^^^^^^^^^^....^^^^^^^^^^^^^.^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^.^.^...^...^..^^...............^.....^...... [1]
+^...^^.^..^^^...^.^.^^^^^^^^^^.^..^^^^^^^^^^..^^^^.^^^^^^^^..^.^ [1]
+^...^.....^.....^......^^^^^^^^^^^^^^.^^^^^^^^^^^^.^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^.^^^^^^^^^.^^^.^^^^^^^^^^^^^^^^^^^^^^^^^.^^^^ [1]
+
+* Contract trace (hash): 4921488529861936491
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2429, mem: 0x2429, pc: 0x17, pc: 0x1e, mem: 0x2429, pc: 0x22, pc: 0x25, pc: 0x2b, mem: 0x189c, pc: 0x2f, pc: 0x36, mem: 0x26fa, mem: 0x26fa, pc: 0x3b, pc: 0x3f, mem: 0x26fa, pc: 0x43, pc: 0x46, pc: 0x4c, mem: 0x27fa, pc: 0x50, pc: 0x57, mem: 0x25c8, mem: 0x25c8, pc: 0x5c, pc: 0x60, mem: 0x25c8, pc: 0x64, pc: 0x6a, mem: 0x1100, pc: 0x6e, pc: 0x71, pc: 0x77, mem: 0x1000, pc: 0x7b, pc: 0x7e, pc: 0x84, mem: 0x1000, pc: 0x88, pc: 0x8e, mem: 0x1000, pc: 0x92, pc: 0x95, pc: 0x98, pc: 0x9e, mem: 0x1000, pc: 0xa2, pc: 0xa9, mem: 0x25c8, pc: 0xad, pc: 0xb4, mem: 0x1000, mem: 0x1000, pc: 0xb9, pc: 0xbd, mem: 0x1000, pc: 0xc1, pc: 0xc8, mem: 0x2ccd, mem: 0x2ccd, pc: 0xcc, pc: 0xd3, mem: 0x1000, mem: 0x1000, pc: 0xd8, pc: 0xdb, pc: 0xe1, mem: 0x1100, pc: 0xe5, pc: 0xe8, pc: 0xee, mem: 0x1000, pc: 0xf2, pc: 0xf8, mem: 0x1000, pc: 0xfc, pc: 0xfe, pc: 0x18f]
+
+Input #35
+* Hardware trace:
+ ^...^.....^...^.^......^...^...^..^................^............ [610]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [7]
+^...^^....^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^^^.^^.^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+^...^.....^...^.^......^...^...^..^............^.^.^^^^^^^^^^^^^ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^..^............ [1]
+^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^.^^ [1]
+^.^.^.....^...^.^......^...^...^..^................^............ [1]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^..........^............ [1]
+^...^^.^.^^^..^.^^^..^^^^^^^^^.^..^^^^^^^^^^..^^^^.^^^^^^^^..^.. [1]
+^^^^^^^^^^^^^^^^^......^...^...^..^................^............ [1]
+^...^.....^...^.^......^...^...^..^.^.^^^^^.^^^^^^^^^^^^^^^^^^^^ [1]
+
+* Contract trace (hash): 4921488529861936491
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2429, mem: 0x2429, pc: 0x17, pc: 0x1e, mem: 0x2429, pc: 0x22, pc: 0x25, pc: 0x2b, mem: 0x189c, pc: 0x2f, pc: 0x36, mem: 0x26fa, mem: 0x26fa, pc: 0x3b, pc: 0x3f, mem: 0x26fa, pc: 0x43, pc: 0x46, pc: 0x4c, mem: 0x27fa, pc: 0x50, pc: 0x57, mem: 0x25c8, mem: 0x25c8, pc: 0x5c, pc: 0x60, mem: 0x25c8, pc: 0x64, pc: 0x6a, mem: 0x1100, pc: 0x6e, pc: 0x71, pc: 0x77, mem: 0x1000, pc: 0x7b, pc: 0x7e, pc: 0x84, mem: 0x1000, pc: 0x88, pc: 0x8e, mem: 0x1000, pc: 0x92, pc: 0x95, pc: 0x98, pc: 0x9e, mem: 0x1000, pc: 0xa2, pc: 0xa9, mem: 0x25c8, pc: 0xad, pc: 0xb4, mem: 0x1000, mem: 0x1000, pc: 0xb9, pc: 0xbd, mem: 0x1000, pc: 0xc1, pc: 0xc8, mem: 0x2ccd, mem: 0x2ccd, pc: 0xcc, pc: 0xd3, mem: 0x1000, mem: 0x1000, pc: 0xd8, pc: 0xdb, pc: 0xe1, mem: 0x1100, pc: 0xe5, pc: 0xe8, pc: 0xee, mem: 0x1000, pc: 0xf2, pc: 0xf8, mem: 0x1000, pc: 0xfc, pc: 0xfe, pc: 0x18f]
