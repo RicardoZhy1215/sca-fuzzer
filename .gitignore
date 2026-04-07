@@ -20,3 +20,5 @@ dist/
 .cache/
 .claude/
 wandb/
+**/wandb/
+*.wandb
