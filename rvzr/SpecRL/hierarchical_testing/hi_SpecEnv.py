@@ -4,9 +4,11 @@ import numpy as np
 import subprocess
 import gymnasium as gym
 import uuid
+import re
 from gymnasium import spaces
 from copy import deepcopy
-from typing import Counter, List, Optional
+from dataclasses import dataclass
+from typing import Counter, Dict, FrozenSet, List, Optional, Sequence, Tuple
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
 from rvzr.tc_components.test_case_code import TestCaseProgram
@@ -51,10 +53,7 @@ import shutil
 from datetime import datetime
 from subprocess import run
 from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
-
-
-
-
+from pattern_matching import VulnerabilityPatternMatcher, PatternToken
 
 class SpecEnv(gym.Env):
     metadata = {}
@@ -109,6 +108,12 @@ class SpecEnv(gym.Env):
 
         self.num_steps = 0
         self.max_steps = self.seq_size
+        self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v4")
+        self.pattern_reward_scale = float(env_config.get("pattern_reward_scale", 1.0))
+        self.leak_reward = float(env_config.get("leak_reward", 600.0))
+        self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
+        self.pattern_stage_reward = 0.0
+        self.pattern_match_counts = {}
 
         """
         OBSERVATION SPACE:
@@ -139,7 +144,7 @@ class SpecEnv(gym.Env):
                 # "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 # "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.max_trace_len), dtype=np.int64),
                 "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
-                "ctrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
+                "ctrace": spaces.Box(low = np.iinfo(np.uint64).min, high = np.iinfo(np.uint64).max, shape = (self.seq_size, self.num_inputs), dtype=np.uint64),
                 "recovery_cycles": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
                 "transient_uops": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64)
             }
@@ -204,8 +209,8 @@ class SpecEnv(gym.Env):
             print(f"NUMBER OF STEPS: {self.step_counter}")
 
             target_desc = X86TargetDesc()
-            self.generator._insert_bb_index = random.choice([0, 1])
-            # self.generator._insert_bb_index = 0
+            # self.generator._insert_bb_index = random.choice([0, 1])
+            self.generator._insert_bb_index = 0
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
             passed_loop = True
@@ -233,7 +238,12 @@ class SpecEnv(gym.Env):
         step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
-        return step_obs, step_reward, end, truncate, {"program": self.new_program, "end_game_count": self.end_game_counter}
+        return step_obs, step_reward, end, truncate, {
+            "program": self.new_program,
+            "end_game_count": self.end_game_counter,
+            "pattern_reward": self.pattern_stage_reward,
+            "pattern_matches": self.pattern_match_counts,
+        }
 
 
     """
@@ -252,6 +262,8 @@ class SpecEnv(gym.Env):
         print(f"NUMBER OF TEST CASES: {self.counter}")
         self.num_steps = 0
         self.bad_case = False
+        self.pattern_stage_reward = 0.0
+        self.pattern_match_counts = {}
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
 
         return (self._get_obs(), {"program": self.new_program})
@@ -331,7 +343,7 @@ class SpecEnv(gym.Env):
                 obs["htrace"][count - 1, : temp_htrace.shape[0]] = temp_htrace[: self.num_inputs]
 
                 # temp_ctrace = np.array(temp_obs[2], dtype=np.int64)
-                temp_ctrace = np.array(temp_obs[2], dtype=np.uint64).view(np.int64)
+                temp_ctrace = np.array(temp_obs[2], dtype=np.uint64)
                 obs["ctrace"][count - 1, : temp_ctrace.shape[0]] = temp_ctrace[: self.num_inputs]
 
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
@@ -405,9 +417,11 @@ class SpecEnv(gym.Env):
     def _reward(self):
         reward = 0
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
+        reward += self.pattern_stage_reward
+        print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
-            reward += 9999 # reward for leak
+            reward += self.leak_reward
         reward = reward + 30 if self.misspec else reward - 30 # reward/punish for passing/failing misspeculative filters
         print(f"misspec: {self.misspec}, reward: {reward}")
         reward = reward + 50 if self.observable else reward - 50 # reward/punish for passing/failing observation filters
@@ -429,6 +443,8 @@ class SpecEnv(gym.Env):
         self.leak = False
         self.misspec = False
         self.observable = False
+        self.pattern_stage_reward = 0.0
+        self.pattern_match_counts = {}
 
         self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
@@ -455,6 +471,10 @@ class SpecEnv(gym.Env):
             total_instructions_num = len(all_instructions)
             print("total instructions in program: ", total_instructions_num)
             print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
+            pattern_tokens = self._build_pattern_tokens(all_instructions)
+            pattern_result = self.pattern_matcher.score(pattern_tokens)
+            self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score
+            self.pattern_match_counts = pattern_result.matches
 
             temp.assign_obj(bin.name)
             assemble(temp)
@@ -488,11 +508,11 @@ class SpecEnv(gym.Env):
             if fenced_htraces != htraces:
                 self.observable = True
 
-            traces_match = True
-            for i, _ in enumerate(inputs):
-                if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
-                    traces_match = False
-                    break
+            # traces_match = True
+            # for i, _ in enumerate(inputs):
+            #     if not self.analyser.htraces_are_equivalent(fenced_htraces[i], htraces[i]):
+            #         traces_match = False
+            #         break
             # print("traces_match ***************", traces_match)
 
             violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
@@ -725,3 +745,55 @@ class SpecEnv(gym.Env):
 
     def _get_reg_size(self):
         return len(self.reg_vocab)
+
+    def _build_pattern_tokens(self, instructions: List[Instruction]) -> List[PatternToken]:
+        tokens: List[PatternToken] = []
+        for instr in instructions:
+            if instr.is_instrumentation or instr.name == "macro":
+                continue
+
+            variant = self._get_instruction_variant_name(instr)
+            mem_reads, mem_writes = self._extract_memory_access_bases(instr)
+            kinds = {variant, variant.split("_")[0]}
+            if mem_reads:
+                kinds.add("load")
+            if mem_writes:
+                kinds.add("store")
+            if mem_reads or mem_writes:
+                kinds.add("memory")
+
+            tokens.append(
+                PatternToken(
+                    index=len(tokens),
+                    kinds=frozenset(kinds),
+                    mem_reads=tuple(mem_reads),
+                    mem_writes=tuple(mem_writes),
+                    opcode_variant=variant,
+                )
+            )
+        return tokens
+
+    def _extract_memory_access_bases(self, instr: Instruction) -> tuple[List[str], List[str]]:
+        reads: List[str] = []
+        writes: List[str] = []
+        for mem_op in instr.get_mem_operands(include_explicit=True):
+            expr = str(mem_op.value).lower()
+            parts = re.split(r"[^a-z0-9_]+", expr)
+            bases = []
+            for token in parts:
+                if not token:
+                    continue
+                normalized = self._normalize_reg_name(token)
+                if normalized in self.reg_vocab:
+                    bases.append(normalized)
+            if not bases:
+                continue
+
+            if getattr(mem_op, "src", False):
+                reads.extend(bases)
+            if getattr(mem_op, "dest", False):
+                writes.extend(bases)
+            if not getattr(mem_op, "src", False) and not getattr(mem_op, "dest", False):
+                reads.extend(bases)
+
+        return sorted(set(reads)), sorted(set(writes))

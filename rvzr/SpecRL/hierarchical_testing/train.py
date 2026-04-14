@@ -80,6 +80,9 @@ class SpecRLCallbacks(DefaultCallbacks):
 env_config = {
     "sequence_size": 50,
     "num_inputs": 20,
+    "vulnerability_type": "spectre_v4",
+    "pattern_reward_scale": 1.0,
+    "leak_reward": 600.0,
 }
 
 if __name__ == "__main__":
@@ -96,7 +99,7 @@ if __name__ == "__main__":
 
     train_config = {
         "lr": 5e-5,
-        "train_batch_size": 128,
+        "train_batch_size": 4,
         "gamma": 0.99,
         "seq_size": 50,
         "num_inputs": 20,
@@ -126,7 +129,7 @@ if __name__ == "__main__":
         "num_env_runners": 1,
         "num_envs_per_env_runner": 1,
         "sample_timeout_s": 7200,
-        "rollout_fragment_length": 16,
+        "rollout_fragment_length": 4,
     }
     if local_debug:
         env_runner_kwargs.update(
@@ -155,6 +158,7 @@ if __name__ == "__main__":
             train_batch_size=train_config["train_batch_size"],
             gamma=train_config["gamma"],
             model=model_config,
+            minibatch_size=4,
         )
         .resources(num_gpus=num_gpus)
     )
@@ -177,7 +181,7 @@ if __name__ == "__main__":
 
 
     try:
-        for i in range(50):
+        for i in range(10):
             result = algo.train()
             learner_info = result.get("info", {}).get("learner", {}).get("default_policy", {}).get("learner_stats", {})
             env_runners = result.get("env_runners", {})

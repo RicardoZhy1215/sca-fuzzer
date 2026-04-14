@@ -182,16 +182,16 @@ class Conf:
     """ program_size: size of generated programs """
     avg_mem_accesses: int = 12
     """ avg_mem_accesses: average number of memory accesses in generated programs """
-    min_bb_per_function: int = 2
+    min_bb_per_function: int = 1
     """ min_bb_per_function: minimal number of basic blocks per function in generated programs """
-    max_bb_per_function: int = 2
+    max_bb_per_function: int = 1
     """ max_bb_per_function: maximum number of basic blocks per function in generated programs """
-    min_successors_per_bb: int = 2
+    min_successors_per_bb: int = 1
     """ min_bb_per_function: min. number of successors for each basic block in generated programs
     Note 1: this config option is a *hint*; it could be ignored if the instruction set does not
     have the necessary instructions to satisfy it, or if a certain number of successor is required
     for correctness"""
-    max_successors_per_bb: int = 2
+    max_successors_per_bb: int = 1
     """ min_bb_per_function: min. number of successors for each basic block in generated programs
     Note: this config option is a *hint*; it could be ignored if the instruction set does not
     have the necessary instructions to satisfy it, or if a certain number of successor is required
@@ -282,7 +282,7 @@ class Conf:
     analyser will ignore the htraces that appear in less then this percentage of the repetitions.
     I.e., a htrace passes the filter if it is observed at least
         (analyser_outliers_threshold * len(htrace)) times """
-    analyser_stat_threshold: float = 0.1
+    analyser_stat_threshold: float = 0.5
     """ analyser_stat_threshold: [only for analyser='chi2' and analyser='mwu']
     Threshold for the statistical tests. If a pair of hardware traces has the (normalized)
     statistics below the threshold, then the traces are considered equivalent.

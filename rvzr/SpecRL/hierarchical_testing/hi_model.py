@@ -151,18 +151,14 @@ class ObsEncoder(nn.Module):
             instr_feat = torch.zeros(batch, self.seq_size, self.hidden_dim, device=instr.device)
 
         def _trace_norm(t: torch.Tensor) -> torch.Tensor:
-            t = t.float().clamp(-1e9, 1e9)
-            t = torch.where(t < 0, torch.zeros_like(t), t)
-            return t
+            t = t.float()
+            # Keep sign information while compressing very large magnitudes.
+            return torch.sign(t) * torch.log1p(torch.abs(t))
 
         h = _trace_norm(obs_dict["htrace"])
         c = _trace_norm(obs_dict["ctrace"])
-        r = obs_dict["recovery_cycles"].float().clamp(-1, 1e6)
-        u = obs_dict["transient_uops"].float().clamp(-1, 1e6)
-        h = torch.where(h < 0, torch.zeros_like(h), h)
-        c = torch.where(c < 0, torch.zeros_like(c), c)
-        r = torch.where(r < 0, torch.zeros_like(r), r)
-        u = torch.where(u < 0, torch.zeros_like(u), u)
+        r = obs_dict["recovery_cycles"].float()
+        u = obs_dict["transient_uops"].float()
 
         h_f = self.htrace_proj(h)
         c_f = self.ctrace_proj(c)
@@ -519,6 +515,7 @@ class SpecRLHierarchicalModel(TorchModelV2, nn.Module):
         self._seq_size = seq_size
         self._num_inputs = num_inputs
         original = getattr(obs_space, "original_space", obs_space)
+        # print(f"SpecRLHierarchicalModel: obs_space={obs_space}, original={original}, use_dict_obs={use_dict_obs}")
         self.use_dict_obs = use_dict_obs and isinstance(original, spaces.Dict)
 
         flat_size = _get_flat_input_size(obs_space)
