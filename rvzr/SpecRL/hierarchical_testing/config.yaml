@@ -1,12 +1,23 @@
 # tested instructions
 instruction_categories:
+  - BASE-NOP
   - BASE-BINARY
-  # - BASE-COND_BR
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-SETCC
+  - BASE-LOGICAL
+  - BASE-POP
+  - BASE-PUSH
 
 # contract
-contract_observation_clause: loads+stores+pc
+x86_executor_enable_ssbp_patch: false
+
+contract_observation_clause: ct
 contract_execution_clause:
-  - no_speculation
+  - seq
 
 
 # enable perf. optimizations

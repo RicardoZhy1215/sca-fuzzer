@@ -1,31 +1,45 @@
+from rvzr.config import CONF
+
 # Vocabulary
 # Split mov into explicit operand-mode variants so each opcode has stable semantics.
+#
+# Stage-1 action space for Spectre v4 curriculum: only keep opcodes that are
+# useful for building an SSB gadget (slow-addr producer / store / bypass load /
+# transmitter).  The full 22-opcode list is preserved in _FULL_OPERAND_SPACE so
+# that it can be restored later as stage-2 fine-tuning:
+#
+#   _FULL_OPERAND_SPACE = [
+#       "mov_rr", "mov_ri", "mov_rm", "mov_mr", "mov_mi",
+#       "add_rr", "add_ri", "add_rm", "add_mr", "add_mi",
+#       "mul", "div", "xor",
+#       "cmp_rr", "cmp_rm", "cmp_mr",
+#       "sub_rr", "sub_ri", "sub_rm", "sub_mr", "sub_mi",
+#   ]
+#
+# Kept opcodes (stage-1):
+#   mov_rr : glue / register setup
+#   mov_ri : stage register with constant (used with care - smashes base chains)
+#   mov_rm : load (also acts as slow-addr producer when followed by store)
+#   mov_mr : store (candidate victim of SSB)
+#   mov_mi : store with immediate value (also a candidate victim)
+#   add_rm : load-ALU (slow-addr producer)
+#   add_mr : RMW store (alternative store form)
 OPERAND_SPACE = [
     "mov_rr",  # mov reg, reg
     "mov_ri",  # mov reg, imm
-    "mov_rm",  # mov reg, [reg]
-    "mov_mr",  # mov [reg], reg
-    "mov_mi",  # mov [reg], imm
-    "add_rr",  # add reg, reg
-    "add_ri",  # add reg, imm
-    "add_rm",  # add reg, [reg]
-    "add_mr",  # add [reg], reg
-    "add_mi",  # add [reg], imm
-    "mul",
-    "div",
-    "xor",
-    "cmp_rr",  # cmp reg, reg
-    "cmp_rm",  # cmp reg, [reg]
-    "cmp_mr",  # cmp [reg], reg
-    "sbb_rr",  # sbb reg, reg
-    "sbb_ri",  # sbb reg, imm
-    "sbb_rm",  # sbb reg, [reg]
-    "sbb_mr",  # sbb [reg], reg
-    "sbb_mi",  # sbb [reg], imm
+    "mov_rm",  # mov reg, [reg]    -- bypass load / slow-addr producer
+    "mov_mr",  # mov [reg], reg    -- store
+    "mov_mi",  # mov [reg], imm    -- store
+    "add_rm",  # add reg, [reg]    -- slow-addr producer
+    "add_mr",  # add [reg], reg    -- RMW store
 ]
 DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"] # add more regs like al, bl,eax, etc.
 SRC_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
-IMMS_SPACE = ["0", "1", "2", "3", "4", "5", "6", "7"] #todo: need to extend the IMM Space based on the Sandbox area.
+_IMM_SMALL_LITERALS = range(8)
+_SANDBOX_IMM_STEP = 8
+_SANDBOX_IMM_LIMIT = CONF.input_main_region_size + CONF.input_faulty_region_size
+IMMS_SPACE = [str(imm) for imm in _IMM_SMALL_LITERALS]
+IMMS_SPACE.extend(str(imm) for imm in range(_SANDBOX_IMM_STEP, _SANDBOX_IMM_LIMIT, _SANDBOX_IMM_STEP))
 
 # Index 0 = empty/N/A for regs and imm
 EMPTY_REG_ID = 0
@@ -37,26 +51,11 @@ OPCODE_OPERAND_SPEC = {
     "mov_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
     "mov_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
     "mov_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
-    "add_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "add_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
     "add_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
     "add_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "add_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
-    "mul": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
-    "div": {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
-    "xor": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "cmp_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "cmp_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "cmp_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "sbb_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "sbb_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
-    "sbb_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "sbb_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "sbb_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
 }
-# Exclude dst_reg == src_reg for these opcodes (redundant: mov rax,rax no-op, cmp rax,rax pointless).
-# xor rax,rax is kept - it's a useful zeroing idiom.
-OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr", "add_rr", "cmp_rr", "sbb_rr"]
+# Exclude dst_reg == src_reg for opcodes where it is pointless (mov rax,rax no-op).
+OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr"]
 
 
 def _is_reg_empty(reg_id: int) -> bool:
@@ -99,7 +98,7 @@ def _check_rule_src_or_imm(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm
 
 
 def _check_rule_exclude_dst_eq_src(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_id: int) -> bool:
-    """Rule 3: OPCODE_EXCLUDE_DST_EQ_SRC - exclude dst==src for mov/add/cmp/sbb."""
+    """Rule 3: OPCODE_EXCLUDE_DST_EQ_SRC - exclude dst==src for mov/add/cmp/sub."""
     if opcode_id < 1 or opcode_id > len(OPERAND_SPACE):
         return True
     opcode_name = OPERAND_SPACE[opcode_id - 1]
@@ -271,7 +270,7 @@ def get_reg_dst_mask(opcode_id: int, reg_src_id: int = 0) -> list:
         base = [False] + [True] * n_reg
     elif dst_req == "forbidden":
         base = [True] + [False] * n_reg
-    # Exclude dst==src for mov_rr/add/cmp/sbb
+    # Exclude dst==src for mov_rr/add/cmp/sub
     if opcode_name in OPCODE_EXCLUDE_DST_EQ_SRC and reg_src_id > 0:
         if reg_src_id <= n_reg and base[reg_src_id]:
             base = base[:]
@@ -405,28 +404,28 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
             MemoryOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "sbb_rr":
-        return Instruction("sbb", False, "", False).add_op(
+    if opcode == "sub_rr":
+        return Instruction("sub", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "sbb_ri":
-        return Instruction("sbb", False, "", False).add_op(
+    if opcode == "sub_ri":
+        return Instruction("sub", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(ImmediateOp(imm_val, 8))
 
-    if opcode == "sbb_rm":
-        return Instruction("sbb", False, "", False).add_op(
+    if opcode == "sub_rm":
+        return Instruction("sub", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(MemoryOp(rs, 64, True, False))
 
-    if opcode == "sbb_mr":
-        return Instruction("sbb", False, "", False).add_op(
+    if opcode == "sub_mr":
+        return Instruction("sub", False, "", False).add_op(
             MemoryOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "sbb_mi":
-        return Instruction("sbb", False, "", False).add_op(
+    if opcode == "sub_mi":
+        return Instruction("sub", False, "", False).add_op(
             MemoryOp(rd, 64, True, True)
         ).add_op(ImmediateOp(imm_val, 8))
 

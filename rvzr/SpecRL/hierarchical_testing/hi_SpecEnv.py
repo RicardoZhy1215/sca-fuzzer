@@ -5,6 +5,7 @@ import subprocess
 import gymnasium as gym
 import uuid
 import re
+import ctypes
 from gymnasium import spaces
 from copy import deepcopy
 from dataclasses import dataclass
@@ -55,6 +56,12 @@ from subprocess import run
 from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
 from pattern_matching import VulnerabilityPatternMatcher, PatternToken
 
+
+PR_SET_SPECULATION_CTRL = 53
+PR_SPEC_STORE_BYPASS = 0
+PR_SPEC_ENABLE = 1 << 1
+
+
 class SpecEnv(gym.Env):
     metadata = {}
     printer: Printer
@@ -86,6 +93,7 @@ class SpecEnv(gym.Env):
     asm_path = "my_test_case.asm"
 
     def __init__(self, env_config):
+        self._ensure_ssb_vulnerable_for_process()
         self.seq_size = env_config["sequence_size"]
         self.num_inputs = env_config["num_inputs"]
         self.bad_case = False
@@ -111,9 +119,15 @@ class SpecEnv(gym.Env):
         self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v4")
         self.pattern_reward_scale = float(env_config.get("pattern_reward_scale", 1.0))
         self.leak_reward = float(env_config.get("leak_reward", 600.0))
+        self.trace_divergence_reward_scale = float(env_config.get("trace_divergence_reward_scale", 30.0))
         self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
+        self.trace_divergence_score = 0.0
+        # Per-episode running max of each pattern counter (for RLlib custom_metrics → wandb).
+        self.episode_pattern_match_max: Dict[str, int] = {}
+        # Snapshot taken at reset() after an episode ends; safe when callback runs after reset.
+        self._last_completed_episode_pattern_match: Dict[str, int] = {}
 
         """
         OBSERVATION SPACE:
@@ -177,6 +191,57 @@ class SpecEnv(gym.Env):
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
+
+    def _read_ssb_status_line(self) -> str:
+        try:
+            with open("/proc/self/status", "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("Speculation_Store_Bypass:"):
+                        return line.strip()
+        except OSError:
+            return "Speculation_Store_Bypass: unknown (read failed)"
+        return "Speculation_Store_Bypass: unknown (missing)"
+
+    def _ensure_ssb_vulnerable_for_process(self) -> None:
+        """
+        Ask kernel to enable speculative store bypass for this process/thread.
+        Safe no-op if kernel policy refuses it.
+
+        Also logs the system-wide SSB vulnerability status so that a failed v4
+        training run can be attributed to CPU / microcode mitigations rather
+        than to the RL policy.  If the machine reports the SSB channel as
+        "not affected" or "Mitigation: Speculative Store Bypass disabled ...",
+        no amount of reward shaping will produce a v4 leak.
+        """
+        libc = ctypes.CDLL(None, use_errno=True)
+        before = self._read_ssb_status_line()
+        rc = libc.prctl(
+            ctypes.c_int(PR_SET_SPECULATION_CTRL),
+            ctypes.c_ulong(PR_SPEC_STORE_BYPASS),
+            ctypes.c_ulong(PR_SPEC_ENABLE),
+            ctypes.c_ulong(0),
+            ctypes.c_ulong(0),
+        )
+        if rc != 0:
+            err = ctypes.get_errno()
+            print(f"[SSB][SpecEnv] prctl(PR_SPEC_ENABLE) failed (errno={err})")
+        after = self._read_ssb_status_line()
+        print(f"[SSB][SpecEnv] {before} -> {after}")
+
+        sysfs_path = "/sys/devices/system/cpu/vulnerabilities/spec_store_bypass"
+        try:
+            with open(sysfs_path, "r", encoding="utf-8") as f:
+                sys_status = f.read().strip()
+            print(f"[SSB][SpecEnv] sysfs {sysfs_path}: {sys_status}")
+            lowered = sys_status.lower()
+            if "not affected" in lowered or "disabled" in lowered:
+                print(
+                    "[SSB][SpecEnv] WARNING: CPU reports SSB as not exploitable for this "
+                    "process.  Spectre v4 leaks will not be detected regardless of the "
+                    "agent's policy.  Check microcode / BIOS / boot-time mitigations."
+                )
+        except OSError as exc:
+            print(f"[SSB][SpecEnv] could not read {sysfs_path}: {exc}")
 
     """
     step(action):
@@ -260,10 +325,14 @@ class SpecEnv(gym.Env):
         super().reset(seed=seed)
         self.counter += 1
         print(f"NUMBER OF TEST CASES: {self.counter}")
+        # Completed-episode snapshot for RLlib callbacks (works whether on_episode_end runs before or after reset).
+        self._last_completed_episode_pattern_match = dict(self.episode_pattern_match_max)
+        self.episode_pattern_match_max = {}
         self.num_steps = 0
         self.bad_case = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
+        self.trace_divergence_score = 0.0
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
 
         return (self._get_obs(), {"program": self.new_program})
@@ -333,7 +402,7 @@ class SpecEnv(gym.Env):
 
                 temp_obs = self._obs_program(temp_program)
 
-                print(f"\niteration {count} observations: ")
+                # print(f"\niteration {count} observations: ")
 
                 # fill appropriate observation row in
                 # obs["instruction"][count - 1] = temp_obs[0]
@@ -418,7 +487,15 @@ class SpecEnv(gym.Env):
         reward = 0
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
         reward += self.pattern_stage_reward
+        reward += self.trace_divergence_reward_scale * self.trace_divergence_score
+        for k, v in self.pattern_match_counts.items():
+            iv = int(v)
+            self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
         print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
+        print(
+            f"trace divergence reward: {self.trace_divergence_reward_scale * self.trace_divergence_score} "
+            f"(score={self.trace_divergence_score})"
+        )
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             reward += self.leak_reward
@@ -445,6 +522,7 @@ class SpecEnv(gym.Env):
         self.observable = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
+        self.trace_divergence_score = 0.0
 
         self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
@@ -507,6 +585,15 @@ class SpecEnv(gym.Env):
 
             if fenced_htraces != htraces:
                 self.observable = True
+
+            # Dense pre-leak signal: normalized count of input traces that diverge
+            # between fenced and unfenced runs.
+            div_count = 0
+            max_n = min(len(inputs), len(htraces), len(fenced_htraces))
+            for idx in range(max_n):
+                if not self.analyser.htraces_are_equivalent(fenced_htraces[idx], htraces[idx]):
+                    div_count += 1
+            self.trace_divergence_score = float(div_count) / float(max_n or 1)
 
             # traces_match = True
             # for i, _ in enumerate(inputs):
@@ -657,7 +744,7 @@ class SpecEnv(gym.Env):
     def _get_instruction_variant_name(self, instr: Instruction) -> str:
         """Map a concrete instruction back to the action-space opcode variant."""
         name_lower = instr.name.lower()
-        if name_lower not in {"mov", "add", "cmp", "sbb"}:
+        if name_lower not in {"mov", "add", "cmp", "sub"}:
             return name_lower
 
         has_mem = len(instr.get_mem_operands()) > 0
@@ -698,17 +785,17 @@ class SpecEnv(gym.Env):
             if has_mem and has_reg_src:
                 return "cmp_mr"
 
-        if name_lower == "sbb":
+        if name_lower == "sub":
             if has_reg_dst and has_reg_src and not has_mem and not has_imm:
-                return "sbb_rr"
+                return "sub_rr"
             if has_reg_dst and has_imm and not has_mem:
-                return "sbb_ri"
+                return "sub_ri"
             if has_reg_dst and has_mem:
-                return "sbb_rm"
+                return "sub_rm"
             if has_mem and has_reg_src:
-                return "sbb_mr"
+                return "sub_mr"
             if has_mem and has_imm:
-                return "sbb_mi"
+                return "sub_mi"
 
         return name_lower
     
@@ -754,6 +841,7 @@ class SpecEnv(gym.Env):
 
             variant = self._get_instruction_variant_name(instr)
             mem_reads, mem_writes = self._extract_memory_access_bases(instr)
+            dst_regs, src_regs = self._extract_gpr_side_effects(instr)
             kinds = {variant, variant.split("_")[0]}
             if mem_reads:
                 kinds.add("load")
@@ -769,9 +857,35 @@ class SpecEnv(gym.Env):
                     mem_reads=tuple(mem_reads),
                     mem_writes=tuple(mem_writes),
                     opcode_variant=variant,
+                    dst_regs=tuple(dst_regs),
+                    src_regs=tuple(src_regs),
                 )
             )
         return tokens
+
+    def _extract_gpr_side_effects(self, instr: Instruction) -> Tuple[List[str], List[str]]:
+        """
+        Return (dst_regs, src_regs) for the instruction, restricted to the env's reg_vocab.
+        These are GPR-level side effects (ALU dst / load dst / ALU src), NOT memory-base
+        registers used to compute addresses.  Memory bases are already handled by
+        _extract_memory_access_bases.
+
+        This powers dependency-chain reasoning in pattern_matching.py:
+          - "is the store's base overwritten between store and load?"  -> dst_regs
+          - "is there a slow-addr producer that WRITES the store's base?"  -> dst_regs
+          - "is the transmitter's base a register written by the bypass load?" -> dst_regs
+        """
+        dst_regs: List[str] = []
+        src_regs: List[str] = []
+        for reg_op in instr.get_reg_operands(include_implicit=True):
+            name = self._normalize_reg_name(str(reg_op.value).lower())
+            if name not in self.reg_vocab:
+                continue
+            if getattr(reg_op, "dest", False):
+                dst_regs.append(name)
+            if getattr(reg_op, "src", False):
+                src_regs.append(name)
+        return sorted(set(dst_regs)), sorted(set(src_regs))
 
     def _extract_memory_access_bases(self, instr: Instruction) -> tuple[List[str], List[str]]:
         reads: List[str] = []
