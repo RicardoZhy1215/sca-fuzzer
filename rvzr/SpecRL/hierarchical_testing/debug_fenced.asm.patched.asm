@@ -1,97 +1,170 @@
 .intel_syntax noprefix
 .section .data.main
-
-# the leaked value - rcx
-# construct a page offset in the range [0x200; 0x900]
 .function_0:
+.bb_0.0:
+lfence
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-and rcx, 0b11100000000
+and rdi, 0b1111111111111 # instrumentation
 lfence
-add rcx, 0x200
+mov qword ptr [r14 + rdi], 4432
 lfence
-
-# save the offset into [r14 + 0]
-mov qword ptr [r14], rcx
+and rdi, 0b1111111111111 # instrumentation
 lfence
-mfence
+add qword ptr [r14 + rdi], rdi
 lfence
-
-# create a delay on rbx
-mov rax, 0
+and rsi, 0b1111111111111 # instrumentation
 lfence
-and rbx, 0b111000
+mov qword ptr [r14 + rsi], rsi
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+xor rbx, rax
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+and rsi, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+mul qword ptr [r14 + rsi]
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+mov rsi, 6048
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+mov rsi, 848
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+xor rdx, rdx
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rdi, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+mul qword ptr [r14 + rdi]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rax, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+add rdx, qword ptr [r14 + rax]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rax, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+add qword ptr [r14 + rax], rbx
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rdi, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+add rax, qword ptr [r14 + rdi]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+mov rcx, 6352
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+and rbx, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+mul qword ptr [r14 + rbx]
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+and rbx, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+add qword ptr [r14 + rbx], rbx
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+lea rdi, qword ptr [rsi + rdi + 1]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rdi, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+add rcx, qword ptr [r14 + rdi]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rbx, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+mul qword ptr [r14 + rbx]
 lfence
-lea rbx, qword ptr [rbx + rax + 1]
+and rsi, 0b1111111111111 # instrumentation
 lfence
-lea rbx, qword ptr [rbx + rax - 1]
+add rcx, qword ptr [r14 + rsi]
 lfence
-
-# sequence of potentially aliasing store-load
-# if rbx == 0, they alias and rdx = 0x40
-# if rbx != 0, they do not alias and rdx = offset saved above
-mov qword ptr [r14 + rbx], 0x40  # store offset 0x40
+and rcx, 0b1111111111111 # instrumentation
 lfence
-mov rdx, qword ptr [r14]  # load the offset; misprediction happens here
+mov qword ptr [r14 + rcx], rax
 lfence
-
-# dependent load with the offset
-and rdx, 0b111111000000
+and rax, 0b1111111111111 # instrumentation
 lfence
-mov rdx, qword ptr [r14 + rdx]
+mov qword ptr [r14 + rax], rdx
 lfence
-mfence
+and rsi, 0b1111111111111 # instrumentation
 lfence
-
-.section .data.main
-.function_end:
+mov qword ptr [r14 + rsi], rdx
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+add rax, qword ptr [r14 + rsi]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rbx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rbx]
+lfence
+mov rbx, rax
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rcx]
+lfence
+mov rcx, 2896
+lfence
+and rdx, 0b1111111111111 # instrumentation
+lfence
+mov rbx, qword ptr [r14 + rdx]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rdi], rdx
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+mov rbx, qword ptr [r14 + rsi]
+lfence
+xor rbx, rbx
+lfence
+mov rbx, 6600
+lfence
+xor rdx, rax
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+mov rbx, qword ptr [r14 + rcx]
+lfence
+mov rax, rcx
+lfence
+mov rdx, 2640
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+add rax, qword ptr [r14 + rsi]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+mov rcx, qword ptr [r14 + rax]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+add rsi, qword ptr [r14 + rcx]
+lfence
+mov rdi, rbx
+lfence
+mov rdx, rsi
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+add rax, qword ptr [r14 + rsi]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+mov rdx, qword ptr [r14 + rdi]
+lfence
+and rdx, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rdx], rcx
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+add rcx, qword ptr [r14 + rbx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+add rdi, qword ptr [r14 + rbx]
+lfence
+.exit_0:
+lfence
 .macro.measurement_end: nop qword ptr [rax + 0xff]
+jmp .test_case_exit
 .section .data.main
 .test_case_exit:nop

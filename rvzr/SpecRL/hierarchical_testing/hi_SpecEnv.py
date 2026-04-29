@@ -117,9 +117,35 @@ class SpecEnv(gym.Env):
         self.num_steps = 0
         self.max_steps = self.seq_size
         self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v4")
-        self.pattern_reward_scale = float(env_config.get("pattern_reward_scale", 1.0))
+        # Bumped default from 1.0 -> 5.0 so partial structural pattern reward
+        # can out-weigh the per-step obs/misspec filter penalties below and
+        # drive the agent toward v4 gadget layouts before a real leak is seen.
+        self.pattern_reward_scale = float(env_config.get("pattern_reward_scale", 5.0))
         self.leak_reward = float(env_config.get("leak_reward", 600.0))
         self.trace_divergence_reward_scale = float(env_config.get("trace_divergence_reward_scale", 30.0))
+        # Step-level shaping knobs (expose via env_config so train.py can tune):
+        self.step_penalty = float(env_config.get("step_penalty", 0.1))
+        # Mask the end_game action before the agent has had a chance to lay
+        # down a gadget. Picked so a minimal v4 gadget (slow producer + store
+        # + bypass load + transmitter, plus a few setup mov_ri's) comfortably fits.
+        self.min_steps_before_end = int(env_config.get("min_steps_before_end", 8))
+        self.early_end_penalty = float(env_config.get("early_end_penalty", 50.0))
+        # Revizor-style PFC misspec signal (branch mispred / machine clear)
+        # does NOT fire for Spectre v4 — store-bypass speculation leaves
+        # UOPS_ISSUED==UOPS_RETIRED and RECOVERY_CYCLES==0. Keeping the old
+        # ±30 shaping causes a permanent -30 drag for v4 runs and dominates
+        # the structural signal. Disable it by default for v4.
+        self.misspec_bonus = float(env_config.get(
+            "misspec_bonus",
+            0.0 if self.vulnerability_type == "spectre_v4" else 30.0,
+        ))
+        self.observable_bonus = float(env_config.get("observable_bonus", 50.0))
+        # Single-sided observable reward (P0.2). The old symmetric form applied
+        # -observable_bonus every step that was NOT observable, which compounds
+        # into a huge negative floor (-50 * seq_size) and drowns the structural
+        # pattern signal. Default 0.0 here so "not observable yet" stops being
+        # an active punishment and only the positive +observable_bonus remains.
+        self.observable_penalty = float(env_config.get("observable_penalty", 0.0))
         self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
@@ -128,6 +154,22 @@ class SpecEnv(gym.Env):
         self.episode_pattern_match_max: Dict[str, int] = {}
         # Snapshot taken at reset() after an episode ends; safe when callback runs after reset.
         self._last_completed_episode_pattern_match: Dict[str, int] = {}
+
+        # Per-episode micro-architectural signal trackers (wandb -> train/leak/*).
+        #   trace_div_max : max trace_divergence_score ever hit in this episode
+        #   observable_any: did ANY step have observable=True
+        #   leak_any      : did ANY step see a real fuzzer-reported violation
+        #   steps_observable: how many steps were observable=True (density)
+        self.episode_trace_div_max: float = 0.0
+        self.episode_observable_any: bool = False
+        self.episode_leak_any: bool = False
+        self.episode_steps_observable: int = 0
+        # Completed-episode snapshots for RLlib callbacks (mirrors the
+        # pattern_match_max pair above so on_episode_end can read after reset).
+        self._last_episode_trace_div_max: float = 0.0
+        self._last_episode_observable_any: bool = False
+        self._last_episode_leak_any: bool = False
+        self._last_episode_steps_observable: int = 0
 
         """
         OBSERVATION SPACE:
@@ -192,6 +234,15 @@ class SpecEnv(gym.Env):
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
 
+        # HARD-FORCE the kernel module's SSBD patch off. Do NOT rely on CONF
+        # being propagated to Ray rollout workers — if CONF is not loaded,
+        # x86_executor_enable_ssbp_patch defaults to True and the kernel
+        # module sets MSR_IA32_SPEC_CTRL.SSBD=1, which silently disables
+        # Spectre v4 exploitation inside the executor's ring-0 test runs.
+        # This is THE single most common reason a v4 training run sees
+        # observable=True but no leak.
+        self._force_kernel_ssb_vulnerable()
+
     def _read_ssb_status_line(self) -> str:
         try:
             with open("/proc/self/status", "r", encoding="utf-8") as f:
@@ -201,6 +252,37 @@ class SpecEnv(gym.Env):
         except OSError:
             return "Speculation_Store_Bypass: unknown (read failed)"
         return "Speculation_Store_Bypass: unknown (missing)"
+
+    def _force_kernel_ssb_vulnerable(self) -> None:
+        """
+        Directly write "0" to /sys/rvzr_executor/enable_ssbp_patch so that the
+        kernel module clears MSR_IA32_SPEC_CTRL.SSBD when running test cases
+        in ring 0. Also force CONF.x86_executor_enable_ssbp_patch = False so
+        that subsequent Executor operations (which re-sync CONF into sysfs)
+        don't flip it back on.
+
+        The sysfs file is write-only (EIO on read), so we can't verify after
+        the write; we log whether the write succeeded and trust the kernel
+        module's own error reporting.
+        """
+        # Force CONF flag so any later _set_vendor_specific_features() call
+        # during re-init of the executor keeps SSBD cleared.
+        try:
+            setattr(CONF, "x86_executor_enable_ssbp_patch", False)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[SSBD][SpecEnv] could not set CONF flag: {exc}")
+
+        sysfs = "/sys/rvzr_executor/enable_ssbp_patch"
+        try:
+            with open(sysfs, "w", encoding="utf-8") as f:
+                f.write("0")
+            print(f"[SSBD][SpecEnv] wrote '0' to {sysfs} (SSB vulnerable in executor)")
+        except OSError as exc:
+            print(
+                f"[SSBD][SpecEnv] FAILED to write {sysfs}: {exc}. "
+                "Kernel module may not be loaded or permissions are wrong. "
+                "Without this, Spectre v4 CANNOT be triggered."
+            )
 
     def _ensure_ssb_vulnerable_for_process(self) -> None:
         """
@@ -234,11 +316,24 @@ class SpecEnv(gym.Env):
                 sys_status = f.read().strip()
             print(f"[SSB][SpecEnv] sysfs {sysfs_path}: {sys_status}")
             lowered = sys_status.lower()
-            if "not affected" in lowered or "disabled" in lowered:
+            # Only warn on genuinely-locked states. Strings like
+            # "Mitigation: Speculative Store Bypass disabled via prctl"
+            # historically tripped the warning because they contain
+            # "disabled", but that's actually the per-process opt-out
+            # mode that the kernel module + our _force_kernel_ssb_vulnerable
+            # override anyway. Be explicit about which states really kill v4.
+            hard_locked = (
+                "not affected" in lowered
+                or "mitigation: speculative store bypass disabled" in lowered
+            )
+            is_prctl_mode = "disabled via prctl" in lowered
+            if hard_locked and not is_prctl_mode:
                 print(
-                    "[SSB][SpecEnv] WARNING: CPU reports SSB as not exploitable for this "
-                    "process.  Spectre v4 leaks will not be detected regardless of the "
-                    "agent's policy.  Check microcode / BIOS / boot-time mitigations."
+                    "[SSB][SpecEnv] WARNING: CPU/kernel reports SSB as "
+                    "not exploitable (hard mitigation). Spectre v4 leaks "
+                    "will not be detected regardless of agent policy or "
+                    "kernel module flags. Check microcode / BIOS / "
+                    "boot-time mitigations parameters."
                 )
         except OSError as exc:
             print(f"[SSB][SpecEnv] could not read {sysfs_path}: {exc}")
@@ -262,6 +357,24 @@ class SpecEnv(gym.Env):
         rd = int(parts[2].item() if hasattr(parts[2], "item") else parts[2])
         imm = int(parts[3].item() if hasattr(parts[3], "item") else parts[3])
         end = (o, rs, rd, imm) == (0, 0, 0, 0)
+
+        # Block early-exit: the optimal policy under the old reward was to pick
+        # end_game on step 0 to minimize the -81/step floor. With reward shaping
+        # tightened, also suppress end_game until the agent has emitted enough
+        # tokens to possibly form a v4 gadget. Treated as an invalid step.
+        if end and self.num_steps < self.min_steps_before_end:
+            print(
+                f"EARLY END_GAME blocked (num_steps={self.num_steps} < "
+                f"min_steps_before_end={self.min_steps_before_end})"
+            )
+            truncate = self.num_steps >= self.max_steps
+            step_obs = self._get_obs()
+            return step_obs, -self.early_end_penalty, False, truncate, {
+                "program": self.new_program,
+                "end_game_count": self.end_game_counter,
+                "early_end_blocked": True,
+            }
+
         inst_action = self._tuple_to_instruction(o, rs, rd, imm) if not end else None
 
         truncate = self.num_steps >= self.max_steps
@@ -328,12 +441,30 @@ class SpecEnv(gym.Env):
         # Completed-episode snapshot for RLlib callbacks (works whether on_episode_end runs before or after reset).
         self._last_completed_episode_pattern_match = dict(self.episode_pattern_match_max)
         self.episode_pattern_match_max = {}
+        # Same snapshot strategy for micro-arch signal roll-ups.
+        self._last_episode_trace_div_max = float(self.episode_trace_div_max)
+        self._last_episode_observable_any = bool(self.episode_observable_any)
+        self._last_episode_leak_any = bool(self.episode_leak_any)
+        self._last_episode_steps_observable = int(self.episode_steps_observable)
+        self.episode_trace_div_max = 0.0
+        self.episode_observable_any = False
+        self.episode_leak_any = False
+        self.episode_steps_observable = 0
         self.num_steps = 0
         self.bad_case = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+
+        # Re-sample inputs every episode so the htrace side-channel signal
+        # actually varies across episodes — v4 observability relies on the
+        # stored value vs. pre-existing memory value differing, and a fixed
+        # input set from __init__ collapses that variance.
+        try:
+            self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1)
+        except Exception as exc:
+            print(f"[SpecEnv.reset] input regeneration failed ({exc}); reusing old inputs")
 
         return (self._get_obs(), {"program": self.new_program})
 
@@ -491,6 +622,14 @@ class SpecEnv(gym.Env):
         for k, v in self.pattern_match_counts.items():
             iv = int(v)
             self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
+        # Per-episode micro-arch signal roll-ups (feed wandb via callbacks).
+        if self.trace_divergence_score > self.episode_trace_div_max:
+            self.episode_trace_div_max = float(self.trace_divergence_score)
+        if self.observable:
+            self.episode_observable_any = True
+            self.episode_steps_observable += 1
+        if self.leak:
+            self.episode_leak_any = True
         print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
         print(
             f"trace divergence reward: {self.trace_divergence_reward_scale * self.trace_divergence_score} "
@@ -499,11 +638,21 @@ class SpecEnv(gym.Env):
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             reward += self.leak_reward
-        reward = reward + 30 if self.misspec else reward - 30 # reward/punish for passing/failing misspeculative filters
+        # Misspec filter: ±self.misspec_bonus. Defaults to 0 for spectre_v4
+        # (PFC branch/machine-clear counters don't fire for SSB speculation).
+        if self.misspec_bonus != 0.0:
+            reward = reward + self.misspec_bonus if self.misspec else reward - self.misspec_bonus
         print(f"misspec: {self.misspec}, reward: {reward}")
-        reward = reward + 50 if self.observable else reward - 50 # reward/punish for passing/failing observation filters
+        # Observable filter: single-sided (P0.2). +observable_bonus when the
+        # fenced-vs-unfenced htrace diverges (a real pre-leak signal), and
+        # -observable_penalty (default 0) otherwise so non-observable steps
+        # don't accumulate a huge negative drag against pattern shaping.
+        if self.observable:
+            reward += self.observable_bonus
+        else:
+            reward -= self.observable_penalty
         print(f"observable: {self.observable}, reward: {reward}")
-        reward -= 1 # negative reward for each additional step
+        reward -= self.step_penalty
         print(f"step penalty, reward: {reward}")
 
         return reward
@@ -564,7 +713,8 @@ class SpecEnv(gym.Env):
 
             # check for violations
             ctraces = self.model.trace_test_case(boosted_inputs, 1)
-            htraces = self.executor.trace_test_case(boosted_inputs, 10)
+            # P2.2: more reps -> more stable fenced/unfenced comparison.
+            htraces = self.executor.trace_test_case(boosted_inputs, 20)
 
             # check if misspec occurs, updates flag
             pfc_feedback = [ht.get_max_pfc() for ht in htraces]
@@ -581,7 +731,7 @@ class SpecEnv(gym.Env):
             fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
 
             self.executor.load_test_case(fenced_test_case)
-            fenced_htraces = self.executor.trace_test_case(inputs, n_reps=10)
+            fenced_htraces = self.executor.trace_test_case(inputs, n_reps=20)
 
             if fenced_htraces != htraces:
                 self.observable = True
@@ -602,7 +752,7 @@ class SpecEnv(gym.Env):
             #         break
             # print("traces_match ***************", traces_match)
 
-            violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, False, type_='asm')
+            violations = self.fuzzer.start_SpecRL(1, len(inputs), 0, False, True, type_='asm')
             if not violations:  # nothing detected? -> we are done here, move to next test case
                 return None
 
@@ -744,6 +894,16 @@ class SpecEnv(gym.Env):
     def _get_instruction_variant_name(self, instr: Instruction) -> str:
         """Map a concrete instruction back to the action-space opcode variant."""
         name_lower = instr.name.lower()
+
+        # Variants we emit via inst_space.tuple_to_instruction have canonical shapes,
+        # so map them back directly to the opcode vocab used in OPERAND_SPACE.
+        if name_lower == "lea":
+            return "lea_rrr"
+        if name_lower == "xor":
+            return "xor_rr"
+        if name_lower == "mul":
+            return "mul"
+
         if name_lower not in {"mov", "add", "cmp", "sub"}:
             return name_lower
 
@@ -885,6 +1045,17 @@ class SpecEnv(gym.Env):
                 dst_regs.append(name)
             if getattr(reg_op, "src", False):
                 src_regs.append(name)
+
+        # Annotate implicit register side effects that aren't surfaced as
+        # RegisterOps in our synthesized instructions. This matters for
+        # pattern_matching._has_slow_addr_producer to credit `mul` as a
+        # producer of the store's base register (rax or rdx).
+        name_lower = instr.name.lower()
+        if name_lower == "mul":
+            # mul writes rdx:rax implicitly, reads rax implicitly.
+            dst_regs.extend(["rax", "rdx"])
+            src_regs.append("rax")
+
         return sorted(set(dst_regs)), sorted(set(src_regs))
 
     def _extract_memory_access_bases(self, instr: Instruction) -> tuple[List[str], List[str]]:

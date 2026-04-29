@@ -32,6 +32,9 @@ OPERAND_SPACE = [
     "mov_mi",  # mov [reg], imm    -- store
     "add_rm",  # add reg, [reg]    -- slow-addr producer
     "add_mr",  # add [reg], reg    -- RMW store
+    "lea_rrr", # lea rd, [rs + rd + 1]  -- serial slow-addr chain (v4 producer)
+    "mul",     # mul qword ptr [rs]     -- long-latency producer (rax:rdx)
+    "xor_rr",  # xor rd, rs             -- fast reg reset / zeroing idiom
 ]
 DST_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"] # add more regs like al, bl,eax, etc.
 SRC_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
@@ -46,13 +49,19 @@ EMPTY_REG_ID = 0
 EMPTY_IMM_ID = 0
 
 OPCODE_OPERAND_SPEC = {
-    "mov_rr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "mov_ri": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
-    "mov_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "mov_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "mov_mi": {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
-    "add_rm": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
-    "add_mr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_rr":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_ri":  {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "mov_rm":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_mr":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "mov_mi":  {"dst_reg": "required", "src_reg": "forbidden", "imm": "required"},
+    "add_rm":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    "add_mr":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    # lea rd, [rs + rd + 1]  -> dst=required, src=required, imm forbidden
+    "lea_rrr": {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
+    # mul qword ptr [rs]  -> implicit rax:rdx dst, only src_reg as mem base
+    "mul":     {"dst_reg": "forbidden", "src_reg": "required", "imm": "forbidden"},
+    # xor rd, rs  (dst==src zeroes; explicitly allowed for the zeroing idiom)
+    "xor_rr":  {"dst_reg": "required", "src_reg": "required", "imm": "forbidden"},
 }
 # Exclude dst_reg == src_reg for opcodes where it is pointless (mov rax,rax no-op).
 OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr"]
@@ -310,7 +319,7 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
     Convert (opcode_id, reg_src_id, reg_dst_id, imm_id) to rvzr Instruction.
     Returns None for end_game (0,0,0,0).
     """
-    from rvzr.tc_components.instruction import Instruction, RegisterOp, ImmediateOp, MemoryOp
+    from rvzr.tc_components.instruction import Instruction, RegisterOp, ImmediateOp, MemoryOp, AgenOp
 
     if opcode_id == 0:
         return None
@@ -370,8 +379,10 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
         ).add_op(ImmediateOp(imm_val, 64))
 
     if opcode == "mul":
+        # mul qword ptr [rs] -> writes rax:rdx implicitly. Using 64-bit width so
+        # the full 64x64->128 result surfaces and the op actually costs latency.
         return Instruction("mul", False, "", False).add_op(
-            MemoryOp(rs, 32, False, True)
+            MemoryOp(rs, 64, False, True)
         )
 
     if opcode == "div":
@@ -379,10 +390,19 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
             MemoryOp(rs, 8, False, True)
         )
 
-    if opcode == "xor":
+    if opcode == "xor_rr":
         return Instruction("xor", False, "", False).add_op(
             RegisterOp(rd, 64, True, True)
         ).add_op(RegisterOp(rs, 64, True, False))
+
+    if opcode == "lea_rrr":
+        # Slow-addr chain: rd = rs + rd + 1. rd appears on both sides so the
+        # dependency serializes across multiple lea_rrr's, matching the
+        # canonical Spectre-v4 gadget (see tests/x86_tests/asm/spectre_v4.asm).
+        # Using AgenOp so sandbox pass leaves the address expression alone.
+        return Instruction("lea", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(AgenOp(f"{rs} + {rd} + 1", 64))
 
     # if opcode == "cmp":
     #     return Instruction("cmp", False, "", False).add_op(

@@ -84,14 +84,26 @@ class VulnerabilityPatternMatcher:
     SAME_REG_STORE_LOAD_BONUS: float = 3.0
     SLOW_STORE_FAST_LOAD_BONUS: float = 5.0
     REPEATED_INSTR_PENALTY: float = 2.0
-    SLOW_ADDR_LOOKBACK: int = 4
+    # P1.1: canonical v4 needs >=10 slow-addr producers on the store base
+    # before the store itself, so the lookback has to be wide enough to
+    # actually reach them. Old value (4) only covered the last 4 user-instrs.
+    # Bumped 20 -> 30 so chain-length counting and slow-producer detection
+    # can see all of the ~26 lea chain in tests/x86_tests/asm/spectre_v4.asm.
+    SLOW_ADDR_LOOKBACK: int = 30
     FAST_LOAD_MAX_GAP: int = 4
 
     # v4-specific shaping
-    V4_FULL_GADGET_BONUS: float = 60.0          # store -> bypass-load -> transmitter all present
-    V4_SLOW_STORE_PRODUCER_BONUS: float = 20.0  # load/mul/div writes store's base right before store
-    V4_TRANSMITTER_BONUS: float = 30.0          # memory access with base = bypass-load's dst
-    V4_FAST_LOAD_MAX_GAP: int = 6               # bypass load within this many tokens after store
+    # Substantially bumped so partial structural progress dominates the
+    # per-step "not observable" -50 drag until the agent actually triggers
+    # a leak. A fully formed gadget should be worth several hundred reward
+    # units on its own, comparable to leak_reward=600.
+    V4_FULL_GADGET_BONUS: float = 200.0         # store -> bypass-load -> transmitter all present
+    V4_SLOW_STORE_PRODUCER_BONUS: float = 30.0  # load/mul/div writes store's base right before store
+    V4_TRANSMITTER_BONUS: float = 50.0          # memory access with base = bypass-load's dst
+    # P1.1: widened so a long lea_rrr chain can still feed into a reachable
+    # bypass load. Old 6 was not enough once the chain itself consumes many
+    # slots; 8 lets the agent win even with a deeper chain.
+    V4_FAST_LOAD_MAX_GAP: int = 8               # bypass load within this many tokens after store
     V4_TRANSMITTER_MAX_GAP: int = 4             # transmitter within this many tokens after bypass load
     V4_BASE_OVERWRITE_PENALTY: float = 15.0     # store's base reg written between store and load
     V4_EXPLICIT_MASK_PENALTY: float = 10.0      # explicit mov_ri / xor_rr(same) on store's base between
@@ -100,10 +112,45 @@ class VulnerabilityPatternMatcher:
     V4_TIGHT_BYPASS_BONUS: float = 10.0         # bypass load appears right after store
     V4_NEAR_TRANSMITTER_BONUS: float = 12.0     # transmitter appears right after bypass load
     V4_BYPASS_DST_CLOBBER_PENALTY: float = 20.0 # bypass-loaded value overwritten before transmitter
+    # P1.2: dense, monotone credit for every extra slow-addr producer that
+    # feeds the store's base register. Replaces the old binary
+    # "has slow producer? +30 once" with a linear "+LINK_BONUS per link"
+    # signal (capped by _CAP) so the agent sees a gradient while extending
+    # the chain, instead of a single step of progress at link #1.
+    #
+    # CAP bumped 20 -> 30 so canonical-depth chains (~26 lea ops like
+    # tests/x86_tests/asm/spectre_v4.asm) still see a positive marginal
+    # bonus for each additional link, instead of plateauing at 20.
+    V4_SLOW_CHAIN_LINK_BONUS: float = 3.0
+    V4_SLOW_CHAIN_CAP: int = 30
+
+    # Full-gadget gating (calibrated from canonical v4 diagnostic):
+    # - Canonical gadget with chain_len=26 fires in ~2-4% of inputs.
+    # - Sub-5-link chains empirically fire on ~0% of inputs; giving full
+    #   gadget bonus there was a reward-hacking trap.
+    # - Saturate the bonus at chain_len=15 so the agent is incentivized to
+    #   keep extending up to canonical depth, not plateau at 5.
+    V4_MIN_CHAIN_LEN_FOR_FULL: int = 5
+    V4_CHAIN_LEN_SATURATION: int = 15
+    # P-smashed: explicit penalty for "built a slow chain, then clobbered the
+    # store base with a fast / constant op (mov_ri / mov_rr / xor_rr zeroing)
+    # before the store". That's the reward-hacking pattern we saw the agent
+    # learn: stack lea_rrr to farm chain-length bonus, then `mov rsi, 7560`
+    # to make the store base a known constant (fast resolve) while the
+    # matcher still credits the chain. This penalty closes that loop.
+    V4_SLOW_CHAIN_SMASHED_PENALTY: float = 25.0
+    # Opcodes that reset a register to a short-latency / constant-known value
+    # and therefore break any upstream slow-chain on that register.
+    _FAST_RESET_OPS: FrozenSet[str] = frozenset(
+        {"mov_ri", "mov_rr", "xor_rr"}
+    )
 
     # Opcode variants that look like long-latency producers (used for slow-addr detection).
+    # lea_rrr (`lea rd, [rs + rd + 1]`) chains rd through itself which gives
+    # exactly the serial dependency the canonical v4 gadget uses to delay
+    # the store's address resolution. Treat it as a slow address producer.
     _LOAD_PRODUCER_OPS: FrozenSet[str] = frozenset(
-        {"mov_rm", "add_rm", "sub_rm", "cmp_rm"}
+        {"mov_rm", "add_rm", "sub_rm", "cmp_rm", "lea_rrr"}
     )
     _LATENCY_PRODUCER_OPS: FrozenSet[str] = frozenset(
         {"mul", "div"}
@@ -120,6 +167,7 @@ class VulnerabilityPatternMatcher:
             "sbb_mi",
             "cmp_mr",
             "cmp_rm",
+            "lea_rrr",
         }
     )
 
@@ -335,15 +383,27 @@ class VulnerabilityPatternMatcher:
         """
         Do not penalize adjacent key pair store->load alias sequences; they are
         exactly what we want to encourage for SSB exploration.
+
+        P0.1: ALSO exempt adjacent slow-addr producers that chain on the same
+        register (e.g. `lea_rrr rbx,... ; lea_rrr rbx,...` or `mul ; mul`).
+        Stacking these is exactly the canonical v4 delay chain — the old
+        blanket REPEATED_INSTR_PENALTY was actively training the policy
+        AGAINST the single most important v4 pattern.
         """
         exempt = set()
+        slow_ops = self._LOAD_PRODUCER_OPS | self._LATENCY_PRODUCER_OPS
         for i in range(1, len(tokens)):
             prev_t = tokens[i - 1]
             cur_t = tokens[i]
-            if "store" not in prev_t.kinds or "load" not in cur_t.kinds:
-                continue
-            if self._has_store_load_alias(prev_t, cur_t):
+            if "store" in prev_t.kinds and "load" in cur_t.kinds \
+                    and self._has_store_load_alias(prev_t, cur_t):
                 exempt.add((i - 1, i))
+                continue
+            if prev_t.opcode_variant in slow_ops and cur_t.opcode_variant in slow_ops:
+                # Only exempt when both writes land on the same register(s);
+                # otherwise the "repeat" really is a wasted duplicate op.
+                if set(prev_t.dst_regs).intersection(cur_t.dst_regs):
+                    exempt.add((i - 1, i))
         return frozenset(exempt)
 
     # ------------------------------------------------------------------
@@ -372,6 +432,10 @@ class VulnerabilityPatternMatcher:
             "v4_base_overwritten": 0,
             "v4_explicit_base_mask": 0,
             "v4_bypass_dst_clobbered": 0,
+            # New: counts how often the agent built a slow chain and then
+            # smashed it with a fast-reset op before the store (the reward-hack
+            # pattern). Should drop to near-zero once the policy converges.
+            "v4_slow_chain_smashed": 0,
         }
 
         full_gadgets = 0
@@ -383,6 +447,17 @@ class VulnerabilityPatternMatcher:
             if not store_bases:
                 continue
 
+            # Detect the "farm slow chain, then smash with mov_ri/xor_rr"
+            # reward-hack pattern and penalize it BEFORE crediting any slow
+            # chain / full gadget bonuses for this store. The actual slow
+            # checks below use last-writer semantics, so once a smash is
+            # detected slow_producer will already evaluate to False, but we
+            # still want the explicit penalty to create a dedicated negative
+            # gradient against the pattern.
+            if self._slow_chain_smashed(tokens, i, store_bases):
+                counts["v4_slow_chain_smashed"] += 1
+                total -= self.V4_SLOW_CHAIN_SMASHED_PENALTY
+
             slow_producer = self._has_slow_addr_producer(tokens, i, store_bases)
             if slow_producer:
                 counts["v4_slow_store_producer"] += 1
@@ -390,6 +465,20 @@ class VulnerabilityPatternMatcher:
                 if self._has_near_slow_addr_producer(tokens, i, store_bases):
                     counts["v4_near_slow_store_producer"] += 1
                     total += self.V4_NEAR_SLOW_PRODUCER_BONUS
+
+            # P1.2: dense credit per extra slow producer that writes the
+            # store's base within the lookback window. Gives the agent a
+            # monotone "+3 for every additional lea_rrr/mul" gradient, so
+            # PPO can climb from a 1-link chain to a 10+-link chain without
+            # each intermediate step looking reward-flat.
+            chain_len = self._count_slow_chain_length(tokens, i, store_bases)
+            if chain_len > 0:
+                counts["v4_slow_chain_len"] = max(
+                    counts.get("v4_slow_chain_len", 0), chain_len
+                )
+                total += self.V4_SLOW_CHAIN_LINK_BONUS * min(
+                    chain_len, self.V4_SLOW_CHAIN_CAP
+                )
 
             # Find nearest aliasing load, ensuring base isn't overwritten in between
             bypass_idx = self._find_bypass_load(tokens, i, store_bases)
@@ -421,16 +510,57 @@ class VulnerabilityPatternMatcher:
                         counts["v4_near_transmitter"] += 1
                         total += self.V4_NEAR_TRANSMITTER_BONUS
 
+            # Gate full_gadget on chain_len >= V4_MIN_CHAIN_LEN_FOR_FULL and
+            # scale bonus linearly to saturation at V4_CHAIN_LEN_SATURATION.
+            # Calibration (canonical v4 diagnostic):
+            #   chain_len ~= 26 -> ~2-4% fire rate (detected by fuzzer)
+            #   chain_len ~= 1  -> ~0% fire rate (never detected)
+            # So giving full_gadget bonus at chain_len<5 is a reward-hack trap.
             if slow_producer and transmitter_idx is not None:
-                full_gadgets += 1
+                if chain_len >= self.V4_MIN_CHAIN_LEN_FOR_FULL:
+                    full_gadgets += 1
+                    scale = min(chain_len, self.V4_CHAIN_LEN_SATURATION) \
+                        / float(self.V4_CHAIN_LEN_SATURATION)
+                    total += self.V4_FULL_GADGET_BONUS * scale
+                else:
+                    # Structurally complete but chain too short to fire SSB.
+                    # Track separately so wandb shows the agent is getting
+                    # the shape right but needs to extend the chain.
+                    counts["v4_shortchain_gadget"] = counts.get(
+                        "v4_shortchain_gadget", 0
+                    ) + 1
 
         if full_gadgets > 0:
             counts["v4_full_gadget"] = full_gadgets
-            total += self.V4_FULL_GADGET_BONUS * float(full_gadgets)
+            # NOTE: full_gadget bonus is now applied per-store inside the
+            # loop (scaled by chain_len). Do NOT re-add the flat bonus here.
 
         # Prune zero-count shaping keys so logs are readable.
         counts = {k: v for k, v in counts.items() if v}
         return total, counts
+
+    def _is_slow_op(self, opcode_variant: str) -> bool:
+        return (opcode_variant in self._LOAD_PRODUCER_OPS
+                or opcode_variant in self._LATENCY_PRODUCER_OPS)
+
+    def _last_base_writer(
+        self,
+        tokens: Sequence[PatternToken],
+        store_idx: int,
+        store_bases: FrozenSet[str],
+        window: int,
+    ) -> Optional[int]:
+        """
+        Return the index of the MOST RECENT user-instr within `window` tokens
+        before store_idx that writes any register in store_bases. Returns None
+        if no such writer exists. This is the token whose output will actually
+        flow into the store's base at runtime.
+        """
+        start = max(-1, store_idx - window - 1)
+        for k in range(store_idx - 1, start, -1):
+            if set(tokens[k].dst_regs).intersection(store_bases):
+                return k
+        return None
 
     def _has_slow_addr_producer(
         self,
@@ -438,16 +568,25 @@ class VulnerabilityPatternMatcher:
         store_idx: int,
         store_bases: FrozenSet[str],
     ) -> bool:
-        """Look back a few tokens for an instr that WRITES the store's base reg via a load/mul/div."""
-        start = max(0, store_idx - self.SLOW_ADDR_LOOKBACK)
-        for k in range(start, store_idx):
-            t = tokens[k]
-            if t.opcode_variant not in self._LOAD_PRODUCER_OPS and \
-               t.opcode_variant not in self._LATENCY_PRODUCER_OPS:
-                continue
-            if set(t.dst_regs).intersection(store_bases):
-                return True
-        return False
+        """
+        Last-writer semantics: return True only if the MOST RECENT writer of
+        any store-base register within the lookback window is itself a slow
+        producer. If a faster op (mov_ri / mov_rr / xor_rr, etc.) writes the
+        store base AFTER the slow producer, the slow-chain value never reaches
+        the store and the addr is known before the store issues — no SSB.
+
+        This is stricter than the old "any slow write somewhere in lookback"
+        check and rules out reward-hacking patterns like
+            lea rsi, [rcx+rsi+1]   # slow
+            mov rsi, 7560          # smashes the chain
+            mov [r14+rsi], ...     # fast store, no speculation window
+        """
+        last_writer = self._last_base_writer(
+            tokens, store_idx, store_bases, self.SLOW_ADDR_LOOKBACK
+        )
+        if last_writer is None:
+            return False
+        return self._is_slow_op(tokens[last_writer].opcode_variant)
 
     def _has_near_slow_addr_producer(
         self,
@@ -455,15 +594,78 @@ class VulnerabilityPatternMatcher:
         store_idx: int,
         store_bases: FrozenSet[str],
     ) -> bool:
-        """Prefer timing-critical producer->store adjacency."""
-        start = max(0, store_idx - self.V4_TIGHT_WINDOW)
+        """
+        Last-writer semantics within the tight adjacency window. Same rule
+        as _has_slow_addr_producer but restricted to V4_TIGHT_WINDOW tokens
+        before the store.
+        """
+        last_writer = self._last_base_writer(
+            tokens, store_idx, store_bases, self.V4_TIGHT_WINDOW
+        )
+        if last_writer is None:
+            return False
+        return self._is_slow_op(tokens[last_writer].opcode_variant)
+
+    def _count_slow_chain_length(
+        self,
+        tokens: Sequence[PatternToken],
+        store_idx: int,
+        store_bases: FrozenSet[str],
+    ) -> int:
+        """
+        Walk BACKWARD from the store, counting consecutive slow-producer writes
+        to the store base. As soon as we see a token that writes the store base
+        but is NOT a slow producer, the chain is considered broken and we stop
+        — any earlier slow writes have been clobbered and don't reach the store.
+
+        Tokens that don't touch store_bases are transparent (allowed to sit
+        between chain links), because they don't disturb the dataflow into
+        the store's addr-gen.
+        """
+        start = max(0, store_idx - self.SLOW_ADDR_LOOKBACK)
+        count = 0
+        for k in range(store_idx - 1, start - 1, -1):
+            t = tokens[k]
+            writes_base = bool(set(t.dst_regs).intersection(store_bases))
+            if not writes_base:
+                continue
+            if self._is_slow_op(t.opcode_variant):
+                count += 1
+                continue
+            break
+        return count
+
+    def _slow_chain_smashed(
+        self,
+        tokens: Sequence[PatternToken],
+        store_idx: int,
+        store_bases: FrozenSet[str],
+    ) -> bool:
+        """
+        Detect the reward-hack pattern: some slow producer in the lookback
+        wrote the store base, but a LATER fast-reset op (mov_ri / mov_rr /
+        xor_rr) clobbered it before the store. The matcher's chain-length
+        counter would previously still reward the earlier slow write; this
+        signal lets the caller apply V4_SLOW_CHAIN_SMASHED_PENALTY to
+        neutralize the farm-then-clobber strategy.
+        """
+        start = max(0, store_idx - self.SLOW_ADDR_LOOKBACK)
+        saw_slow = False
         for k in range(start, store_idx):
             t = tokens[k]
-            if t.opcode_variant not in self._LOAD_PRODUCER_OPS and \
-               t.opcode_variant not in self._LATENCY_PRODUCER_OPS:
+            if not set(t.dst_regs).intersection(store_bases):
                 continue
-            if set(t.dst_regs).intersection(store_bases):
+            if self._is_slow_op(t.opcode_variant):
+                saw_slow = True
+                continue
+            # Non-slow write to a store base.
+            if saw_slow and t.opcode_variant in self._FAST_RESET_OPS:
                 return True
+            # Any other non-slow writer also breaks the chain, but we only
+            # flag the farm-then-reset case (fast-reset ops) as "smashed"
+            # because those are the ones the agent uses to force a constant
+            # store address. Generic writes (e.g. add_ri) fall into the
+            # chain-truncation path via _count_slow_chain_length instead.
         return False
 
     def _find_bypass_load(

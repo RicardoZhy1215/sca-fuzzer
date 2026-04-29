@@ -3,6 +3,8 @@
 
 # the leaked value - rcx
 # construct a page offset in the range [0x200; 0x900]
+.function_0:
+.macro.measurement_start: nop qword ptr [rax + 0xff]
 and rcx, 0b11100000000
 add rcx, 0x200
 
@@ -51,4 +53,7 @@ and rdx, 0b111111000000
 mov rdx, qword ptr [r14 + rdx]
 mfence
 
-.test_case_exit:
+.section .data.main
+.function_end:
+.macro.measurement_end: nop qword ptr [rax + 0xff]
+.test_case_exit:nop

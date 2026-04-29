@@ -108,7 +108,9 @@ parser.add_argument(
 
 
 class SpecRLCallbacks(DefaultCallbacks):
-    """Add end_game_count and step counters to custom_metrics for logging."""
+    """Add end_game_count, step counters, pattern-match counts, and per-episode
+    micro-architectural signal roll-ups (observable / trace divergence / leak)
+    to custom_metrics so they show up in wandb under train/*."""
 
     @staticmethod
     def _episode_pattern_counts(env) -> dict:
@@ -125,6 +127,36 @@ class SpecRLCallbacks(DefaultCallbacks):
         snap = getattr(env, "_last_completed_episode_pattern_match", None) or {}
         return dict(snap)
 
+    @staticmethod
+    def _episode_uarch_signals(env) -> dict:
+        """
+        Per-episode microarchitectural signal roll-ups. Reads whichever of
+        the (running / last-completed) pairs has non-zero data, matching the
+        pattern_match_counts strategy so we're order-independent w.r.t. reset.
+        """
+        if env is None:
+            return {}
+        # Prefer running values if the episode appears to have any activity.
+        running_has = (
+            getattr(env, "episode_trace_div_max", 0.0)
+            or getattr(env, "episode_observable_any", False)
+            or getattr(env, "episode_steps_observable", 0)
+            or getattr(env, "episode_leak_any", False)
+        )
+        if running_has:
+            return {
+                "trace_div_score_max": float(getattr(env, "episode_trace_div_max", 0.0)),
+                "observable_any": float(getattr(env, "episode_observable_any", False)),
+                "steps_observable": float(getattr(env, "episode_steps_observable", 0)),
+                "leak_any": float(getattr(env, "episode_leak_any", False)),
+            }
+        return {
+            "trace_div_score_max": float(getattr(env, "_last_episode_trace_div_max", 0.0)),
+            "observable_any": float(getattr(env, "_last_episode_observable_any", False)),
+            "steps_observable": float(getattr(env, "_last_episode_steps_observable", 0)),
+            "leak_any": float(getattr(env, "_last_episode_leak_any", False)),
+        }
+
     def on_episode_end(self, *, episode, env=None, **kwargs):
         if env is not None and hasattr(env, "end_game_counter"):
             episode.custom_metrics["end_game_count"] = env.end_game_counter
@@ -137,14 +169,34 @@ class SpecRLCallbacks(DefaultCallbacks):
         for key, val in counts.items():
             safe = str(key).replace("/", "_")
             episode.custom_metrics[f"pattern_matches/{safe}"] = float(val)
+        # Microarchitectural signal roll-ups (leak/*).
+        uarch = self._episode_uarch_signals(env)
+        for key, val in uarch.items():
+            episode.custom_metrics[f"leak/{key}"] = float(val)
 
 
 env_config = {
     "sequence_size": 50,
-    "num_inputs": 20,
+    # P2.2: more inputs -> less htrace noise when judging observable / leak.
+    "num_inputs": 200,
     "vulnerability_type": "spectre_v4",
-    "pattern_reward_scale": 1.0,
+    # P0.2: restore the SpecEnv default (5.0). pattern shaping must outweigh
+    # the per-step observable penalty to give PPO a usable structural signal.
+    "pattern_reward_scale": 5.0,
     "leak_reward": 600.0,
+    # P0.2: single-sided observable bonus. +50 when fenced/unfenced diverge,
+    # 0 otherwise — the old symmetric -50/step drag was compounding into a
+    # ~-2500 floor per episode and dominating the pattern signal.
+    "observable_bonus": 50.0,
+    "observable_penalty": 0.0,
+    "step_penalty": 0.05,
+    # Push min_steps_before_end up so the agent has to emit a usable slow
+    # chain (>=10 lea_rrr) + store + load + transmitter before it can exit.
+    "min_steps_before_end": 15,
+    "early_end_penalty": 20.0,
+    # Dense pre-leak signal; bump so fenced/unfenced trace divergence is a
+    # visible gradient even before a full gadget materializes.
+    "trace_divergence_reward_scale": 100.0,
 }
 
 if __name__ == "__main__":
@@ -265,6 +317,12 @@ if __name__ == "__main__":
             pm_keys = {k: v for k, v in (custom_metrics or {}).items() if "pattern_matches" in str(k)}
             if pm_keys:
                 print_res["pattern_matches_custom_metrics"] = pm_keys
+            leak_keys = {
+                k: v for k, v in (custom_metrics or {}).items()
+                if "leak/" in str(k) or "leak_" in str(k)
+            }
+            if leak_keys:
+                print_res["leak_signal_custom_metrics"] = leak_keys
             pprint(print_res)
 
             if use_wandb:
@@ -281,9 +339,13 @@ if __name__ == "__main__":
                     wandb_log["train/entropy"] = learner_info["entropy"]
                 if custom_metrics.get("end_game_count") is not None:
                     wandb_log["train/end_game_count"] = custom_metrics["end_game_count"]
-                # RLlib aggregates custom_metrics with _mean suffix per training iter.
+                # RLlib aggregates custom_metrics with _mean / _min / _max suffix
+                # per training iter. Forward both pattern_matches/* (gadget
+                # structure) and leak/* (micro-architectural signal: observable,
+                # trace_div_score_max, steps_observable, leak_any).
                 for k, v in (custom_metrics or {}).items():
-                    if "pattern_matches" in str(k):
+                    ks = str(k)
+                    if "pattern_matches" in ks or "leak/" in ks or "leak_" in ks:
                         wandb_log[f"train/{k}"] = v
                 wandb.log(wandb_log)
 
