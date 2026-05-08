@@ -57,9 +57,61 @@ from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
 from pattern_matching import VulnerabilityPatternMatcher, PatternToken
 
 
+# Speculative Store Bypass prctl constants. Originally V4-only, but the
+# `_force_kernel_ssb_vulnerable()` hook below is required for Ray rollout
+# workers regardless of vulnerability_type — without it the workers boot
+# with CONF.x86_executor_enable_ssbp_patch=True (module default) and the
+# executor re-enables SSBD MSR, silently disabling v4 even if the agent
+# happens to produce a v4 gadget. Keep these enabled at all times.
 PR_SET_SPECULATION_CTRL = 53
 PR_SPEC_STORE_BYPASS = 0
 PR_SPEC_ENABLE = 1 << 1
+
+
+
+_EMBEDDER_CACHE: Dict[Tuple[str, str], Tuple[object, object]] = {}
+
+
+def _get_text_embedder(model_name: str, device: str):
+    key = (model_name, device)
+    if key in _EMBEDDER_CACHE:
+        return _EMBEDDER_CACHE[key]
+    from transformers import AutoTokenizer, AutoModel  # lazy import
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    tok = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name).to(device).eval()
+    _EMBEDDER_CACHE[key] = (tok, model)
+    return tok, model
+
+
+def _filter_reference_asm_text(path: str) -> str:
+    """
+    Extract just the agent-emitted instructions from a reference .asm file.
+    Skips:
+        - directives / labels (lines starting with '.')
+        - lines tagged '# instrumentation' (sandbox-inserted ops like
+          `and rax, 0b1111111111111`)
+        - pure comments
+    Trailing inline comments are stripped. The output is a newline-joined
+    string of one instruction per line, matching the format we'll generate
+    for SpecRL programs.
+    """
+    out: List[str] = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith("."):
+                continue
+            if "# instrumentation" in s:
+                continue
+            if s.startswith("#"):
+                continue
+            s = s.split("#", 1)[0].strip()
+            if s:
+                out.append(s)
+    return "\n".join(out)
 
 
 class SpecEnv(gym.Env):
@@ -93,6 +145,9 @@ class SpecEnv(gym.Env):
     asm_path = "my_test_case.asm"
 
     def __init__(self, env_config):
+        # Per-process SSB opt-in. Originally V4-only but kept on at all times:
+        # Ray rollout workers re-import CONF fresh, so the only reliable place
+        # to switch SSBD off is here, inside the worker's __init__.
         self._ensure_ssb_vulnerable_for_process()
         self.seq_size = env_config["sequence_size"]
         self.num_inputs = env_config["num_inputs"]
@@ -116,7 +171,9 @@ class SpecEnv(gym.Env):
 
         self.num_steps = 0
         self.max_steps = self.seq_size
-        self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v4")
+        # Default switched from "spectre_v4" -> "spectre_v1". v4 path is kept
+        # (commented) for reference but not used during training.
+        self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v1")
         # Bumped default from 1.0 -> 5.0 so partial structural pattern reward
         # can out-weigh the per-step obs/misspec filter penalties below and
         # drive the agent toward v4 gadget layouts before a real leak is seen.
@@ -130,15 +187,16 @@ class SpecEnv(gym.Env):
         # + bypass load + transmitter, plus a few setup mov_ri's) comfortably fits.
         self.min_steps_before_end = int(env_config.get("min_steps_before_end", 8))
         self.early_end_penalty = float(env_config.get("early_end_penalty", 50.0))
-        # Revizor-style PFC misspec signal (branch mispred / machine clear)
-        # does NOT fire for Spectre v4 — store-bypass speculation leaves
-        # UOPS_ISSUED==UOPS_RETIRED and RECOVERY_CYCLES==0. Keeping the old
-        # ±30 shaping causes a permanent -30 drag for v4 runs and dominates
-        # the structural signal. Disable it by default for v4.
-        self.misspec_bonus = float(env_config.get(
-            "misspec_bonus",
-            0.0 if self.vulnerability_type == "spectre_v4" else 30.0,
-        ))
+        # Revizor-style PFC misspec signal (branch mispred / machine clear).
+        # [V4-only branch commented] For Spectre v4 (SSB) this signal does
+        # not fire, so the v4 path used to default this to 0.0. v1 mispredicts
+        # a conditional branch -> RECOVERY_CYCLES > 0, so 30.0 is the right
+        # default. Restore the simple default for v1 training.
+        # self.misspec_bonus = float(env_config.get(
+        #     "misspec_bonus",
+        #     0.0 if self.vulnerability_type == "spectre_v4" else 30.0,
+        # ))
+        self.misspec_bonus = float(env_config.get("misspec_bonus", 30.0))
         self.observable_bonus = float(env_config.get("observable_bonus", 50.0))
         # Single-sided observable reward (P0.2). The old symmetric form applied
         # -observable_bonus every step that was NOT observable, which compounds
@@ -194,6 +252,9 @@ class SpecEnv(gym.Env):
         max_address = np.iinfo(np.int64).max # so for now just giving (h/c)traces the set {-1, 0, 1, 2...}
         self.max_trace_len = self.seq_size * self.num_inputs
         instr_high = 500
+        # NUM_ARCH_REGS: rax, rbx, rcx, rdx, rsi, rdi (matches _REG_ID_TO_NAME_X86
+        # in rvzr/traces.py and DST_REGS_SPACE in inst_space.py).
+        self.num_arch_regs = 6
         self.observation_space = spaces.Dict(
             {
                 "instruction": spaces.Box(low = -1, high = instr_high, shape = (self.seq_size, 4), dtype=np.int64),
@@ -202,7 +263,12 @@ class SpecEnv(gym.Env):
                 "htrace": spaces.Box(low = min_address, high = max_address, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
                 "ctrace": spaces.Box(low = np.iinfo(np.uint64).min, high = np.iinfo(np.uint64).max, shape = (self.seq_size, self.num_inputs), dtype=np.uint64),
                 "recovery_cycles": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
-                "transient_uops": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64)
+                "transient_uops": spaces.Box(low = -1, high = np.iinfo(np.int32).max, shape = (self.seq_size, self.num_inputs), dtype=np.int64),
+                # End-of-program register-equality encoding (per input, rax..rdi).
+                # 1 = this slot's value duplicates at least one other slot in
+                # the same snapshot, 0 = unique. See _collect_reg_state for
+                # the rationale and the loss-of-info caveat.
+                "regs": spaces.Box(low = 0, high = 1, shape = (self.seq_size, self.num_inputs, self.num_arch_regs), dtype=np.uint8),
             }
         )
         print(f"observation space: {self.observation_space}")
@@ -228,21 +294,123 @@ class SpecEnv(gym.Env):
         self.executor.valid_mem_limit = 0x100000
         self.addr_mask = self.executor.valid_mem_limit - 1
 
+        # Second executor in arch (GPR) mode. The kernel module's
+        # /sys/rvzr_executor/enable_dbg_gpr_mode flag is GLOBAL, so this
+        # instance must be used carefully: every load_test_case() flips the
+        # flag, and the most recent load wins for the next trace_test_case().
+        # Always re-load self.executor before reading htraces to restore flag=0.
+        self.arch_executor = factory.get_executor(enable_mismatch_check_mode=True)
+
         self.model = factory.get_model(self.executor.read_base_addresses())
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
 
-        # HARD-FORCE the kernel module's SSBD patch off. Do NOT rely on CONF
-        # being propagated to Ray rollout workers — if CONF is not loaded,
-        # x86_executor_enable_ssbp_patch defaults to True and the kernel
-        # module sets MSR_IA32_SPEC_CTRL.SSBD=1, which silently disables
-        # Spectre v4 exploitation inside the executor's ring-0 test runs.
-        # This is THE single most common reason a v4 training run sees
-        # observable=True but no leak.
+        # HARD-FORCE the kernel module's SSBD patch off. Originally V4-only,
+        # kept on always: Ray rollout workers re-import CONF and otherwise
+        # default x86_executor_enable_ssbp_patch=True, which re-enables SSBD
+        # in ring-0 test runs and silently disables v4 even if the agent
+        # produces a perfectly valid v4 gadget. Harmless under v1.
         self._force_kernel_ssb_vulnerable()
 
+        self.similarity_model_name = env_config.get("similarity_model_name", "sentence-transformers/all-MiniLM-L6-v2")
+        self.similarity_device = env_config.get("similarity_device", "cuda:0" if self._cuda_available() else "cpu")
+        self.similarity_top_k = int(env_config.get("similarity_top_k", 3))
+        self.similarity_reward_scale = float(env_config.get("similarity_reward_scale", 20.0))
+        self.similarity_baseline_subtract = bool(env_config.get("similarity_baseline_subtract", False))
+        self.similarity_max_length = int(env_config.get("similarity_max_length", 512))
+        # similarity machinery is generic (UniXcoder cosine vs. a directory of
+        # reference asm files). The hardcoded v4 example default is commented
+        # out — pass `similarity_reference_dir` in env_config to enable it for
+        # any vulnerability. Empty default => similarity reward is disabled.
+        ref_dir = env_config.get(
+            "similarity_reference_dir",
+            "/home/hz25d/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
+        )
+        self._sim_tokenizer = None
+        self._sim_model = None
+        self._reference_embeddings = None  # (N_ref, hidden_dim) on similarity_device, normalized
+        self._reference_centroid = None    # (hidden_dim,) on similarity_device, normalized
+        self.similarity_score = 0.0
+        self.episode_similarity_max = 0.0
+        self._last_episode_similarity_max = 0.0
+        self._init_similarity_embedder(ref_dir)
+
+    @staticmethod
+    def _cuda_available() -> bool:
+        try:
+            import torch
+            return bool(torch.cuda.is_available())
+        except Exception:
+            return False
+
+    def _init_similarity_embedder(self, ref_dir: str) -> None:
+        """
+        Lazy-load the embedder and pre-embed reference asm files.
+        On any failure (model download / no refs / etc.), disable the
+        similarity reward by leaving _reference_embeddings=None.
+        """
+        if not ref_dir or not os.path.isdir(ref_dir):
+            print(f"[SIM][SpecEnv] reference_dir '{ref_dir}' not found; similarity reward disabled")
+            return
+        ref_paths = sorted(
+            os.path.join(ref_dir, f)
+            for f in os.listdir(ref_dir)
+            if f.endswith(".asm")
+        )
+        if not ref_paths:
+            print(f"[SIM][SpecEnv] no .asm files in {ref_dir}; similarity reward disabled")
+            return
+        try:
+            tok, model = _get_text_embedder(self.similarity_model_name, self.similarity_device)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[SIM][SpecEnv] failed to load embedder {self.similarity_model_name}: {exc}; "
+                  "similarity reward disabled")
+            return
+
+        ref_texts = [_filter_reference_asm_text(p) for p in ref_paths]
+        empty = [p for p, t in zip(ref_paths, ref_texts) if not t.strip()]
+        if empty:
+            print(f"[SIM][SpecEnv] WARNING: empty after filtering: {empty}")
+
+        self._sim_tokenizer = tok
+        self._sim_model = model
+        self._reference_embeddings = self._embed_texts(ref_texts)
+        # Centroid (normalized) for optional baseline subtraction.
+        import torch
+        centroid = self._reference_embeddings.mean(dim=0, keepdim=True)
+        self._reference_centroid = torch.nn.functional.normalize(centroid, dim=-1).squeeze(0)
+
+        # Diagnostic: print pairwise cosines so the user can see how
+        # discriminative the references are (high baseline => weak signal).
+        sim = (self._reference_embeddings @ self._reference_embeddings.T).cpu().numpy()
+        off_diag = sim[~np.eye(sim.shape[0], dtype=bool)]
+        print(f"[SIM][SpecEnv] loaded {len(ref_paths)} refs from {ref_dir}; "
+              f"pairwise cosine: mean={off_diag.mean():.3f}, "
+              f"min={off_diag.min():.3f}, max={off_diag.max():.3f}")
+
+    def _embed_texts(self, texts: List[str]):
+        """Tokenize + forward + mean-pool + L2-normalize. Returns (B, hidden_dim)."""
+        import torch
+        with torch.no_grad():
+            enc = self._sim_tokenizer(
+                texts,
+                padding=True,
+                truncation=True,
+                max_length=self.similarity_max_length,
+                return_tensors="pt",
+            ).to(self.similarity_device)
+            out = self._sim_model(**enc).last_hidden_state  # (B, T, H)
+            mask = enc["attention_mask"].unsqueeze(-1).float()
+            pooled = (out * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1)
+            return torch.nn.functional.normalize(pooled, dim=-1)
+
+    # SSB / SSBD helper methods. Originally added for Spectre v4 only; kept
+    # always-on because Ray rollout workers re-import CONF and would otherwise
+    # default x86_executor_enable_ssbp_patch=True, leaving SSBD MSR=1 in
+    # ring-0 test runs and silently disabling v4 even if a v4-shaped gadget
+    # is produced. Harmless under v1.
     def _read_ssb_status_line(self) -> str:
         try:
             with open("/proc/self/status", "r", encoding="utf-8") as f:
@@ -446,15 +614,18 @@ class SpecEnv(gym.Env):
         self._last_episode_observable_any = bool(self.episode_observable_any)
         self._last_episode_leak_any = bool(self.episode_leak_any)
         self._last_episode_steps_observable = int(self.episode_steps_observable)
+        self._last_episode_similarity_max = float(self.episode_similarity_max)
         self.episode_trace_div_max = 0.0
         self.episode_observable_any = False
         self.episode_leak_any = False
         self.episode_steps_observable = 0
+        self.episode_similarity_max = 0.0
         self.num_steps = 0
         self.bad_case = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
+        self.similarity_score = 0.0
         self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
 
         # Re-sample inputs every episode so the htrace side-channel signal
@@ -491,7 +662,8 @@ class SpecEnv(gym.Env):
             "htrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.int64),
             "ctrace": np.full((self.seq_size, self.num_inputs), 0, dtype=np.uint64),
             "recovery_cycles": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
-            "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64)
+            "transient_uops": np.full((self.seq_size, self.num_inputs), -1, dtype=np.int64),
+            "regs": np.full((self.seq_size, self.num_inputs, self.num_arch_regs), 0, dtype=np.uint8),
         } # filled with -1's as filler
 
         # temp file management
@@ -549,6 +721,9 @@ class SpecEnv(gym.Env):
                 obs["recovery_cycles"][count - 1] = temp_obs[3]
                 obs["transient_uops"][count - 1] = temp_obs[4]
 
+                temp_regs = np.array(temp_obs[5], dtype=np.uint8)
+                obs["regs"][count - 1, : temp_regs.shape[0]] = temp_regs[: self.num_inputs]
+
         # temp file cleanup
         os.chdir(cwd)
         return obs
@@ -587,17 +762,119 @@ class SpecEnv(gym.Env):
             htraces_obs.append(merged_trace)
 
         #pfc_feedback = self.executor.get_last_feedback()
+        # PFC counters come back as uint64 from the kernel module. In rare
+        # configs the top bit can be set (counter wrap / uninitialized state /
+        # error sentinel), and the resulting Python int exceeds int64.max, so
+        # numpy's assignment into the int64 obs buffers throws
+        # `OverflowError: Python int too large to convert to C long`.
+        # The observation space already declares `high = int32.max` for both
+        # recovery_cycles and transient_uops, so clip to that range here.
+        _PFC_HIGH = int(np.iinfo(np.int32).max)
         recovery = []
         transient = []
         pfc_feedback = [ht.get_max_pfc() for ht in htraces]
         for _, pfc_values in enumerate(pfc_feedback):
-            recovery.append(pfc_values[2])
-            if (pfc_values[0] > pfc_values[1]):
-                transient.append(pfc_values[0] - pfc_values[1])
-            else: transient.append(0)
+            rec = int(pfc_values[2])
+            if rec < 0:
+                rec = -1
+            elif rec > _PFC_HIGH:
+                rec = _PFC_HIGH
+            recovery.append(rec)
+            if pfc_values[0] > pfc_values[1]:
+                diff = int(pfc_values[0]) - int(pfc_values[1])
+                if diff < 0:
+                    diff = 0
+                elif diff > _PFC_HIGH:
+                    diff = _PFC_HIGH
+                transient.append(diff)
+            else:
+                transient.append(0)
         last_instr_info = tuple(self._extract_last_instr_info(program))
+        regs_obs = self._collect_reg_state(program)
+        # print("regs_obs", regs_obs)
+        return (last_instr_info, htraces_obs, ctraces_obs, recovery, transient, regs_obs)
 
-        return (last_instr_info, htraces_obs, ctraces_obs, recovery, transient)
+    def _collect_reg_state(self, program: TestCaseProgram) -> List[List[int]]:
+        """
+        Trace the test case under enable_dbg_gpr_mode and return a list of
+        per-input register-equality vectors (length=num_arch_regs, values 0/1).
+
+        Encoding rule: for each slot in [rax, rbx, rcx, rdx, rsi, rdi],
+        output 1 if its value duplicates at least one OTHER slot in the same
+        snapshot, else 0. Raw absolute values are mostly sandbox_base+offset
+        and carry little signal; what matters for v4 gadget structure is
+        register aliasing (e.g., is the store-base also the load-dst?).
+
+        Caveat: this encoding cannot tell {rax==rbx, rcx==rdx} apart from
+        {rax==rbx==rcx==rdx} — both produce [1,1,1,1,0,0]. If that
+        ambiguity hurts, switch to a pairwise encoding (15 bits over the
+        C(6,2) reg pairs) which captures the full equivalence relation.
+
+        n_reps=1 because the architectural state is deterministic.
+        """
+        self.arch_executor.load_test_case(program)
+        reg_traces = self.arch_executor.trace_test_case(self.inputs, n_reps=1)
+        regs: List[List[int]] = []
+        for rt in reg_traces:
+            samples = rt.get_raw_readings()
+            if len(samples) == 0:
+                regs.append([0] * self.num_arch_regs)
+                continue
+            s = samples[0]
+            raw = [
+                int(s['trace']),
+                int(s['pfc0']),
+                int(s['pfc1']),
+                int(s['pfc2']),
+                int(s['pfc3']),
+                int(s['pfc4']),
+            ]
+            counts = Counter(raw)
+            regs.append([1 if counts[v] > 1 else 0 for v in raw])
+        return regs
+
+    def _extract_agent_asm_text(self, program: TestCaseProgram) -> str:
+        """
+        Render the agent-emitted instructions of `program` as plain asm text,
+        one instruction per line. Skips the same things _build_pattern_tokens
+        and _filter_reference_asm_text skip:
+            - instrumentation (sandbox-inserted ops)
+            - macros (.macro.measurement_*)
+        Used as the input text to the similarity embedder.
+        """
+        lines: List[str] = []
+        for bb in program.iter_basic_blocks():
+            for instr in bb:
+                if instr.is_instrumentation:
+                    continue
+                if instr.name == "macro":
+                    continue
+                lines.append(self.printer._instruction_to_str(instr))
+        return "\n".join(lines)
+
+    def _compute_similarity_score(self, program: TestCaseProgram) -> float:
+        """
+        Cosine similarity (top-K mean) between embedding of agent's asm text
+        and the cached reference embeddings. Returns 0.0 if similarity reward
+        is disabled or program has no agent-emitted instructions.
+        """
+        if self._reference_embeddings is None or self._sim_model is None:
+            return 0.0
+        text = self._extract_agent_asm_text(program)
+        if not text.strip():
+            return 0.0
+        agent_emb = self._embed_texts([text])  # (1, H), normalized
+        sims = (agent_emb @ self._reference_embeddings.T).squeeze(0)  # (N_ref,)
+
+        if self.similarity_baseline_subtract:
+            # Subtract similarity to the centroid: rewards being closer to
+            # the references than the references' average is to itself.
+            baseline = float((agent_emb @ self._reference_centroid).item())
+            sims = sims - baseline
+
+        k = min(self.similarity_top_k, sims.shape[0])
+        topk = sims.topk(k).values
+        return float(topk.mean().item())
 
 
     """
@@ -617,14 +894,20 @@ class SpecEnv(gym.Env):
     def _reward(self):
         reward = 0
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
-        reward += self.pattern_stage_reward
+        # reward += self.pattern_stage_reward
         reward += self.trace_divergence_reward_scale * self.trace_divergence_score
-        for k, v in self.pattern_match_counts.items():
-            iv = int(v)
-            self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
+        # Code-similarity reward (UniXcoder cosine vs reference attacks).
+        # 0 when disabled (no refs / model failed to load) so it's a no-op.
+        sim_reward = self.similarity_reward_scale * self.similarity_score
+        reward += sim_reward
+        # for k, v in self.pattern_match_counts.items():
+        #     iv = int(v)
+        #     self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
         # Per-episode micro-arch signal roll-ups (feed wandb via callbacks).
         if self.trace_divergence_score > self.episode_trace_div_max:
             self.episode_trace_div_max = float(self.trace_divergence_score)
+        if self.similarity_score > self.episode_similarity_max:
+            self.episode_similarity_max = float(self.similarity_score)
         if self.observable:
             self.episode_observable_any = True
             self.episode_steps_observable += 1
@@ -635,6 +918,7 @@ class SpecEnv(gym.Env):
             f"trace divergence reward: {self.trace_divergence_reward_scale * self.trace_divergence_score} "
             f"(score={self.trace_divergence_score})"
         )
+        print(f"similarity reward: {sim_reward} (score={self.similarity_score:.4f}, top_k={self.similarity_top_k})")
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             reward += self.leak_reward
@@ -672,6 +956,7 @@ class SpecEnv(gym.Env):
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
+        self.similarity_score = 0.0
 
         self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
@@ -703,6 +988,11 @@ class SpecEnv(gym.Env):
             self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score
             self.pattern_match_counts = pattern_result.matches
 
+            # Code-similarity (UniXcoder cosine vs reference attacks). Cheap
+            # to compute alongside pattern matching since `temp` already has
+            # the agent-emitted instructions in iteration order.
+            self.similarity_score = self._compute_similarity_score(temp)
+
             temp.assign_obj(bin.name)
             assemble(temp)
             self.elf_parser.populate_elf_data(temp.get_obj(), temp)
@@ -714,6 +1004,11 @@ class SpecEnv(gym.Env):
             # check for violations
             ctraces = self.model.trace_test_case(boosted_inputs, 1)
             # P2.2: more reps -> more stable fenced/unfenced comparison.
+            # _get_obs may have left /sys/rvzr_executor/enable_dbg_gpr_mode=1
+            # via arch_executor. Re-load through self.executor to flip the
+            # global sysfs flag back to 0 so trace_test_case returns cache
+            # htraces, not GPR snapshots.
+            self.executor.load_test_case(temp)
             htraces = self.executor.trace_test_case(boosted_inputs, 20)
 
             # check if misspec occurs, updates flag

@@ -33,45 +33,49 @@ from hi_model import register_specrl_hierarchical_model
 from rvzr.config import CONF
 
 
-PR_GET_SPECULATION_CTRL = 52
-PR_SET_SPECULATION_CTRL = 53
-PR_SPEC_STORE_BYPASS = 0
-PR_SPEC_ENABLE = 1 << 1
-
-
-def _read_ssb_status_line() -> str:
-    """Read kernel-reported SSB status for current process."""
-    try:
-        with open("/proc/self/status", "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("Speculation_Store_Bypass:"):
-                    return line.strip()
-    except OSError:
-        return "Speculation_Store_Bypass: unknown (read failed)"
-    return "Speculation_Store_Bypass: unknown (missing)"
-
-
-def ensure_ssb_vulnerable_for_process() -> None:
-    """
-    Ensure this training process allows speculative store bypass.
-    If kernel policy allows PR_SET_SPECULATION_CTRL, this sets thread to vulnerable.
-    """
-    libc = ctypes.CDLL(None, use_errno=True)
-    before = _read_ssb_status_line()
-    print(f"[SSB] Before prctl: {before}")
-
-    rc = libc.prctl(
-        ctypes.c_int(PR_SET_SPECULATION_CTRL),
-        ctypes.c_ulong(PR_SPEC_STORE_BYPASS),
-        ctypes.c_ulong(PR_SPEC_ENABLE),
-        ctypes.c_ulong(0),
-        ctypes.c_ulong(0),
-    )
-    if rc != 0:
-        err = ctypes.get_errno()
-        print(f"[SSB] prctl(PR_SPEC_ENABLE) failed (errno={err}).")
-    after = _read_ssb_status_line()
-    print(f"[SSB] After prctl: {after}")
+# [V4-only] SSB / Speculative Store Bypass prctl plumbing — needed only for
+# Spectre v4. Spectre v1 doesn't depend on per-process SSBD state, so the
+# constants, _read_ssb_status_line, and ensure_ssb_vulnerable_for_process are
+# all commented out below. Re-enable them when training v4.
+# PR_GET_SPECULATION_CTRL = 52
+# PR_SET_SPECULATION_CTRL = 53
+# PR_SPEC_STORE_BYPASS = 0
+# PR_SPEC_ENABLE = 1 << 1
+#
+#
+# def _read_ssb_status_line() -> str:
+#     """Read kernel-reported SSB status for current process."""
+#     try:
+#         with open("/proc/self/status", "r", encoding="utf-8") as f:
+#             for line in f:
+#                 if line.startswith("Speculation_Store_Bypass:"):
+#                     return line.strip()
+#     except OSError:
+#         return "Speculation_Store_Bypass: unknown (read failed)"
+#     return "Speculation_Store_Bypass: unknown (missing)"
+#
+#
+# def ensure_ssb_vulnerable_for_process() -> None:
+#     """
+#     Ensure this training process allows speculative store bypass.
+#     If kernel policy allows PR_SET_SPECULATION_CTRL, this sets thread to vulnerable.
+#     """
+#     libc = ctypes.CDLL(None, use_errno=True)
+#     before = _read_ssb_status_line()
+#     print(f"[SSB] Before prctl: {before}")
+#
+#     rc = libc.prctl(
+#         ctypes.c_int(PR_SET_SPECULATION_CTRL),
+#         ctypes.c_ulong(PR_SPEC_STORE_BYPASS),
+#         ctypes.c_ulong(PR_SPEC_ENABLE),
+#         ctypes.c_ulong(0),
+#         ctypes.c_ulong(0),
+#     )
+#     if rc != 0:
+#         err = ctypes.get_errno()
+#         print(f"[SSB] prctl(PR_SPEC_ENABLE) failed (errno={err}).")
+#     after = _read_ssb_status_line()
+#     print(f"[SSB] After prctl: {after}")
 
 parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=50, default_timesteps=100000
@@ -179,31 +183,39 @@ env_config = {
     "sequence_size": 50,
     # P2.2: more inputs -> less htrace noise when judging observable / leak.
     "num_inputs": 200,
-    "vulnerability_type": "spectre_v4",
-    # P0.2: restore the SpecEnv default (5.0). pattern shaping must outweigh
-    # the per-step observable penalty to give PPO a usable structural signal.
+    # [V4-only] "vulnerability_type": "spectre_v4",
+    "vulnerability_type": "spectre_v1",
+    # Pattern shaping is generic (rule-level: same-reg store/load,
+    # slow-store-fast-load, repeated-instr penalty). v1-specific templates
+    # have not been added yet, so this scale only affects generic rules.
     "pattern_reward_scale": 5.0,
     "leak_reward": 600.0,
-    # P0.2: single-sided observable bonus. +50 when fenced/unfenced diverge,
-    # 0 otherwise — the old symmetric -50/step drag was compounding into a
-    # ~-2500 floor per episode and dominating the pattern signal.
+    # Single-sided observable bonus. +50 when fenced/unfenced diverge.
     "observable_bonus": 50.0,
     "observable_penalty": 0.0,
     "step_penalty": 0.05,
-    # Push min_steps_before_end up so the agent has to emit a usable slow
-    # chain (>=10 lea_rrr) + store + load + transmitter before it can exit.
-    "min_steps_before_end": 15,
+    # [V4-only tuning] v4 needed >=10 lea_rrr chain + store + load +
+    # transmitter, hence min_steps_before_end=15. v1's canonical gadget is
+    # shorter (cmp, jcc, mov[secret], mov[transmit] + a few setup mov_ri),
+    # so a smaller floor is enough.
+    # "min_steps_before_end": 15,
+    "min_steps_before_end": 6,
     "early_end_penalty": 20.0,
-    # Dense pre-leak signal; bump so fenced/unfenced trace divergence is a
-    # visible gradient even before a full gadget materializes.
+    # Dense pre-leak signal (generic): rewards fenced/unfenced trace
+    # divergence regardless of vulnerability type.
     "trace_divergence_reward_scale": 100.0,
+    # similarity_reference_dir: pass an explicit path to a directory of v1
+    # reference asm files to enable code-similarity reward. Leave unset (or
+    # ""), and SpecEnv disables the similarity term but still uses the
+    # generic pattern / divergence / leak signals.
+    "similarity_reference_dir": "/home/hz25d/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
 }
 
 if __name__ == "__main__":
     args = parser.parse_args()
     if getattr(args, "config", None):
         CONF.load(args.config, args.include_dir)
-    ensure_ssb_vulnerable_for_process()
+    # [V4-only] ensure_ssb_vulnerable_for_process()
     local_debug = args.specrl_local_debug
     ray.init(
         local_mode=local_debug,

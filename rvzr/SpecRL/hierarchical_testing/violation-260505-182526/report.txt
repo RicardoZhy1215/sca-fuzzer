@@ -1,0 +1,54 @@
+# Violation Report
+
+* Test Case ID: 90
+* Detected: 05.05.26 at 18:25:26
+
+* Time to detection: 242.963355
+* Statistics:
+Test Cases: 91
+Inputs per test case: 400.0
+Violations: 4
+Effectiveness: 
+  Total Cls: 200.0
+  Effective Cls: 200.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 56
+  Fast Path: 30
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 1010
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #177
+* Hardware trace:
+ ^.....................^^...........^...........^...^....^....... [393]
+^.....................^^.......................^...^....^....... [227]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+^.....................^^...........^...........^.^.^^^^^^^^^^^^^ [1]
+^^^^^^^.^^^.^^........^^.......................^...^....^....... [1]
+^.....................^^.......................^...^....^......^ [1]
+^.....................^^...........^...........^...^....^^^^^^^^ [1]
+
+* Contract trace (hash): 17358836369210449585
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x1e0c, pc: 0x16, pc: 0x1d, pc: 0x24, mem: 0x1be3, pc: 0x28, pc: 0x2f, mem: 0x2cd0, pc: 0x37, pc: 0x3e, mem: 0x1e0c, pc: 0x42, pc: 0x45, pc: 0x4b, mem: 0x2cd0, mem: 0x2cd0, pc: 0x4f, pc: 0x54, pc: 0x5a, mem: 0x2cd0, pc: 0x5e, pc: 0x65, mem: 0x25bb, pc: 0x69, pc: 0x6b, pc: 0xc7]
+
+Input #377
+* Hardware trace:
+ ^.....................^^.......................^.^.^....^....... [324]
+^.....................^^.......................^...^....^....... [302]
+^^^^^^^^^^^^^^^^^^^^^^^^.^.....................^...^....^....... [1]
+
+* Contract trace (hash): 17358836369210449585
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x1e0c, pc: 0x16, pc: 0x1d, pc: 0x24, mem: 0x1be3, pc: 0x28, pc: 0x2f, mem: 0x2cd0, pc: 0x37, pc: 0x3e, mem: 0x1e0c, pc: 0x42, pc: 0x45, pc: 0x4b, mem: 0x2cd0, mem: 0x2cd0, pc: 0x4f, pc: 0x54, pc: 0x5a, mem: 0x2cd0, pc: 0x5e, pc: 0x65, mem: 0x25bb, pc: 0x69, pc: 0x6b, pc: 0xc7]

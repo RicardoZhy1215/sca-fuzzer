@@ -35,6 +35,9 @@ def _get_flat_input_size(obs_space, seq_size=100, num_inputs=20):
     return obs_space.shape[0]
 
 
+NUM_ARCH_REGS = 6
+
+
 def _unflatten_obs(flat_obs: torch.Tensor, seq_size: int, num_inputs: int) -> dict:
     """Reconstruct dict obs from RLlib's flattened observation."""
     b = flat_obs.shape[0]
@@ -48,12 +51,17 @@ def _unflatten_obs(flat_obs: torch.Tensor, seq_size: int, num_inputs: int) -> di
     recovery = flat_obs[:, i : i + seq_size * num_inputs].view(b, seq_size, num_inputs)
     i += seq_size * num_inputs
     transient = flat_obs[:, i : i + seq_size * num_inputs].view(b, seq_size, num_inputs)
+    i += seq_size * num_inputs
+    regs = flat_obs[:, i : i + seq_size * num_inputs * NUM_ARCH_REGS].view(
+        b, seq_size, num_inputs, NUM_ARCH_REGS
+    )
     return {
         "instruction": instr,
         "htrace": htrace,
         "ctrace": ctrace,
         "recovery_cycles": recovery,
         "transient_uops": transient,
+        "regs": regs,
     }
 
 
@@ -123,8 +131,15 @@ class ObsEncoder(nn.Module):
             nn.LayerNorm(trace_embed_dim),
             nn.ReLU(),
         )
+        # regs: (B, seq_size, num_inputs, NUM_ARCH_REGS) -> flatten last 2 dims
+        # before the linear, matches the trace projections' embed_dim.
+        self.regs_proj = nn.Sequential(
+            nn.Linear(num_inputs * NUM_ARCH_REGS, trace_embed_dim),
+            nn.LayerNorm(trace_embed_dim),
+            nn.ReLU(),
+        )
 
-        row_dim = (hidden_dim if self.instr_proj is not None else 0) + 4 * trace_embed_dim
+        row_dim = (hidden_dim if self.instr_proj is not None else 0) + 5 * trace_embed_dim
         self.row_fusion = nn.Sequential(
             nn.Linear(row_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
@@ -159,13 +174,19 @@ class ObsEncoder(nn.Module):
         c = _trace_norm(obs_dict["ctrace"])
         r = obs_dict["recovery_cycles"].float()
         u = obs_dict["transient_uops"].float()
+        # regs are 0/1 equality flags (1 = slot value duplicates another
+        # slot in the same snapshot). No magnitude compression needed —
+        # just cast to float and flatten the (num_inputs, num_arch_regs)
+        # axes for the projection.
+        regs_flat = obs_dict["regs"].float().flatten(-2)
 
         h_f = self.htrace_proj(h)
         c_f = self.ctrace_proj(c)
         r_f = self.recovery_proj(r)
         u_f = self.transient_proj(u)
+        regs_f = self.regs_proj(regs_flat)
 
-        row = torch.cat([instr_feat, h_f, c_f, r_f, u_f], dim=-1)
+        row = torch.cat([instr_feat, h_f, c_f, r_f, u_f, regs_f], dim=-1)
         row = self.row_fusion(row)
         return row.mean(dim=1)
 
@@ -568,7 +589,7 @@ class SpecRLHierarchicalModel(TorchModelV2, nn.Module):
     def forward(self, input_dict, state, seq_lens):
         obs, is_dict = self._get_obs_tensors(input_dict)
         if is_dict and self.encoder is not None:
-            required = ["instruction", "htrace", "ctrace", "recovery_cycles", "transient_uops"]
+            required = ["instruction", "htrace", "ctrace", "recovery_cycles", "transient_uops", "regs"]
             if all(k in obs for k in required):
                 features = self.encoder(obs)
             else:

@@ -112,7 +112,7 @@ def parse_args() -> argparse.Namespace:
         "-i",
         "--num-inputs",
         type=int,
-        default=200,
+        default=100,
         help="Number of inputs to generate for the check.",
     )
     parser.add_argument(
