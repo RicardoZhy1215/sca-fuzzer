@@ -182,7 +182,7 @@ class SpecRLCallbacks(DefaultCallbacks):
 env_config = {
     "sequence_size": 50,
     # P2.2: more inputs -> less htrace noise when judging observable / leak.
-    "num_inputs": 200,
+    "num_inputs": 100,
     # [V4-only] "vulnerability_type": "spectre_v4",
     "vulnerability_type": "spectre_v1",
     # Pattern shaping is generic (rule-level: same-reg store/load,
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         "train_batch_size": 128,
         "gamma": 0.99,
         "seq_size": 50,
-        "num_inputs": 20,
+        "num_inputs": 100,
         "hidden_dim": 256,
     }
     if local_debug:

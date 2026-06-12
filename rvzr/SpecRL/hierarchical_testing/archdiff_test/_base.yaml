@@ -1,0 +1,12 @@
+fuzzer: archdiff
+enable_priming: false
+inputs_per_class: 1
+data_generator_seed: 0
+program_generator_seed: 0
+executor_sample_sizes: [10]
+logging_modes:
+  - info
+program_size: 80
+avg_mem_accesses: 20
+max_bb_per_function: 3
+min_bb_per_function: 3

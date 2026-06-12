@@ -314,12 +314,12 @@ class SpecEnv(gym.Env):
         # produces a perfectly valid v4 gadget. Harmless under v1.
         self._force_kernel_ssb_vulnerable()
 
-        self.similarity_model_name = env_config.get("similarity_model_name", "sentence-transformers/all-MiniLM-L6-v2")
-        self.similarity_device = env_config.get("similarity_device", "cuda:0" if self._cuda_available() else "cpu")
-        self.similarity_top_k = int(env_config.get("similarity_top_k", 3))
-        self.similarity_reward_scale = float(env_config.get("similarity_reward_scale", 20.0))
-        self.similarity_baseline_subtract = bool(env_config.get("similarity_baseline_subtract", False))
-        self.similarity_max_length = int(env_config.get("similarity_max_length", 512))
+        # self.similarity_model_name = env_config.get("similarity_model_name", "sentence-transformers/all-MiniLM-L6-v2")
+        # self.similarity_device = env_config.get("similarity_device", "cuda:0" if self._cuda_available() else "cpu")
+        # self.similarity_top_k = int(env_config.get("similarity_top_k", 3))
+        # self.similarity_reward_scale = float(env_config.get("similarity_reward_scale", 20.0))
+        # self.similarity_baseline_subtract = bool(env_config.get("similarity_baseline_subtract", False))
+        # self.similarity_max_length = int(env_config.get("similarity_max_length", 512))
         # similarity machinery is generic (UniXcoder cosine vs. a directory of
         # reference asm files). The hardcoded v4 example default is commented
         # out — pass `similarity_reference_dir` in env_config to enable it for
@@ -335,7 +335,7 @@ class SpecEnv(gym.Env):
         self.similarity_score = 0.0
         self.episode_similarity_max = 0.0
         self._last_episode_similarity_max = 0.0
-        self._init_similarity_embedder(ref_dir)
+        # self._init_similarity_embedder(ref_dir)
 
     @staticmethod
     def _cuda_available() -> bool:
@@ -898,27 +898,27 @@ class SpecEnv(gym.Env):
         reward += self.trace_divergence_reward_scale * self.trace_divergence_score
         # Code-similarity reward (UniXcoder cosine vs reference attacks).
         # 0 when disabled (no refs / model failed to load) so it's a no-op.
-        sim_reward = self.similarity_reward_scale * self.similarity_score
-        reward += sim_reward
+        # sim_reward = self.similarity_reward_scale * self.similarity_score
+        # reward += sim_reward
         # for k, v in self.pattern_match_counts.items():
         #     iv = int(v)
         #     self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
         # Per-episode micro-arch signal roll-ups (feed wandb via callbacks).
-        if self.trace_divergence_score > self.episode_trace_div_max:
-            self.episode_trace_div_max = float(self.trace_divergence_score)
-        if self.similarity_score > self.episode_similarity_max:
-            self.episode_similarity_max = float(self.similarity_score)
+        # if self.trace_divergence_score > self.episode_trace_div_max:
+        #     self.episode_trace_div_max = float(self.trace_divergence_score)
+        # if self.similarity_score > self.episode_similarity_max:
+        #     self.episode_similarity_max = float(self.similarity_score)
         if self.observable:
             self.episode_observable_any = True
             self.episode_steps_observable += 1
         if self.leak:
             self.episode_leak_any = True
-        print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
+        # print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
         print(
             f"trace divergence reward: {self.trace_divergence_reward_scale * self.trace_divergence_score} "
             f"(score={self.trace_divergence_score})"
         )
-        print(f"similarity reward: {sim_reward} (score={self.similarity_score:.4f}, top_k={self.similarity_top_k})")
+        # print(f"similarity reward: {sim_reward} (score={self.similarity_score:.4f}, top_k={self.similarity_top_k})")
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             reward += self.leak_reward
@@ -983,15 +983,15 @@ class SpecEnv(gym.Env):
             total_instructions_num = len(all_instructions)
             print("total instructions in program: ", total_instructions_num)
             print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
-            pattern_tokens = self._build_pattern_tokens(all_instructions)
-            pattern_result = self.pattern_matcher.score(pattern_tokens)
-            self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score
-            self.pattern_match_counts = pattern_result.matches
+            # pattern_tokens = self._build_pattern_tokens(all_instructions)
+            # pattern_result = self.pattern_matcher.score(pattern_tokens)
+            # self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score
+            # self.pattern_match_counts = pattern_result.matches
 
             # Code-similarity (UniXcoder cosine vs reference attacks). Cheap
             # to compute alongside pattern matching since `temp` already has
             # the agent-emitted instructions in iteration order.
-            self.similarity_score = self._compute_similarity_score(temp)
+            # self.similarity_score = self._compute_similarity_score(temp)
 
             temp.assign_obj(bin.name)
             assemble(temp)
@@ -1198,6 +1198,68 @@ class SpecEnv(gym.Env):
             return "xor_rr"
         if name_lower == "mul":
             return "mul"
+
+        # New pure-GPR opcodes — name is unique, no operand-shape ambiguity.
+        if name_lower == "div":
+            return "div_r"
+        if name_lower == "idiv":
+            return "idiv_r"
+        if name_lower == "lock xadd":
+            return "lock_xadd_mr"
+        if name_lower == "xchg":
+            return "lock_xchg_mr"
+        if name_lower == "lock cmpxchg":
+            return "lock_cmpxchg_mr"
+        if name_lower == "lock add":
+            return "lock_add_mr"
+        if name_lower == "repe movsb":
+            return "rep_movsb"
+        if name_lower == "repe stosb":
+            return "rep_stosb"
+        if name_lower == "repe cmpsb":
+            return "rep_cmpsb"
+        if name_lower == "repe scasb":
+            return "rep_scasb"
+        # BASE-CMOV (only _rm form is exposed). cmova/cmovnbe collapse to one entry.
+        if name_lower == "cmovz":
+            return "cmovz_rm"
+        if name_lower == "cmovnz":
+            return "cmovnz_rm"
+        if name_lower == "cmovb":
+            return "cmovb_rm"
+        if name_lower in ("cmova", "cmovnbe"):
+            return "cmova_rm"
+        # sbb has only the _rr variant in OPERAND_SPACE; no shape disambiguation needed.
+        if name_lower == "sbb":
+            return "sbb_rr"
+        # lock not is the single-operand mem RMW.
+        if name_lower == "lock not":
+            return "lock_not_m"
+
+        # XMM (SSE / SSE2) variants — name alone or shape disambiguates.
+        if name_lower in ("pxor", "paddq", "pmuludq"):
+            return name_lower + "_xx"
+        if name_lower == "movdqu":
+            # _xm = XMM load (REG128, MEM128); _mx = store (MEM128, REG128)
+            return "movdqu_xm" if len(instr.get_mem_operands()) > 0 and any(
+                op.dest for op in instr.get_reg_operands()
+            ) else "movdqu_mx"
+        if name_lower == "movups":
+            return "movups_xm" if len(instr.get_mem_operands()) > 0 and any(
+                op.dest for op in instr.get_reg_operands()
+            ) else "movups_mx"
+        if name_lower == "movq":
+            # Only movq_xr is exposed in OPERAND_SPACE (GPR -> XMM, REG128,REG64).
+            return "movq_xr"
+        if name_lower == "movd":
+            # Only movd_xr (GPR -> XMM, REG128,REG32) remains in OPERAND_SPACE;
+            # movd_rx (XMM -> GPR) was removed. A `movd xmm, reg32` (dst REG128)
+            # maps to movd_xr; the old `movd reg32, xmm` shape now has no action
+            # and stays unmapped ("movd" is not in opcode_vocab -> caller id -1).
+            for op in instr.get_reg_operands():
+                if op.dest and op.width >= 128:
+                    return "movd_xr"
+            return "movd"  # unmapped
 
         if name_lower not in {"mov", "add", "cmp", "sub"}:
             return name_lower

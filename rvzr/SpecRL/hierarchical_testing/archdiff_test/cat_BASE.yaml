@@ -1,0 +1,7 @@
+file: !include _base.yaml
+instruction_categories:
+  - BASE-BINARY
+  - BASE-DATAXFER
+  - BASE-LOGICAL
+  - BASE-CMOV
+  - BASE-SEMAPHORE

@@ -109,16 +109,25 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
         mem_operands = instr.get_mem_operands()
         implicit_mem_operands = instr.get_mem_operands(include_explicit=False, include_implicit=True)
 
-        # mask = sandbox_address_mask
-        # if any(op.width >= 256 for op in mem_operands):
-        #     mask = mask[:-5] + "0" * 5
-        # elif any(op.width >= 128 for op in mem_operands):
-        #     mask = mask[:-4] + "0" * 4
-
-        # # FIXME: broken type
-        # if CONF.x86_generator_align_locks:  # type: ignore  # pylint: disable = no-member
-        # if "lock" in instr.name or instr.name == "xchg":
-        #         mask = mask[:-3] + "0" * 3
+        # Per-instruction sandbox mask. Base mask keeps the offset inside the
+        # 13-bit sandbox window. Two additional rules:
+        #   * LOCK / xchg : clear low 3 bits → 8-byte aligned (lock atomics).
+        #   * width ≥ 128 : clear low 4 bits → 16-byte aligned AND, more
+        #     importantly, also caps the max address at sandbox_size - 16,
+        #     so a 128-bit movdqu/movups can't read past the sandbox edge.
+        # Both mirror what rvzr/arch/x86/generator.py:_sandbox_memory_access
+        # does in the standard Revizor flow.
+        mask = sandbox_address_mask
+        any_op_ge_128 = any(getattr(op, "width", 0) >= 128 for op in mem_operands)
+        if any_op_ge_128:
+            mask = mask[:-4] + "0" * 4
+        align_locks = getattr(CONF, "x86_generator_align_locks", True)
+        if align_locks and ("lock" in instr.name or instr.name == "xchg"):
+            # Lock alignment dominates the ≥128 mask only when stricter;
+            # for the GPR-lock case (8-byte) the 16-byte mask above would
+            # already be stricter, so this branch only fires for non-128 lock ops.
+            if not any_op_ge_128:
+                mask = mask[:-3] + "0" * 3
 
         if mem_operands and not implicit_mem_operands:
             assert len(mem_operands) == 1, \
@@ -129,7 +138,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
             imm_width = mem_operand.width if mem_operand.width <= 32 else 32
             apply_mask = Instruction("and", is_instrumentation=True) \
                 .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
-                .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
+                .add_op(ImmediateOp(mask, imm_width)) \
                 .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
             generator.insert_instruction_in_test_case_randomly(prog, apply_mask, generator._insert_bb_index)
             # prog.append(apply_mask)
@@ -154,7 +163,7 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
                     f"Unexpected address register {address_reg} used in {instr}"
                 apply_mask = Instruction("and", is_instrumentation=True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
-                    .add_op(ImmediateOp(sandbox_address_mask, imm_width)) \
+                    .add_op(ImmediateOp(mask, imm_width)) \
                     .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True)
                 add_base = Instruction("add", is_instrumentation=True) \
                     .add_op(RegisterOp(address_reg, mem_operand.width, True, True)) \
@@ -286,6 +295,78 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
 
         return True
 
+    def sandbox_cmov(instr: Instruction, prog: TestCaseProgram) -> bool:
+        """
+        Force the cmovcc condition to be TRUE so the memory load architecturally
+        always happens.
+
+        Background: cmov*_rm reads FLAGS that the agent's program may not have
+        set (the measurement_start macro doesn't reset flags). On some Intel
+        microarchitectures, when the condition is FALSE the load can be skipped,
+        leaving zero cache activity. The kernel module then reports trace=0 and
+        returns EIO from /sys/rvzr_executor/trace, killing the worker.
+
+        We prepend a tiny preamble that pins the relevant flag to the value
+        making the cmov's condition true. Side effects (low bit of dst clobbered
+        for cmovnz/cmova) are tolerated — sandbox passes elsewhere in this file
+        accept similar trade-offs (cf. sandbox_division's `or divisor, 1`).
+        """
+        # Find the cmov's destination register — we use it as a flag-bearer to
+        # avoid introducing a new register dependency.
+        dst_reg_name = None
+        for op in instr.get_reg_operands():
+            if op.dest:
+                dst_reg_name = op.value
+                break
+        if dst_reg_name is None:
+            return True  # nothing to do; shouldn't happen for cmov*_rm
+
+        name = instr.name.lower()
+        if name == "cmovz":
+            # ZF=1 via self-compare. cmp dst, dst → ZF=1, CF=0; no register write.
+            preamble = [
+                Instruction("cmp", is_instrumentation=True)
+                    .add_op(RegisterOp(dst_reg_name, 64, True, False))
+                    .add_op(RegisterOp(dst_reg_name, 64, True, False))
+                    .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True),
+            ]
+        elif name == "cmovnz":
+            # ZF=0 via OR with 1 — guarantees dst becomes nonzero. Cost: dst's
+            # low bit is forced to 1 before the cmov runs; if the cmov fires
+            # (condition true), the load overwrites dst, so the side effect is
+            # only visible when the cmov is skipped (condition false), which is
+            # exactly the case we are not optimizing for here.
+            preamble = [
+                Instruction("or", is_instrumentation=True)
+                    .add_op(RegisterOp(dst_reg_name, 64, True, True))
+                    .add_op(ImmediateOp("1", 8))
+                    .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True),
+            ]
+        elif name == "cmovb":
+            # CF=1 via STC. Flag-only, no register or memory effects.
+            preamble = [
+                Instruction("stc", is_instrumentation=True)
+                    .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True),
+            ]
+        elif name in ("cmovnbe", "cmova"):
+            # cmova ≡ cmovnbe; requires CF=0 AND ZF=0.
+            # or dst, 1 → ZF=0 (dst nonzero); clc → CF=0.
+            preamble = [
+                Instruction("or", is_instrumentation=True)
+                    .add_op(RegisterOp(dst_reg_name, 64, True, True))
+                    .add_op(ImmediateOp("1", 8))
+                    .add_op(FlagsOp(["w", "w", "undef", "w", "w", "", "", "", "w"]), True),
+                Instruction("clc", is_instrumentation=True)
+                    .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True),
+            ]
+        else:
+            return True  # unknown cmov; let it through unsandboxed
+
+        for p in preamble:
+            generator.insert_instruction_in_test_case_randomly(
+                prog, p, generator._insert_bb_index)
+        return True
+
     def sandbox_corrupted_cf(instr: Instruction, prog: TestCaseProgram) -> bool:
         set_cf = Instruction("stc", is_instrumentation= True) \
             .add_op(FlagsOp(["w", "", "", "", "", "", "", "", ""]), True)
@@ -315,12 +396,21 @@ def X86SandboxCheck(prog: TestCaseProgram, instr: Instruction, target_desc: X86T
 
     if instr.has_mem_operand(True):
         passed = passed and sandbox_memory_access(instr, prog)
-    if instr.name in ["div", "rex div"]:
+    # NOTE: `idiv` and `rex idiv` were missing here — without them, the
+    # signed-divide path was emitted with NO divisor `or ...,1` instrumentation,
+    # so any agent step that picked idiv would #DE in the kernel module and
+    # leave /sys/rvzr_executor/trace in an I/O-error state for the next read.
+    if instr.name in ["div", "rex div", "idiv", "rex idiv"]:
         passed = passed and sandbox_division(instr, prog)
     elif instr.name in bit_test_names:
         passed = passed and sandbox_bit_test(instr, prog)
     elif "rep" in instr.name:
         passed = passed and sandbox_repeated_instruction(instr, prog)
+    elif instr.name.lower() in ("cmovz", "cmovnz", "cmovb", "cmovnbe", "cmova"):
+        # cmov*_rm needs flag setup so the load architecturally always happens —
+        # otherwise a FALSE condition can produce zero cache activity and the
+        # kernel module returns EIO from /sys/rvzr_executor/trace.
+        passed = passed and sandbox_cmov(instr, prog)
     elif instr.category == "BASE-ROTATE" or instr.category == "BASE-SHIFT":
         passed = passed and sandbox_corrupted_cf(instr, prog)
     elif instr.name == "ENCLU":

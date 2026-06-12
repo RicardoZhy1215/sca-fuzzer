@@ -282,7 +282,7 @@ class Conf:
     analyser will ignore the htraces that appear in less then this percentage of the repetitions.
     I.e., a htrace passes the filter if it is observed at least
         (analyser_outliers_threshold * len(htrace)) times """
-    analyser_stat_threshold: float = 0.05
+    analyser_stat_threshold: float = 0.5
     """ analyser_stat_threshold: [only for analyser='chi2' and analyser='mwu']
     Threshold for the statistical tests. If a pair of hardware traces has the (normalized)
     statistics below the threshold, then the traces are considered equivalent.
