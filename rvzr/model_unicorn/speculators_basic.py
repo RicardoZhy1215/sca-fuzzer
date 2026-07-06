@@ -410,7 +410,35 @@ class X86CondBpasSpeculator(X86CondSpeculator, StoreBpasSpeculator):
     """
 
     def _speculate_mem_access(self, access: int, address: int, size: int, value: int) -> None:
-        super(StoreBpasSpeculator, self)._speculate_mem_access(access, address, size, value)
+        # Store-bypass needs to record stores; cond has no mem-access hook.
+        # NB: the previous `super(StoreBpasSpeculator, self)` resolved (via MRO)
+        # to UnicornSpeculator's no-op, so store-bypass was never recorded and
+        # cond-bpas silently degenerated to seq. Call StoreBpas's impl directly.
+        StoreBpasSpeculator._speculate_mem_access(self, access, address, size, value)
 
     def _speculate_instruction(self, address: int, size: int) -> None:
-        super(X86CondSpeculator, self)._speculate_instruction(address, size)
+        # Run BOTH speculations: cond branch-misprediction AND bpas store-bypass
+        # undo. Each only acts on its own trigger (cond: conditional jump;
+        # bpas: a pending store), so for straight-line code only bpas fires.
+        X86CondSpeculator._speculate_instruction(self, address, size)
+        StoreBpasSpeculator._speculate_instruction(self, address, size)
+
+
+class StoreBpasDebugSpeculator(StoreBpasSpeculator):
+    """ DEBUG-ONLY bpas variant: logs speculative mem accesses + bypass forks.
+        Registered as exec clause 'bpas-dbg'. Does not change 'bpas' behavior. """
+
+    def handle_mem_access(self, access: int, address: int, size: int, value: int) -> None:
+        if getattr(self, "_in_speculation", False):
+            cset = (address >> 6) & 0x3f
+            kind = "W" if access == UC_MEM_WRITE else "R"
+            print(f"[BPASDBG][spec] {kind} addr=0x{address:x} set={cset} size={size} "
+                  f"val=0x{value & 0xffffffffffffffff:x}", flush=True)
+        super().handle_mem_access(access, address, size, value)
+
+    def _speculate_instruction(self, address: int, size: int) -> None:
+        if self._previous_store is not None and not self._max_nesting_reached():
+            sa = self._previous_store[0]
+            print(f"[BPASDBG][fork] undo store @0x{sa:x} set={(sa>>6)&0x3f} "
+                  f"depth={len(self._checkpoints)}", flush=True)
+        super()._speculate_instruction(address, size)

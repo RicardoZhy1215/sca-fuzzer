@@ -182,9 +182,9 @@ class Conf:
     """ program_size: size of generated programs """
     avg_mem_accesses: int = 12
     """ avg_mem_accesses: average number of memory accesses in generated programs """
-    min_bb_per_function: int = 1
+    min_bb_per_function: int = 2
     """ min_bb_per_function: minimal number of basic blocks per function in generated programs """
-    max_bb_per_function: int = 1
+    max_bb_per_function: int = 2
     """ max_bb_per_function: maximum number of basic blocks per function in generated programs """
     min_successors_per_bb: int = 1
     """ min_bb_per_function: min. number of successors for each basic block in generated programs
@@ -321,6 +321,7 @@ class Conf:
         "model_backend": ["dummy", "unicorn", "dynamorio"],
         "contract_execution_clause": [
             "seq", "no_speculation", "seq-assist", "cond", "conditional_br_misprediction", "bpas",
+            "bpas-dbg",
             "nullinj-fault", "nullinj-assist", "delayed-exception-handling", "div-zero",
             "div-overflow", "meltdown", "fault-skip", "noncanonical", "vspec-ops-div",
             "vspec-ops-memory-faults", "vspec-ops-memory-assists", "vspec-ops-gp", "vspec-all-div",

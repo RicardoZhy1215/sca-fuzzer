@@ -28,7 +28,6 @@ from rvzr.elf_parser import ELFParser
 from rvzr.isa_spec import InstructionSet
 from rvzr.tc_components.test_case_data import InputData
 from rvzr.tc_components.instruction import Instruction, RegisterOp, MemoryOp, ImmediateOp
-from rvzr.arch.x86.executor import X86IntelExecutor
 from rvzr.config import CONF
 from rvzr.code_generator import assemble
 from rvzr.arch.x86.target_desc import X86TargetDesc
@@ -52,7 +51,7 @@ import tempfile
 import os
 import shutil
 from datetime import datetime
-from subprocess import run
+from subprocess import run, CalledProcessError
 from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
 from pattern_matching import VulnerabilityPatternMatcher, PatternToken
 
@@ -149,6 +148,21 @@ class SpecEnv(gym.Env):
         # Ray rollout workers re-import CONF fresh, so the only reliable place
         # to switch SSBD off is here, inside the worker's __init__.
         self._ensure_ssb_vulnerable_for_process()
+        # Same reason as SSBD above: Ray rollout workers re-import rvzr.config
+        # with DEFAULTS, so the `--config big_fuzz.yaml` contract loaded in the
+        # driver (train.py __main__) never reaches the model built here. Without
+        # this, factory.get_model() below would silently use the default
+        # 'delayed-exception-handling' clause instead of bpas, which makes the
+        # fuzzer flag plain Spectre-v4 as violations. Force the intended
+        # ct + cond-bpas contract here, before factory.get_model() is called.
+        # ['cond', 'bpas'] -> factory resolves to the 'cond-bpas' speculator
+        # (Spectre-v1 branch misprediction + v4 store bypass).
+        setattr(CONF, "contract_observation_clause", "ct")
+        setattr(CONF, "contract_execution_clause", ["cond", "bpas"])
+        print(f"[CONTRACT-CHECK][worker pid={os.getpid()}] "
+              f"obs={CONF.contract_observation_clause} "
+              f"exec={CONF.contract_execution_clause} "
+              f"ssbp_patch={CONF.x86_executor_enable_ssbp_patch}", flush=True)
         self.seq_size = env_config["sequence_size"]
         self.num_inputs = env_config["num_inputs"]
         self.bad_case = False
@@ -276,7 +290,7 @@ class SpecEnv(gym.Env):
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
         self.printer = _X86Printer(target_desc)
-        instruction_set = InstructionSet("/home/hz25d/sca-fuzzer/base.json")
+        instruction_set = InstructionSet("/home/mluo/sca-fuzzer/base.json")
         # Keep observation opcode IDs aligned with the hierarchical action space.
         self.opcode_vocab = list(OPERAND_SPACE)
         self.reg_vocab = list(DST_REGS_SPACE)
@@ -287,9 +301,9 @@ class SpecEnv(gym.Env):
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
                                       elf_parser=self.elf_parser)
         self.generator.instruction_space = self.instruction_space
-        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.new_program = self.generator.create_test_case_SpecRL("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
         self.base_program = deepcopy(self.new_program)
-        self.executor = X86IntelExecutor()
+        self.executor = factory.get_executor()
         self.executor.valid_mem_base = 0x0
         self.executor.valid_mem_limit = 0x100000
         self.addr_mask = self.executor.valid_mem_limit - 1
@@ -302,6 +316,9 @@ class SpecEnv(gym.Env):
         self.arch_executor = factory.get_executor(enable_mismatch_check_mode=True)
 
         self.model = factory.get_model(self.executor.read_base_addresses())
+        print(f"[CONTRACT-CHECK][worker pid={os.getpid()}] model built: "
+              f"speculator={type(getattr(self.model, 'speculator', None)).__name__} "
+              f"tracer={type(getattr(self.model, 'tracer', None)).__name__}", flush=True)
         print(f"\nSandbox Base Address and Code Base Address (base 10): {self.executor.read_base_addresses()}\n")
         self.analyser = factory.get_analyser()
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
@@ -326,7 +343,7 @@ class SpecEnv(gym.Env):
         # any vulnerability. Empty default => similarity reward is disabled.
         ref_dir = env_config.get(
             "similarity_reference_dir",
-            "/home/hz25d/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
+            "/home/mluo/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
         )
         self._sim_tokenizer = None
         self._sim_model = None
@@ -555,11 +572,14 @@ class SpecEnv(gym.Env):
             print(f"NUMBER OF STEPS: {self.step_counter}")
 
             target_desc = X86TargetDesc()
-            # self.generator._insert_bb_index = random.choice([0, 1])
-            self.generator._insert_bb_index = 0
+            self.generator._insert_bb_index = random.choice([0, 1])
+            # self.generator._insert_bb_index = 0
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
-            # passed_loop = self._infiniteLoopCheck(self.new_program, inst_action, 1)
-            passed_loop = True
+            # Only run the (expensive, assembles+emulates) loop check on instructions
+            # that already passed validation — assembling an invalid instruction would
+            # raise inside assemble() and crash the episode.
+            passed_loop = passed_inst and self._infiniteLoopCheck(self.new_program, inst_action, 1)
+            # passed_loop = True
             if not passed_inst:
                 print("DIDN'T PASS INSTRUCTION CHECK, NOT A VALID INSTRUCTION, THROWING AWAY")
                 step_obs = self._get_obs()
@@ -584,11 +604,19 @@ class SpecEnv(gym.Env):
         step_reward = self._reward()
         print(f"reward: {step_reward}")
         print("#=======================================================#")
+        # Violation found -> terminate the episode immediately and move on to the
+        # next test case, instead of appending more instructions onto an already
+        # violating program. _reward() -> _full_obs_program() set self.leak.
+        terminated_on_violation = bool(self.leak)
+        if terminated_on_violation:
+            print("VIOLATION FOUND -> terminating episode immediately, starting next round")
+            end = True
         return step_obs, step_reward, end, truncate, {
             "program": self.new_program,
             "end_game_count": self.end_game_counter,
             "pattern_reward": self.pattern_stage_reward,
             "pattern_matches": self.pattern_match_counts,
+            "terminated_on_violation": terminated_on_violation,
         }
 
 
@@ -626,7 +654,7 @@ class SpecEnv(gym.Env):
         self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
         self.similarity_score = 0.0
-        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.new_program = self.generator.create_test_case_SpecRL("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
 
         # Re-sample inputs every episode so the htrace side-channel signal
         # actually varies across episodes — v4 observability relies on the
@@ -690,7 +718,7 @@ class SpecEnv(gym.Env):
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
-                os.makedirs("/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm", exist_ok=True)
+                os.makedirs("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm", exist_ok=True)
                 # we can not create new test cases here, cuz the instruments are randomly generated.
                 temp_program = self.generator.create_asm_with_existing_test_case(temp_asm_path, self.base_program)
                 for j in range(1, i + 1):
@@ -958,7 +986,7 @@ class SpecEnv(gym.Env):
         self.trace_divergence_score = 0.0
         self.similarity_score = 0.0
 
-        self.fuzzer = X86Fuzzer("/home/hz25d/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
+        self.fuzzer = X86Fuzzer("/home/mluo/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser
@@ -1021,7 +1049,7 @@ class SpecEnv(gym.Env):
             fenced = tempfile.NamedTemporaryFile(delete=False)
             fenced_obj = tempfile.NamedTemporaryFile(delete=False)
 
-            debug_path = "/home/hz25d/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
+            debug_path = "/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
             os.makedirs(debug_path, exist_ok=True)
             fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
 
@@ -1119,18 +1147,33 @@ class SpecEnv(gym.Env):
     def _infiniteLoopCheck(self, prog: TestCaseProgram, instr: Instruction, timeout: int) -> bool:
         prog_ = copy.deepcopy(prog)
         unique = uuid.uuid4().hex
-        self.generator.insert_instruction_in_test_case(prog_, instr)
         temp_asm_path = f"/tmp/test_case_{unique}.s"
         temp_bin_path = f"/tmp/test_case_{unique}.o"
+        # Point the throwaway program at its own temp files BEFORE inserting: the
+        # insert routine prints the program internally, and we don't want it writing
+        # the candidate (instruction-added) asm over the shared source path.
         prog_._asm_path = temp_asm_path
         prog_.assign_obj(temp_bin_path)
-        self.printer.print(prog_)
-        assemble(prog_)
-        self.elf_parser.populate_elf_data(prog_.get_obj(), prog_)
-        self.model.load_test_case(prog_)
-
-
-        return self.model.check_inf_loop(self.inputs, 1, timeout)
+        try:
+            # Insert using the same path/bb index as the real insertion in step(), so the
+            # loop check validates the exact program layout that will be constructed.
+            self.generator.insert_instruction_in_test_case_randomly(
+                prog_, instr, self.generator._insert_bb_index)
+            self.printer.print(prog_)
+            assemble(prog_)
+            self.elf_parser.populate_elf_data(prog_.get_obj(), prog_)
+            self.model.load_test_case(prog_)
+            return self.model.check_inf_loop(self.inputs, 1, timeout)
+        except CalledProcessError:
+            # Failed to assemble — treat as not passing so the step is thrown away
+            # rather than crashing the episode.
+            return False
+        finally:
+            for path in (temp_asm_path, temp_bin_path):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
 
     def aggregate_htraces(self, htraces: List[HTrace], n_reps: int) -> List[int]:
 

@@ -578,9 +578,25 @@ class SpecRLHierarchicalModel(TorchModelV2, nn.Module):
         self.value_head = nn.Linear(enc_dim, 1)
 
     def _get_obs_tensors(self, input_dict: dict) -> tuple:
-        obs = input_dict.get("obs_flat", input_dict.get("obs"))
+        # One-time diagnostic: show exactly what RLlib passes (dict vs obs_flat,
+        # and obs_flat width) so obs-shape mismatches are visible in the log.
+        if not getattr(self, "_obs_dbg_done", False):
+            self._obs_dbg_done = True
+            try:
+                shapes = {k: (tuple(v.shape) if hasattr(v, "shape") else type(v).__name__)
+                          for k, v in input_dict.items()}
+                print(f"[OBS-CHECK] keys/shapes={shapes} "
+                      f"seq_size={self._seq_size} num_inputs={self._num_inputs} "
+                      f"NUM_ARCH_REGS={NUM_ARCH_REGS}", flush=True)
+            except Exception as e:  # pragma: no cover - diagnostic only
+                print(f"[OBS-CHECK] error: {e}", flush=True)
+        # Prefer the raw dict obs: with `_disable_preprocessor_api: True` the dict
+        # carries correctly-shaped fields, whereas obs_flat may be an incomplete
+        # fallback (its regs segment came out short -> the [.,.,.,6] view crashed).
+        obs = input_dict.get("obs")
         if isinstance(obs, dict) and "instruction" in obs:
             return {k: v.float() if v.dtype != torch.int64 else v for k, v in obs.items()}, True
+        obs = input_dict.get("obs_flat", obs)
         if isinstance(obs, torch.Tensor) and obs.dim() == 2:
             return _unflatten_obs(obs, self._seq_size, self._num_inputs), True
         return obs, False

@@ -116,7 +116,19 @@ class Minimizer:
         # Parse the test case and inputs
         test_case = self._fuzzer.asm_parser.parse_file(test_case_asm, self._fuzzer.code_gen,
                                                        self._fuzzer.elf_parser)
-        inputs = self._fuzzer.data_gen.generate(n_inputs, n_actors=test_case.n_actors())
+        # Opt-in: load the EXACT saved inputs (input*.bin) instead of regenerating
+        # from the seed. Needed when the violating inputs are not a single fresh
+        # data_gen.generate() from data_generator_seed (e.g. RL-generated runs that
+        # advance the input RNG across episodes). Set RVZR_MINIMIZE_INPUT_DIR.
+        _indir = os.environ.get("RVZR_MINIMIZE_INPUT_DIR")
+        if _indir:
+            paths = sorted(
+                os.path.join(_indir, f) for f in os.listdir(_indir)
+                if f.startswith("input") and f.endswith(".bin"))[:n_inputs]
+            print(f"[minimizer] loading {len(paths)} saved inputs from {_indir}", flush=True)
+            inputs = self._fuzzer.data_gen.load(paths)
+        else:
+            inputs = self._fuzzer.data_gen.generate(n_inputs, n_actors=test_case.n_actors())
 
         # Check if the violation can be reproduced
         violation = self._reproduce_org_violation(test_case, inputs)

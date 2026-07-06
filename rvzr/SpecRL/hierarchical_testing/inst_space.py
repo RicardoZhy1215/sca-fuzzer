@@ -105,22 +105,39 @@ OPERAND_SPACE = [
     "lock_dec_m",       # lock dec [reg64]
     # BASE-LOGICAL atomic — single-operand RMW; widens the SEMAPHORE menu.
     # "lock_not_m",       # lock not [reg64]
-    # ---- XMM (SSE / SSE2) — DISABLED ----
-    # Revizor's model-based pipeline can't handle SIMD faithfully:
-    #   (1) Unicorn's SSE/YMM emulation != real CPU -> architectural mismatch (bugs/ w/ report)
-    #   (2) taint_tracker under-taints xmm regs (high 64 bits) -> "fast path != full" taint bug
-    # Both flood bugs/ and XMM can't carry the GPR address-dependent v4 transmitter anyway.
-    # To re-enable: uncomment these opcodes, their OPCODE_OPERAND_SPEC entries below,
-    # and restore the xmm names in XMM_REGS_SPACE.
-    # "movdqu_xm",        # movdqu xmm, [reg64]   -- 128-bit load (XMM <- mem)
-    # "movdqu_mx",        # movdqu [reg64], xmm   -- 128-bit store (mem <- XMM)
-    # "movups_xm",        # movups xmm, [reg64]   -- 128-bit load (FP path)
-    # "movups_mx",        # movups [reg64], xmm   -- 128-bit store (FP path)
-    # "movq_xr",          # movq   xmm, reg64     -- GPR -> XMM (low 64)
-    # "movd_xr",          # movd   xmm, reg32     -- GPR -> XMM (low 32)
-    # "pxor_xx",          # pxor   xmm, xmm       -- XMM XOR
-    # "paddq_xx",         # paddq  xmm, xmm       -- 2x packed-uint64 add
-    # "pmuludq_xx",       # pmuludq xmm, xmm      -- 2x 32->64 unsigned multiply
+    # ---- XMM (SSE2, integer-only) — ENABLED (Route A: secrets kept in low 64 bits) ----
+    # Route A keeps every secret in the LOW 64 bits of each XMM, so the known
+    # taint_tracker high-64 under-taint bug (taint_tracker.py:304 — the `+ 1`
+    # that should be `+ 8`) is never exercised, and taint_tracker is left untouched.
+    # Invariant preserved by the enabled set:
+    #   * movq_xr writes the low 64 and zeroes the high 64   -> clean high half
+    #   * pextrq_rx reads lane 0 only (low 64)               -> the tracked half
+    #   * the packed ALU ops keep the 64-bit lanes independent -> high stays clean
+    # movdqu_xm (128-bit LOAD) is the ONE op that would inject untracked memory
+    # bytes into the high 64 bits, so it stays DISABLED under Route A. To move to
+    # Route B (full 128-bit), fix taint_tracker.py:304 (`+ 1` -> `+ 8`), then
+    # uncomment movdqu_xm here and its OPCODE_OPERAND_SPEC entry below.
+    # "movdqu_xm",        # movdqu xmm, [reg64]   -- 128-bit load (Route B only)
+    # movdqu_mx DISABLED: Unicorn 1.0.3 reports a 16-byte SSE store as TWO 8-byte
+    # write callbacks. StoreBpasSpeculator (bpas / cond-bpas contracts) assumes
+    # <=1 store per instruction, so the 2nd write trips
+    # "Instructions with multiple stores are not supported" (speculators_basic.py).
+    # It is the only 128-bit memory op here; all other XMM ops are reg-reg.
+    # XMM->memory still works via pextrq_rx -> GPR -> mov_mr (8-byte store).
+    # To re-enable, first make StoreBpasSpeculator coalesce same-instruction writes.
+    # "movdqu_mx",        # movdqu [reg64], xmm   -- 128-bit store (needs speculator fix)
+    # ---- XMM opcodes DISABLED (GPR-only stage). Re-enable together with
+    #      XMM_REGS_SPACE and the XMM OPCODE_OPERAND_SPEC entries below. ----
+    # "movq_xr",            # movq   xmm, reg64     -- GPR -> XMM (low 64, zeroes high 64)
+    # "movd_xr",          # movd   xmm, reg32     -- GPR -> XMM (low 32); optional, Route-A safe
+    # "pxor_xx",            # pxor   xmm, xmm       -- 128-bit XOR
+    # "paddq_xx",           # paddq  xmm, xmm       -- 2x packed-uint64 add
+    # "pmuludq_xx",         # pmuludq xmm, xmm      -- 2x 32->64 unsigned multiply (slow producer)
+    # "pand_xx",            # pand   xmm, xmm       -- 128-bit AND
+    # "por_xx",             # por    xmm, xmm       -- 128-bit OR
+    # "psubq_xx",           # psubq  xmm, xmm       -- 2x packed-uint64 sub
+    # "pcmpeqd_xx",         # pcmpeqd xmm, xmm      -- packed 32-bit compare-equal
+    # "pextrq_rx",          # pextrq reg64, xmm, 0  -- XMM lane0 -> GPR (Route A return path)
 ]
 # Register pools. Layout:
 #   indices 1..6  : GPR  (rax, rbx, rcx, rdx, rsi, rdi)
@@ -129,8 +146,12 @@ OPERAND_SPACE = [
 # OPCODE_OPERAND_SPEC carries a reg-class tag ("required:gpr" / "required:xmm")
 # that the mask functions use to restrict each opcode to the right slice.
 GPR_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
-# XMM disabled (see DISABLED XMM opcodes above). To re-enable, restore:
+# XMM DISABLED (GPR-only stage). Empty list -> NUM_XMM == 0, so DST/SRC_REGS_SPACE
+# collapse to GPR-only and the reg-class machinery never yields an XMM slot.
+# Re-enable by restoring this list together with the XMM opcodes/specs:
 #   XMM_REGS_SPACE = ["xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"]
+# Model supports exactly xmm0..xmm7 (x86/target_desc.py usable_simd128_registers);
+# do NOT add xmm8..15.
 XMM_REGS_SPACE = []
 NUM_GPR = len(GPR_REGS_SPACE)
 NUM_XMM = len(XMM_REGS_SPACE)
@@ -227,16 +248,22 @@ OPCODE_OPERAND_SPEC = {
     # honored by get_reg_*_mask / is_action_legal so GPR slots only get GPR
     # and XMM slots only get XMM.  "required" without a class is implicitly
     # "required:gpr" (backward compat with existing entries above).
-    # ---- XMM specs DISABLED (see DISABLED XMM opcodes in OPERAND_SPACE) ----
+    # ---- XMM specs ENABLED (Route A). reg-class tags restrict slots to gpr/xmm. ----
+    # ---- XMM specs DISABLED (GPR-only stage). Re-enable with the opcodes/regs. ----
     # "movdqu_xm":       {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
-    # "movdqu_mx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "movups_xm":       {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
-    # "movups_mx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},
+    # "movdqu_mx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},  # DISABLED: 2-write store breaks bpas
     # "movq_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
     # "movd_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
     # "pxor_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
     # "paddq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
     # "pmuludq_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    # "pand_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    # "por_xx":          {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    # "psubq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    # "pcmpeqd_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    # pextrq reg64, xmm, imm8: dst=GPR (extracted lane), src=XMM. imm forbidden
+    # because the lane is hard-coded to 0 in the encoder (Route A: low 64 only).
+    # "pextrq_rx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},
 }
 # Exclude dst_reg == src_reg for opcodes where it is pointless (mov rax,rax no-op).
 OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr"]
@@ -684,20 +711,10 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
     #         MemoryOp(rd, 32, True, True)
     #     ).add_op(RegisterOp(rs, 64, True, False))
 
-    if opcode == "cmp_rr":
-        return Instruction("cmp", False, "", False).add_op(
-            RegisterOp(rd, 64, True, True)
-        ).add_op(RegisterOp(rs, 64, True, False))
-
-    if opcode == "cmp_rm":
-        return Instruction("cmp", False, "", False).add_op(
-            RegisterOp(rd, 64, True, True)
-        ).add_op(MemoryOp(rs, 64, True, False))
-
-    if opcode == "cmp_mr":
-        return Instruction("cmp", False, "", False).add_op(
-            MemoryOp(rd, 64, True, True)
-        ).add_op(RegisterOp(rs, 64, True, False))
+    # NOTE: cmp_rr / cmp_rm / cmp_mr are handled below in the "NEW GPR opcodes"
+    # block with dst marked read-only (cmp is a flag producer, it does NOT write
+    # its destination). The earlier duplicate definitions that wrongly marked dst
+    # as written (dest=True) were removed so the correct ones take effect.
 
     if opcode == "sub_rr":
         return Instruction("sub", False, "", False).add_op(
@@ -962,6 +979,39 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
         return Instruction("pmuludq", False, "", False).add_op(
             RegisterOp(rd, 128, True, True)
         ).add_op(RegisterOp(rs, 128, True, False))
+
+    if opcode == "pand_xx":
+        # pand xmm, xmm         -- base.json: SSE2-LOGICAL pand REG128, REG128
+        return Instruction("pand", False, "", False).add_op(
+            RegisterOp(rd, 128, True, True)
+        ).add_op(RegisterOp(rs, 128, True, False))
+
+    if opcode == "por_xx":
+        # por xmm, xmm          -- base.json: SSE2-LOGICAL por REG128, REG128
+        return Instruction("por", False, "", False).add_op(
+            RegisterOp(rd, 128, True, True)
+        ).add_op(RegisterOp(rs, 128, True, False))
+
+    if opcode == "psubq_xx":
+        # psubq xmm, xmm        -- base.json: SSE2-SSE psubq REG128, REG128
+        return Instruction("psubq", False, "", False).add_op(
+            RegisterOp(rd, 128, True, True)
+        ).add_op(RegisterOp(rs, 128, True, False))
+
+    if opcode == "pcmpeqd_xx":
+        # pcmpeqd xmm, xmm      -- base.json: SSE2-SSE pcmpeqd REG128, REG128
+        return Instruction("pcmpeqd", False, "", False).add_op(
+            RegisterOp(rd, 128, True, True)
+        ).add_op(RegisterOp(rs, 128, True, False))
+
+    if opcode == "pextrq_rx":
+        # pextrq reg64, xmm, 0  -- base.json: SSE4-SSE pextrq REG64, REG128, imm8.
+        # Lane fixed to 0 (low 64 bits): the value read is exactly the half the
+        # taint_tracker tracks (Route A). rd = GPR (extracted value / future
+        # address operand), rs = XMM source.
+        return Instruction("pextrq", False, "", False).add_op(
+            RegisterOp(rd, 64, False, True)
+        ).add_op(RegisterOp(rs, 128, True, False)).add_op(ImmediateOp("0", 8))
 
     return None
 

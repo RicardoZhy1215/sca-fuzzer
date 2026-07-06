@@ -182,7 +182,7 @@ class SpecRLCallbacks(DefaultCallbacks):
 env_config = {
     "sequence_size": 50,
     # P2.2: more inputs -> less htrace noise when judging observable / leak.
-    "num_inputs": 100,
+    "num_inputs": 50,
     # [V4-only] "vulnerability_type": "spectre_v4",
     "vulnerability_type": "spectre_v1",
     # Pattern shaping is generic (rule-level: same-reg store/load,
@@ -217,8 +217,10 @@ if __name__ == "__main__":
         CONF.load(args.config, args.include_dir)
     # [V4-only] ensure_ssb_vulnerable_for_process()
     local_debug = args.specrl_local_debug
+    # NOTE: ray.init(local_mode=...) was removed in newer Ray. Synchronous,
+    # single-process debugging is achieved below via num_env_runners=0 (the env
+    # runs in the driver), so we no longer need local_mode here.
     ray.init(
-        local_mode=local_debug,
         include_dashboard=not local_debug,
         ignore_reinit_error=True,
     )
@@ -228,8 +230,11 @@ if __name__ == "__main__":
         "lr": 5e-5,
         "train_batch_size": 128,
         "gamma": 0.99,
-        "seq_size": 50,
-        "num_inputs": 100,
+        # MUST match env_config so the model unflattens obs with the same dims
+        # the env used to build observation_space. Mismatch -> obs view crash
+        # (e.g. env num_inputs=50 -> obs width 25200, model num_inputs=100 -> expects 50200).
+        "seq_size": env_config["sequence_size"],
+        "num_inputs": env_config["num_inputs"],
         "hidden_dim": 256,
     }
     if local_debug:
@@ -292,7 +297,7 @@ if __name__ == "__main__":
 
     if local_debug:
         print("Running in local Ray debug mode.")
-        print("Overrides: local_mode=True, num_env_runners=0, rollout_fragment_length=1, num_gpus=0")
+        print("Overrides: num_env_runners=0 (env runs in driver), rollout_fragment_length=1, num_gpus=0")
 
     use_wandb = not args.specrl_no_wandb
     if use_wandb:

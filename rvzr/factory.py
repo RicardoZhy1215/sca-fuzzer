@@ -120,6 +120,7 @@ _SPECULATORS_GENERIC: Dict[str, Type[speculator_abc.UnicornSpeculator]] = {
     "seq": speculators_basic.SeqSpeculator,
     "no_speculation": speculators_basic.SeqSpeculator,
     "bpas": speculators_basic.StoreBpasSpeculator,
+    "bpas-dbg": speculators_basic.StoreBpasDebugSpeculator,
     "cond-bpas": speculators_basic.X86CondBpasSpeculator,
     "seq-assist": speculators_fault.SequentialAssistSpeculator,
 }

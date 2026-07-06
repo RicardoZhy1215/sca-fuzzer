@@ -1,0 +1,30 @@
+macro L L            1
+and R64 R64          1
+movsx R64 M8         1
+movzx R64 M8         1
+lock dec M64         1
+xor R64 R64          1
+cmovs R64 M64        1
+lock and M64 R64     1
+lock xor M64 R64     1
+sub R64 R64          1
+mov M64 R64          1
+setb R8              1
+adc R64 R64          1
+mov M64 I32          1
+cmovle R64 M64       1
+cmovnbe R64 M64      1
+cmp R64 R64          1
+lock add M64 R64     1
+cmovnz R64 M64       1
+jmp L                1
+mul M64              1
+lea R64 A64          1
+add R64 M64          1
+xchg M64 R64         1
+cmovb R64 M64        1
+imul R64 R64         1
+lock or M64 R64      1
+or R64 R64           1
+lock cmpxchg M64 R64 1
+lock inc M64         1
