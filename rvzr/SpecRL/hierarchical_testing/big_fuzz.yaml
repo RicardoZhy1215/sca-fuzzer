@@ -4,7 +4,9 @@ instruction_set: x86-64
 contract_observation_clause: ct
 contract_execution_clause:
   - cond
-  - bpas
+# NOTE: dropped 'bpas' — with SSBD ON below the hardware can't do store bypass,
+# so modeling v4 is pointless. Goal here: find leaks beyond v1 (and beyond v4,
+# which is hardware-disabled). See worker override in hi_SpecEnv.py.
 
 # Actors
 actors:
@@ -14,15 +16,15 @@ actors:
 
 # Executor
 executor_mode: P+P
-x86_executor_enable_ssbp_patch: false
+x86_executor_enable_ssbp_patch: true   # SSBD ON (store bypass mitigated in hardware)
 
 # Program generator
-program_size: 64
+program_size: 50
 avg_mem_accesses: 16
-max_bb_per_function: 2  # straight-line code only
+max_bb_per_function: 2  # 2 BBs with a conditional branch between them (for cond/v1)
 min_bb_per_function: 2
-min_successors_per_bb: 1
-max_successors_per_bb: 1
+min_successors_per_bb: 2
+max_successors_per_bb: 2  # allow a BB to have 2 successors = a conditional branch
 
 instruction_categories:
   - BASE-BINARY
@@ -61,8 +63,8 @@ enable_fast_path_model: true
 # coverage_type: model_instructions
 
 # Overwrite some of the configuration options to reproduce the violation
-data_generator_seed: 11110
-inputs_per_class: 1
+# data_generator_seed: 11110
+# inputs_per_class: 1
 
 # Output
 # color: true

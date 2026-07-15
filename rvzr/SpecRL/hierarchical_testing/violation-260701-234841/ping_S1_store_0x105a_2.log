@@ -1,0 +1,140 @@
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 714476
+
+INFO: [fuzzer] Starting at 20:03:52
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0000.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0001.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0002.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0003.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0004.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0005.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0006.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0007.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0008.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0009.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0010.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0011.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0012.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0013.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0014.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0015.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0016.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0017.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0018.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0019.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0020.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0021.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0022.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0023.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0024.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0025.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0026.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0027.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0028.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0029.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0030.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0031.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0032.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0033.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0034.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0035.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0036.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0037.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0038.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0039.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0040.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0041.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0042.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0043.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0044.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0045.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0046.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0047.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0048.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0049.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0050.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0051.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0052.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0053.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0054.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0055.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0056.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0057.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0058.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0059.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0060.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0061.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0062.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0063.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0064.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0065.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0066.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0067.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0068.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0069.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0070.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0071.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0072.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0073.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0074.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0075.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0076.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0077.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0078.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0079.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0080.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0081.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0082.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0083.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0084.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0085.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0086.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0087.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0088.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0089.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0090.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0091.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0092.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0093.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0094.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0095.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0096.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0097.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0098.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/violation-260701-234841/input_0099.bin'
+> Entering slow path...> Priming  2             > Increasing sample size... to 50> Increasing sample size... to 100> Increasing sample size... to 500> Priming  2             
+
+================================ Violations detected ==========================
+Violation Details:
+
+-----------------------------------------------------------------------------------
+                             HTrace                              | ID:18  | ID:68 |
+-----------------------------------------------------------------------------------
+^^.^^^....................^.........^..............^^........... | 625    | 0     |
+^^.^^^....................^.........^............^.^^........... | 1      | 0     |
+^^.^^^....................^.........^..............^^.......^... | 1      | 0     |
+^^.^^^....................^.........^...............^....^...... | 0      | 625   |
+^^.^^^....................^.........^..............^^....^...... | 0      | 1     |
+^^.^^^....................^.........^...............^....^..^... | 0      | 1     |
+
+
+================================ Statistics ===================================
+
+Test Cases: 1
+Inputs per test case: 100.0
+Violations: 1
+Effectiveness: 
+  Total Cls: 98.0
+  Effective Cls: 2.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 0
+  Fast Path: 0
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 37.3
+Finished at 20:04:30

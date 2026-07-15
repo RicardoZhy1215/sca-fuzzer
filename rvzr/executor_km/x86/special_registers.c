@@ -103,6 +103,12 @@ static int set_msrs_for_svm(void)
     return 0;
 }
 
+// AMD Predictive Store Forwarding Disable lives in SPEC_CTRL bit 7. The kernel
+// header does not always define it, so provide a local fallback.
+#ifndef SPEC_CTRL_PSFD
+#define SPEC_CTRL_PSFD (1ULL << 7)
+#endif
+
 static int get_ssbp_patch_msr_ctrls(uint64_t *msr_id, uint64_t *msr_mask)
 {
     if (cpu_has(cpuinfo, X86_FEATURE_MSR_SPEC_CTRL)) {
@@ -200,6 +206,16 @@ int set_special_registers(void)
     CHECK_ERR("set_enable_ssbp_patch");
     err = apply_msr_mask(msr_id, msr_mask, enable_ssbp_patch);
     CHECK_ERR("set_enable_ssbp_patch");
+
+    // Predictive Store Forwarding Disable (AMD, SPEC_CTRL bit 7). Independent of
+    // SSBD so we can test SSBD=0/PSFD=1 to isolate PSF from classic store-bypass.
+    // Opt-in only (write the bit just when explicitly enabled): on CPUs that do
+    // not implement bit 7 the readback verify in apply_msr_mask would otherwise
+    // fail. orig spec_ctrl was already saved above, so the restore path clears it.
+    if (enable_psfd && cpu_has(cpuinfo, X86_FEATURE_MSR_SPEC_CTRL)) {
+        err = apply_msr_mask(MSR_IA32_SPEC_CTRL, SPEC_CTRL_PSFD, true);
+        CHECK_ERR("set_enable_psfd");
+    }
 
     // Prefetcher control
     err = get_prefetcher_msr_ctrls(&msr_id, &msr_mask);

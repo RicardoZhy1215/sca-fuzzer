@@ -215,6 +215,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if getattr(args, "config", None):
         CONF.load(args.config, args.include_dir)
+        # Propagate the config to rollout workers. Ray re-imports rvzr.config with
+        # DEFAULTS, so without this the worker's generator uses defaults (e.g.
+        # max_successors_per_bb=1 -> NO conditional branches) and big_fuzz.yaml's
+        # program_size / instruction_categories never take effect. Pass ABSOLUTE
+        # paths since a worker's cwd may differ from the driver's.
+        env_config["config_path"] = os.path.abspath(args.config)
+        env_config["include_dir"] = (
+            os.path.abspath(args.include_dir) if args.include_dir else ""
+        )
     # [V4-only] ensure_ssb_vulnerable_for_process()
     local_debug = args.specrl_local_debug
     # NOTE: ray.init(local_mode=...) was removed in newer Ray. Synchronous,

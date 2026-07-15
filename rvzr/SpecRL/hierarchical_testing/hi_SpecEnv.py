@@ -144,6 +144,22 @@ class SpecEnv(gym.Env):
     asm_path = "my_test_case.asm"
 
     def __init__(self, env_config):
+        # Ray rollout workers re-import rvzr.config with DEFAULTS, so big_fuzz.yaml's
+        # GENERATOR settings (max_successors_per_bb -> conditional branches,
+        # program_size, instruction_categories, ...) never reach the worker. Reload
+        # the full config here so they take effect; the explicit contract/SSBD
+        # overrides below then re-affirm the intended values.
+        _cfg_path = env_config.get("config_path")
+        if _cfg_path:
+            try:
+                CONF.load(_cfg_path, env_config.get("include_dir", ""))
+                print(f"[CONF-LOAD][worker pid={os.getpid()}] loaded {_cfg_path} "
+                      f"(max_successors_per_bb={CONF.max_successors_per_bb}, "
+                      f"program_size={CONF.program_size})", flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[CONF-LOAD][worker pid={os.getpid()}] FAILED to load "
+                      f"{_cfg_path}: {exc} -- generator falls back to DEFAULTS "
+                      f"(no conditional branches!)", flush=True)
         # Per-process SSB opt-in. Originally V4-only but kept on at all times:
         # Ray rollout workers re-import CONF fresh, so the only reliable place
         # to switch SSBD off is here, inside the worker's __init__.
@@ -158,7 +174,11 @@ class SpecEnv(gym.Env):
         # ['cond', 'bpas'] -> factory resolves to the 'cond-bpas' speculator
         # (Spectre-v1 branch misprediction + v4 store bypass).
         setattr(CONF, "contract_observation_clause", "ct")
-        setattr(CONF, "contract_execution_clause", ["cond", "bpas"])
+        # SSBD-ON experiment: contract dropped to 'cond' only (v1). 'bpas' removed
+        # because with SSBD ON the executor disables store bypass, so modeling v4
+        # is pointless. To go back to the beyond-bpas setup: ["cond", "bpas"] here,
+        # SSBD off (_force_kernel_ssbd_on -> off), and ssbp_patch:false in big_fuzz.
+        setattr(CONF, "contract_execution_clause", ["cond"])
         print(f"[CONTRACT-CHECK][worker pid={os.getpid()}] "
               f"obs={CONF.contract_observation_clause} "
               f"exec={CONF.contract_execution_clause} "
@@ -324,12 +344,11 @@ class SpecEnv(gym.Env):
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
 
-        # HARD-FORCE the kernel module's SSBD patch off. Originally V4-only,
-        # kept on always: Ray rollout workers re-import CONF and otherwise
-        # default x86_executor_enable_ssbp_patch=True, which re-enables SSBD
-        # in ring-0 test runs and silently disables v4 even if the agent
-        # produces a perfectly valid v4 gadget. Harmless under v1.
-        self._force_kernel_ssb_vulnerable()
+        # SSBD-ON experiment: HARD-FORCE the kernel module's SSBD patch ON, so
+        # store bypass (v4) is mitigated in hardware. Ray rollout workers re-import
+        # CONF with defaults, so we set the executor sysfs here to guarantee SSBD=1
+        # in ring-0 test runs. Goal: find leaks that survive SSBD (beyond v1 & v4).
+        self._force_kernel_ssbd_on()
 
         # self.similarity_model_name = env_config.get("similarity_model_name", "sentence-transformers/all-MiniLM-L6-v2")
         # self.similarity_device = env_config.get("similarity_device", "cuda:0" if self._cuda_available() else "cpu")
@@ -438,35 +457,38 @@ class SpecEnv(gym.Env):
             return "Speculation_Store_Bypass: unknown (read failed)"
         return "Speculation_Store_Bypass: unknown (missing)"
 
-    def _force_kernel_ssb_vulnerable(self) -> None:
+    def _force_kernel_ssbd_on(self) -> None:
         """
-        Directly write "0" to /sys/rvzr_executor/enable_ssbp_patch so that the
-        kernel module clears MSR_IA32_SPEC_CTRL.SSBD when running test cases
-        in ring 0. Also force CONF.x86_executor_enable_ssbp_patch = False so
-        that subsequent Executor operations (which re-sync CONF into sysfs)
-        don't flip it back on.
+        SSBD-ON experiment (cond-only contract). Directly write "1" to
+        /sys/rvzr_executor/enable_ssbp_patch so that the kernel module SETS
+        MSR_IA32_SPEC_CTRL.SSBD when running test cases in ring 0 (store bypass
+        DISABLED in hardware). Also force CONF.x86_executor_enable_ssbp_patch =
+        True so subsequent Executor re-syncs keep SSBD on.
+
+        To revert to the beyond-bpas setup: write "0" / set the CONF flag False
+        (i.e. the old _force_kernel_ssb_vulnerable behavior), use ["cond","bpas"]
+        as the contract, and set ssbp_patch:false in big_fuzz.yaml.
 
         The sysfs file is write-only (EIO on read), so we can't verify after
         the write; we log whether the write succeeded and trust the kernel
         module's own error reporting.
         """
         # Force CONF flag so any later _set_vendor_specific_features() call
-        # during re-init of the executor keeps SSBD cleared.
+        # during re-init of the executor keeps SSBD set.
         try:
-            setattr(CONF, "x86_executor_enable_ssbp_patch", False)
+            setattr(CONF, "x86_executor_enable_ssbp_patch", True)
         except Exception as exc:  # noqa: BLE001
             print(f"[SSBD][SpecEnv] could not set CONF flag: {exc}")
 
         sysfs = "/sys/rvzr_executor/enable_ssbp_patch"
         try:
             with open(sysfs, "w", encoding="utf-8") as f:
-                f.write("0")
-            print(f"[SSBD][SpecEnv] wrote '0' to {sysfs} (SSB vulnerable in executor)")
+                f.write("1")
+            print(f"[SSBD][SpecEnv] wrote '1' to {sysfs} (SSBD ON = store bypass mitigated)")
         except OSError as exc:
             print(
                 f"[SSBD][SpecEnv] FAILED to write {sysfs}: {exc}. "
-                "Kernel module may not be loaded or permissions are wrong. "
-                "Without this, Spectre v4 CANNOT be triggered."
+                "Kernel module may not be loaded or permissions are wrong."
             )
 
     def _ensure_ssb_vulnerable_for_process(self) -> None:
@@ -1010,7 +1032,7 @@ class SpecEnv(gym.Env):
                     all_instructions.append(instr)
             total_instructions_num = len(all_instructions)
             print("total instructions in program: ", total_instructions_num)
-            print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
+            # print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
             # pattern_tokens = self._build_pattern_tokens(all_instructions)
             # pattern_result = self.pattern_matcher.score(pattern_tokens)
             # self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score

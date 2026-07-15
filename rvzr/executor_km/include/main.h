@@ -32,6 +32,8 @@ extern long uarch_reset_rounds;
 #define UARCH_RESET_ROUNDS_DEFAULT 1
 extern bool enable_ssbp_patch;
 #define SSBP_PATCH_DEFAULT true
+extern bool enable_psfd; // AMD Predictive Store Forwarding Disable (SPEC_CTRL bit 7)
+#define PSFD_DEFAULT false
 extern bool enable_prefetchers;
 #define PREFETCHER_DEFAULT false
 extern char pre_run_flush;

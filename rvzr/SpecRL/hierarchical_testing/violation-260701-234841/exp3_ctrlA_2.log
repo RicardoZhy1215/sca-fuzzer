@@ -1,0 +1,8 @@
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 900482
+
+INFO: [fuzzer] Starting at 21:29:17
+Error appeared while assembling the test case:
+ Assembler messages:
+  Line 46: Error: operand type mismatch for `and'
+    (the line was parsed as and r10, 0xffffffff)

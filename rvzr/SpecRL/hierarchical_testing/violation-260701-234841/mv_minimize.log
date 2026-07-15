@@ -132,4 +132,24 @@ Address    +0x0     +0x40    +0x80    +0xc0    +0x100   +0x140   +0x180   +0x1c0
 [INFO] Minimization attempt 1/1
 [PASS 3] Instruction Removal Pass
 
-.--------
+.--------.----.--.---.-..---.-...--..--.-..--..-.--.
+[PASS 4] NOP Replacement Pass
+
+--..-....----..-.-.--..-.--..--.-..-.-.----
+[PASS 5] Constant Simplification Pass
+
+-------------------------------------------------
+[PASS 6] Mask Simplification Pass
+
+-.-------.----.-.--.--.--.-.-------.-.-----------.------..--.---
+-
+[PASS 7] Label Removal Pass
+
+.----------------------------------.----------------------------
+---.
+[PASS 8] Violation Comment Insertion
+[PASS 9] Label Removal Pass
+
+----------------------------------------------------------------
+-------------
+[PASS 10] Storing the results

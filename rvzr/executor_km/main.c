@@ -84,6 +84,7 @@ bool quick_and_dirty_mode = false;
 
 long uarch_reset_rounds = UARCH_RESET_ROUNDS_DEFAULT;
 bool enable_ssbp_patch = SSBP_PATCH_DEFAULT;
+bool enable_psfd = PSFD_DEFAULT;
 bool enable_prefetchers = PREFETCHER_DEFAULT;
 char pre_run_flush = PRE_RUN_FLUSH_DEFAULT;
 bool enable_hpa_gpa_collisions = HPA_GPA_COLLISIONS_DEFAULT;
@@ -158,6 +159,13 @@ static ssize_t enable_ssbp_patch_store(struct kobject *kobj, struct kobj_attribu
 static struct kobj_attribute enable_ssbp_patch_attribute =
     __ATTR(enable_ssbp_patch, 0666, NULL, enable_ssbp_patch_store);
 
+/// Control PSFD (AMD Predictive Store Forwarding Disable, SPEC_CTRL bit 7)
+///
+static ssize_t enable_psfd_store(struct kobject *kobj, struct kobj_attribute *attr,
+                                 const char *buf, size_t count);
+static struct kobj_attribute enable_psfd_attribute =
+    __ATTR(enable_psfd, 0666, NULL, enable_psfd_store);
+
 /// Control prefetchers
 ///
 static ssize_t enable_prefetcher_store(struct kobject *kobj, struct kobj_attribute *attr,
@@ -225,6 +233,7 @@ static struct attribute *sysfs_attributes[] = {
     &print_data_base_attribute.attr,
     &print_code_base_attribute.attr,
     &enable_ssbp_patch_attribute.attr,
+    &enable_psfd_attribute.attr,
     &enable_prefetcher_attribute.attr,
     &enable_pre_run_flush_attribute.attr,
     &measurement_mode_attribute.attr,
@@ -406,6 +415,15 @@ static ssize_t enable_ssbp_patch_store(struct kobject *kobj, struct kobj_attribu
     return count;
 }
 
+static ssize_t enable_psfd_store(struct kobject *kobj, struct kobj_attribute *attr,
+                                 const char *buf, size_t count)
+{
+    unsigned value = 0;
+    sscanf(buf, "%u", &value);
+    enable_psfd = (value == 0) ? false : true;
+    return count;
+}
+
 static ssize_t enable_prefetcher_store(struct kobject *kobj, struct kobj_attribute *attr,
                                        const char *buf, size_t count)
 {
@@ -541,6 +559,7 @@ static ssize_t dbg_dump_show(struct kobject *kobj, struct kobj_attribute *attr, 
     len += sprintf(&buf[len], "quick_and_dirty_mode: %d\n", quick_and_dirty_mode);
     len += sprintf(&buf[len], "uarch_reset_rounds: %ld\n", uarch_reset_rounds);
     len += sprintf(&buf[len], "enable_ssbp_patch: %d\n", enable_ssbp_patch);
+    len += sprintf(&buf[len], "enable_psfd: %d\n", enable_psfd);
     len += sprintf(&buf[len], "enable_prefetchers: %d\n", enable_prefetchers);
     len += sprintf(&buf[len], "pre_run_flush: %d\n", pre_run_flush);
     return len;
