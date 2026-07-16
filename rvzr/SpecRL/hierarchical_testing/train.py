@@ -191,7 +191,11 @@ env_config = {
     "pattern_reward_scale": 5.0,
     "leak_reward": 600.0,
     # Single-sided observable bonus. +50 when fenced/unfenced diverge.
-    "observable_bonus": 50.0,
+    # Lowered 50 -> 20: observable is a BINARY "any input diverged" bonus, so a
+    # program with just 1/50 inputs diverging already banked +50 and had little
+    # pressure to increase divergence. Keep a small discovery nudge; let the
+    # graded trace_divergence signal (scaled up below) drive "more htrace diffs".
+    "observable_bonus": 20.0,
     "observable_penalty": 0.0,
     "step_penalty": 0.05,
     # [V4-only tuning] v4 needed >=10 lea_rrr chain + store + load +
@@ -203,7 +207,12 @@ env_config = {
     "early_end_penalty": 20.0,
     # Dense pre-leak signal (generic): rewards fenced/unfenced trace
     # divergence regardless of vulnerability type.
-    "trace_divergence_reward_scale": 100.0,
+    # Raised 100 -> 300: this is the GRADED "fraction of inputs whose fenced vs
+    # unfenced htrace diverges" signal (0..1). Scaling it up (and dropping the
+    # binary observable_bonus above) makes the agent climb from 1/50 toward N/50
+    # diverging inputs -> "more htrace differences". Full divergence (1.0) now
+    # pays +300 (~half of leak_reward=600); a real leak is still the top prize.
+    "trace_divergence_reward_scale": 300.0,
     # similarity_reference_dir: pass an explicit path to a directory of v1
     # reference asm files to enable code-similarity reward. Leave unset (or
     # ""), and SpecEnv disables the similarity term but still uses the

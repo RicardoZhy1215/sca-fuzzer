@@ -238,6 +238,14 @@ class SpecEnv(gym.Env):
         # pattern signal. Default 0.0 here so "not observable yet" stops being
         # an active punishment and only the positive +observable_bonus remains.
         self.observable_penalty = float(env_config.get("observable_penalty", 0.0))
+        # Consecutive-identical-instruction penalty: subtract when the agent inserts
+        # the exact same (opcode, reg_src, reg_dst, imm) as the previous SUCCESSFULLY
+        # INSERTED instruction (discourages degenerate "spam the same op" gadgets).
+        # Compared against the last INSERTED op, so throwaway invalid actions in
+        # between don't reset it.
+        self.repeat_penalty = float(env_config.get("repeat_penalty", 10.0))
+        self._last_action_tuple = None
+        self._repeat_this_step = False
         self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
@@ -564,6 +572,8 @@ class SpecEnv(gym.Env):
         rd = int(parts[2].item() if hasattr(parts[2], "item") else parts[2])
         imm = int(parts[3].item() if hasattr(parts[3], "item") else parts[3])
         end = (o, rs, rd, imm) == (0, 0, 0, 0)
+        # reset each step; set True below only on a consecutive-identical insertion
+        self._repeat_this_step = False
 
         # Block early-exit: the optimal policy under the old reward was to pick
         # end_game on step 0 to minimize the -81/step floor. With reward shaping
@@ -615,6 +625,11 @@ class SpecEnv(gym.Env):
             else:
                 self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
                 print(f"adding step {inst_action}")
+                # Consecutive-identical-instruction check (vs the last INSERTED op).
+                _act = (o, rs, rd, imm)
+                self._repeat_this_step = (self._last_action_tuple is not None
+                                          and _act == self._last_action_tuple)
+                self._last_action_tuple = _act
                 self.num_steps += 1
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
@@ -624,6 +639,9 @@ class SpecEnv(gym.Env):
         print("program: ")
         step_obs = self._get_obs()
         step_reward = self._reward()
+        if self._repeat_this_step:
+            step_reward -= self.repeat_penalty
+            print(f"repeat-instruction penalty: -{self.repeat_penalty}")
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         # Violation found -> terminate the episode immediately and move on to the
@@ -671,6 +689,9 @@ class SpecEnv(gym.Env):
         self.episode_steps_observable = 0
         self.episode_similarity_max = 0.0
         self.num_steps = 0
+        # reset the repeat-instruction tracker so runs don't carry across episodes
+        self._last_action_tuple = None
+        self._repeat_this_step = False
         self.bad_case = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
