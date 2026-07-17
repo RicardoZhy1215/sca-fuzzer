@@ -244,8 +244,13 @@ class SpecEnv(gym.Env):
         # Compared against the last INSERTED op, so throwaway invalid actions in
         # between don't reset it.
         self.repeat_penalty = float(env_config.get("repeat_penalty", 10.0))
-        self._last_action_tuple = None
-        self._repeat_this_step = False
+        # Per-episode count of each inserted (opcode,rs,rd,imm). The Nth insertion
+        # of the SAME instruction costs repeat_penalty*(N-1), so spamming one op
+        # escalates (total for N copies ~ penalty*N(N-1)/2) while a diverse program
+        # with only 1-2 incidental repeats is barely touched. Subsumes the
+        # "consecutive identical" case and also catches scattered A..A..A spam.
+        self._action_counts = {}
+        self._repeat_penalty_this_step = 0.0
         self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}
@@ -572,8 +577,8 @@ class SpecEnv(gym.Env):
         rd = int(parts[2].item() if hasattr(parts[2], "item") else parts[2])
         imm = int(parts[3].item() if hasattr(parts[3], "item") else parts[3])
         end = (o, rs, rd, imm) == (0, 0, 0, 0)
-        # reset each step; set True below only on a consecutive-identical insertion
-        self._repeat_this_step = False
+        # reset each step; set below to repeat_penalty*(prior count) on insertion
+        self._repeat_penalty_this_step = 0.0
 
         # Block early-exit: the optimal policy under the old reward was to pick
         # end_game on step 0 to minimize the -81/step floor. With reward shaping
@@ -625,11 +630,12 @@ class SpecEnv(gym.Env):
             else:
                 self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
                 print(f"adding step {inst_action}")
-                # Consecutive-identical-instruction check (vs the last INSERTED op).
+                # Diversity penalty: escalate with how many times this exact
+                # instruction was ALREADY inserted this episode (0 for the first).
                 _act = (o, rs, rd, imm)
-                self._repeat_this_step = (self._last_action_tuple is not None
-                                          and _act == self._last_action_tuple)
-                self._last_action_tuple = _act
+                _prior = self._action_counts.get(_act, 0)
+                self._repeat_penalty_this_step = self.repeat_penalty * _prior
+                self._action_counts[_act] = _prior + 1
                 self.num_steps += 1
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
@@ -639,9 +645,9 @@ class SpecEnv(gym.Env):
         print("program: ")
         step_obs = self._get_obs()
         step_reward = self._reward()
-        if self._repeat_this_step:
-            step_reward -= self.repeat_penalty
-            print(f"repeat-instruction penalty: -{self.repeat_penalty}")
+        if self._repeat_penalty_this_step > 0:
+            step_reward -= self._repeat_penalty_this_step
+            print(f"repeat/diversity penalty: -{self._repeat_penalty_this_step}")
         print(f"reward: {step_reward}")
         print("#=======================================================#")
         # Violation found -> terminate the episode immediately and move on to the
@@ -689,9 +695,9 @@ class SpecEnv(gym.Env):
         self.episode_steps_observable = 0
         self.episode_similarity_max = 0.0
         self.num_steps = 0
-        # reset the repeat-instruction tracker so runs don't carry across episodes
-        self._last_action_tuple = None
-        self._repeat_this_step = False
+        # reset the diversity tracker so counts don't carry across episodes
+        self._action_counts = {}
+        self._repeat_penalty_this_step = 0.0
         self.bad_case = False
         self.pattern_stage_reward = 0.0
         self.pattern_match_counts = {}

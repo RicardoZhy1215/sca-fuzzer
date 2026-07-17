@@ -248,6 +248,12 @@ if __name__ == "__main__":
         "lr": 5e-5,
         "train_batch_size": 128,
         "gamma": 0.99,
+        # Entropy bonus. PPO defaults entropy_coeff=0.0 (no bonus), which lets the
+        # policy collapse to deterministic / repeated actions in late training
+        # (the "spams the same instruction" symptom). A positive coeff keeps the
+        # policy stochastic and exploratory throughout. Raise (0.03-0.05) if the
+        # collapse persists; lower if it never converges.
+        "entropy_coeff": 0.01,
         # MUST match env_config so the model unflattens obs with the same dims
         # the env used to build observation_space. Mismatch -> obs view crash
         # (e.g. env num_inputs=50 -> obs width 25200, model num_inputs=100 -> expects 50200).
@@ -307,6 +313,7 @@ if __name__ == "__main__":
             lr=train_config["lr"],
             train_batch_size=train_config["train_batch_size"],
             gamma=train_config["gamma"],
+            entropy_coeff=train_config["entropy_coeff"],  # keep policy stochastic (anti-collapse)
             model=model_config,
             # minibatch_size=4,
         )

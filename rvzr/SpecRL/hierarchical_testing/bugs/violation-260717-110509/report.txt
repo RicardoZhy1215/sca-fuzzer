@@ -1,0 +1,67 @@
+# Violation Report
+
+* Test Case ID: 10294
+* Detected: 17.07.26 at 11:05:09
+
+* Time to detection: 34.431261
+* Statistics:
+Test Cases: 10295
+Inputs per test case: 100.0
+Violations: 0
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 7567
+  Observation Filter: 1019
+  Fast Path: 1690
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 7
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 11460
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #17
+* Hardware trace:
+ ^............................................................... [626]
+^......................................................^........ [1]
+
+* Contract trace (hash): 13724532323686029106
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x17, pc: 0x1e, mem: 0x1990, mem: 0x1990, pc: 0x24, pc: 0x2c, pc: 0x15, pc: 0x24]
+
+Input #29
+* Hardware trace:
+ ^.....................................^......................... [624]
+^.....................................^................^........ [1]
+^.....................................^......................^.. [1]
+^.....................................^.....................^... [1]
+
+* Contract trace (hash): 13724532323686029106
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x17, pc: 0x1e, mem: 0x1990, mem: 0x1990, pc: 0x24, pc: 0x2c, pc: 0x15, pc: 0x24]
+
+Input #67
+* Hardware trace:
+ ^............................................................... [626]
+^......................................................^........ [1]
+
+* Contract trace (hash): 13724532323686029106
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x17, pc: 0x1e, mem: 0x1990, mem: 0x1990, pc: 0x24, pc: 0x2c, pc: 0x15, pc: 0x24]
+
+Input #79
+* Hardware trace:
+ ^.....................................^......................... [625]
+^.....................................^..............^.......... [1]
+^.....................................^................^........ [1]
+
+* Contract trace (hash): 13724532323686029106
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x17, pc: 0x1e, mem: 0x1990, mem: 0x1990, pc: 0x24, pc: 0x2c, pc: 0x15, pc: 0x24]
