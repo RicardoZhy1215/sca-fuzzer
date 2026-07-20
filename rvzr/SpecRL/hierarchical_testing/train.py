@@ -253,7 +253,7 @@ if __name__ == "__main__":
         # (the "spams the same instruction" symptom). A positive coeff keeps the
         # policy stochastic and exploratory throughout. Raise (0.03-0.05) if the
         # collapse persists; lower if it never converges.
-        "entropy_coeff": 0.01,
+        "entropy_coeff": 0.03,
         # MUST match env_config so the model unflattens obs with the same dims
         # the env used to build observation_space. Mismatch -> obs view crash
         # (e.g. env num_inputs=50 -> obs width 25200, model num_inputs=100 -> expects 50200).

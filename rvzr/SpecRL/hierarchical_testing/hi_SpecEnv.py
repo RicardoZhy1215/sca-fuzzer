@@ -630,12 +630,14 @@ class SpecEnv(gym.Env):
             else:
                 self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
                 print(f"adding step {inst_action}")
-                # Diversity penalty: escalate with how many times this exact
-                # instruction was ALREADY inserted this episode (0 for the first).
-                _act = (o, rs, rd, imm)
-                _prior = self._action_counts.get(_act, 0)
+                # Diversity penalty, counted by OPCODE (not the exact tuple): the
+                # agent dodged an exact-tuple penalty by cycling ONE op across
+                # registers (cmp [rax], cmp [rbx], ...). Opcode-level escalation
+                # tolerates a few of one op (0,penalty,2*penalty,...) but crushes
+                # single-opcode spam -> forces varied instruction TYPES.
+                _prior = self._action_counts.get(o, 0)
                 self._repeat_penalty_this_step = self.repeat_penalty * _prior
-                self._action_counts[_act] = _prior + 1
+                self._action_counts[o] = _prior + 1
                 self.num_steps += 1
                 self.succ_step_counter += 1
                 print(f"NUMBER OF SUCCESSFUL STEPS: {self.succ_step_counter}")
