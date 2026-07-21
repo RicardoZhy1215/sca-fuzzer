@@ -3,16 +3,19 @@ instruction_set: x86-64
 # Model
 contract_observation_clause: ct
 contract_execution_clause:
-  - cond
-# NOTE: dropped 'bpas' — with SSBD ON below the hardware can't do store bypass,
-# so modeling v4 is pointless. Goal here: find leaks beyond v1 (and beyond v4,
-# which is hardware-disabled). See worker override in hi_SpecEnv.py.
+  - delayed-exception-handling
+# ct + delayed-exception-handling (DEH): the contract models transient execution
+# that continues PAST a faulting instruction. A violation = hardware leaks beyond
+# that. NOTE: DEH only does something if the program actually FAULTS — with
+# sandboxed (masked) loads that never fault, DEH degenerates to seq. The only
+# fault source in the current action space is div_r (divide-by-zero). See worker
+# override in hi_SpecEnv.py.
 
 # Actors
 actors:
   - main:
     - data_properties:
-      - present: true
+      - present: false
 
 # Executor
 executor_mode: P+P
@@ -21,10 +24,10 @@ x86_executor_enable_ssbp_patch: true   # SSBD ON (store bypass mitigated in hard
 # Program generator
 program_size: 50
 avg_mem_accesses: 16
-max_bb_per_function: 2  # 2 BBs with a conditional branch between them (for cond/v1)
-min_bb_per_function: 2
-min_successors_per_bb: 2
-max_successors_per_bb: 2  # allow a BB to have 2 successors = a conditional branch
+max_bb_per_function: 1  # single basic block (no branches; DEH is fault-based, not branch-based)
+min_bb_per_function: 1
+min_successors_per_bb: 1
+max_successors_per_bb: 1  # 1 successor (-> exit); no conditional branch
 
 instruction_categories:
   - BASE-BINARY

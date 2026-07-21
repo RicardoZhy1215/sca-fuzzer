@@ -1,0 +1,72 @@
+# Violation Report
+
+* Test Case ID: 2441
+* Detected: 21.07.26 at 00:51:59
+
+* Time to detection: 34.431573
+* Statistics:
+Test Cases: 2442
+Inputs per test case: 100.0
+Violations: 0
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 1810
+  Observation Filter: 224
+  Fast Path: 394
+  Max Nesting Check: 1
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 1
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 3160
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #26
+* Hardware trace:
+ ^............................................................... [624]
+^...................................................^........... [1]
+^.......................................................^....... [1]
+^...........................................................^... [1]
+
+* Contract trace (hash): 6528810057365330098
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x1a, mem: 0x1fc8, mem: 0x1fc8, pc: 0x1f, pc: 0x27, pc: 0x11, pc: 0x1f]
+
+Input #28
+* Hardware trace:
+ ^..............................................................^ [624]
+^...................................................^..........^ [1]
+^.......................................................^......^ [1]
+^...........................................................^..^ [1]
+
+* Contract trace (hash): 6528810057365330098
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x1a, mem: 0x1fc8, mem: 0x1fc8, pc: 0x1f, pc: 0x27, pc: 0x11, pc: 0x1f]
+
+Input #76
+* Hardware trace:
+ ^............................................................... [624]
+^...................................................^........... [1]
+^.......................................................^....... [1]
+^...........................................................^... [1]
+
+* Contract trace (hash): 6528810057365330098
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x1a, mem: 0x1fc8, mem: 0x1fc8, pc: 0x1f, pc: 0x27, pc: 0x11, pc: 0x1f]
+
+Input #78
+* Hardware trace:
+ ^..............................................................^ [624]
+^...................................................^..........^ [1]
+^.......................................................^......^ [1]
+^...........................................................^..^ [1]
+
+* Contract trace (hash): 6528810057365330098
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xf, pc: 0x13, pc: 0x1a, mem: 0x1fc8, mem: 0x1fc8, pc: 0x1f, pc: 0x27, pc: 0x11, pc: 0x1f]

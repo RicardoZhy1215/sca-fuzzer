@@ -42,7 +42,11 @@ OPERAND_SPACE = [
     # BASE-SEMAPHORE atomics — store-forwarding / MDS class probes.
     "lock_xadd_mr",     # lock xadd [reg64], reg64
     "lock_xchg_mr",     # xchg [reg64], reg64      -- implicit lock when mem operand
-    "lock_cmpxchg_mr",  # lock cmpxchg [reg64], reg64  -- implicit rax
+    # DISABLED for the DEH contract: X86UnicornDEH._handle_isa_specific_corner_cases
+    # (speculators_fault.py:260) does `assert instruction.get_flags_operand()` for
+    # cmpxchg, but the action-space cmpxchg is built without a FlagsOp -> crash.
+    # Re-enable only after adding a proper FlagsOp to lock_cmpxchg_mr below.
+    # "lock_cmpxchg_mr",  # lock cmpxchg [reg64], reg64  -- implicit rax
     "lock_add_mr",      # lock add  [reg64], reg64
     # BASE-STRINGOP — rep-prefixed loops; SCO and MDS-frontend probes.
     # All four use implicit registers (RSI/RDI/RCX/AL), so the action's

@@ -4,125 +4,95 @@
 .bb_0.0:
 lfence
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-add dl, 103 # instrumentation
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-mov qword ptr [r14 + rdi], 3112
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-mul qword ptr [r14 + rbx]
-lfence
-sub rdi, rax
-lfence
-mov rax, rsi
-lfence
-or rsi, rbx
-lfence
-mov rdi, rsi
-lfence
-setnz sil
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-movsx rdi, byte ptr [r14 + rcx]
-lfence
-and rcx, 0b1111111111000 # instrumentation
-lfence
-lock dec qword ptr [r14 + rcx]
-lfence
-and rdi, 0b1111111111000 # instrumentation
-lfence
-lock xadd qword ptr [r14 + rdi], rdi
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-add rsi, qword ptr [r14 + rbx]
-lfence
-and rsi, 0b1111111111111 # instrumentation
-lfence
-cmp rsi, rsi # instrumentation
-lfence
-cmovz rsi, qword ptr [r14 + rsi]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-or rbx, 1 # instrumentation
-lfence
-cmovnz rbx, qword ptr [r14 + rdi]
-lfence
-setnz sil
-lfence
-and rdx, 0b1111111111000 # instrumentation
-lfence
-xchg qword ptr [r14 + rdx], rax
-lfence
-and rax, 0b1111111111111 # instrumentation
-lfence
-mov qword ptr [r14 + rax], 1392
-lfence
-loopne .bb_0.1
-jmp .exit_0
-.bb_0.1:
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmovns rdi, qword ptr [r14 + rcx]
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-add rax, qword ptr [r14 + rbx]
-lfence
-and rsi, 0b1111111111000 # instrumentation
-lfence
-lock cmpxchg qword ptr [r14 + rsi], rdx
-lfence
 and rdx, 0b1111111111111 # instrumentation
 lfence
-cmovnl rdi, qword ptr [r14 + rdx]
+cmovbe rdx, qword ptr [r14 + rdx]
 lfence
-and rax, rax
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-cmovs rcx, qword ptr [r14 + rbx]
+setnz al
 lfence
 and rsi, 0b1111111111111 # instrumentation
 lfence
-mov qword ptr [r14 + rsi], rcx
-lfence
-sbb rax, rdi
-lfence
-mov rbx, rdx
-lfence
-and rax, 0b1111111111111 # instrumentation
-lfence
-cmp rbx, qword ptr [r14 + rax]
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmovs rax, qword ptr [r14 + rcx]
-lfence
-neg rsi
-lfence
-and rax, 0b1111111111000 # instrumentation
-lfence
-lock or qword ptr [r14 + rax], rax
-lfence
-dec rdx
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-cmp rsi, qword ptr [r14 + rbx]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-or rdx, 1 # instrumentation
+or rdi, 1 # instrumentation
 lfence
 clc  # instrumentation
 lfence
-cmovnbe rdx, qword ptr [r14 + rdi]
+cmovnbe rdi, qword ptr [r14 + rsi]
+lfence
+adc rsi, rcx
+lfence
+sub rcx, rdx
+lfence
+dec rsi
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+movsx rdx, byte ptr [r14 + rsi]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+cmovnle rdx, qword ptr [r14 + rdi]
+lfence
+not rsi
+lfence
+and rdx, 0b1111111111000 # instrumentation
+lfence
+lock and qword ptr [r14 + rdx], rcx
+lfence
+mov rcx, rsi
+lfence
+cmp rdx, rdi
+lfence
+or rdx, rax
+lfence
+and rcx, rax
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+or rdi, 1 # instrumentation
+lfence
+cmovnz rdi, qword ptr [r14 + rax]
+lfence
+and rdx, 0b1111111111111 # instrumentation
+lfence
+cmovle rcx, qword ptr [r14 + rdx]
+lfence
+setl bl
+lfence
+setl bl
+lfence
+and rdx, 0b1111111111111 # instrumentation
+lfence
+or rsi, 1 # instrumentation
+lfence
+cmovnz rsi, qword ptr [r14 + rdx]
+lfence
+setl dil
+lfence
+and rax, 0b1111111111000 # instrumentation
+lfence
+xchg qword ptr [r14 + rax], rdi
+lfence
+and rcx, 0b1111111111000 # instrumentation
+lfence
+lock or qword ptr [r14 + rcx], rdi
+lfence
+and rdx, 0b1111111111111 # instrumentation
+lfence
+cmp rcx, rcx # instrumentation
+lfence
+cmovz rcx, qword ptr [r14 + rdx]
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+cmovns rsi, qword ptr [r14 + rax]
+lfence
+and rax, 0b1111111111000 # instrumentation
+lfence
+lock xor qword ptr [r14 + rax], rbx
+lfence
+and rax, 0b1111111111000 # instrumentation
+lfence
+lock and qword ptr [r14 + rax], rbx
 lfence
 .exit_0:
 lfence

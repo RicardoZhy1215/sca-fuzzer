@@ -174,11 +174,13 @@ class SpecEnv(gym.Env):
         # ['cond', 'bpas'] -> factory resolves to the 'cond-bpas' speculator
         # (Spectre-v1 branch misprediction + v4 store bypass).
         setattr(CONF, "contract_observation_clause", "ct")
-        # SSBD-ON experiment: contract dropped to 'cond' only (v1). 'bpas' removed
-        # because with SSBD ON the executor disables store bypass, so modeling v4
-        # is pointless. To go back to the beyond-bpas setup: ["cond", "bpas"] here,
-        # SSBD off (_force_kernel_ssbd_on -> off), and ssbp_patch:false in big_fuzz.
-        setattr(CONF, "contract_execution_clause", ["cond"])
+        # ct + delayed-exception-handling (DEH) experiment. Re-affirmed here on top
+        # of the big_fuzz.yaml load (Ray workers re-import CONF with defaults).
+        # DEH models transient execution past a faulting instruction; it only fires
+        # if the program actually FAULTS (div-by-zero via div_r, etc.).
+        # To go back: ["cond"] (v1) or ["cond","bpas"] (beyond-bpas) here + matching
+        # big_fuzz.yaml + SSBD setting.
+        setattr(CONF, "contract_execution_clause", ["delayed-exception-handling"])
         print(f"[CONTRACT-CHECK][worker pid={os.getpid()}] "
               f"obs={CONF.contract_observation_clause} "
               f"exec={CONF.contract_execution_clause} "
@@ -609,8 +611,8 @@ class SpecEnv(gym.Env):
             print(f"NUMBER OF STEPS: {self.step_counter}")
 
             target_desc = X86TargetDesc()
-            self.generator._insert_bb_index = random.choice([0, 1])
-            # self.generator._insert_bb_index = 0
+            # self.generator._insert_bb_index = random.choice([0, 1])
+            self.generator._insert_bb_index = 0
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # Only run the (expensive, assembles+emulates) loop check on instructions
             # that already passed validation — assembling an invalid instruction would
