@@ -1,0 +1,31 @@
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 763842
+
+INFO: [fuzzer] Starting at 00:55:08
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0000.bin'
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0001.bin'
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0002.bin'
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0003.bin'
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0004.bin'
+DEBUG: Attempting to load path: 'rvzr/SpecRL/hierarchical_testing/violation-260721-212748/min-inputs/min_input_0005.bin'
+
+================================ Statistics ===================================
+
+Test Cases: 1
+Inputs per test case: 6.0
+Violations: 0
+Effectiveness: 
+  Total Cls: 0.0
+  Effective Cls: 0.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 1
+  Fast Path: 0
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+Duration: 0.0
+Finished at 00:55:08

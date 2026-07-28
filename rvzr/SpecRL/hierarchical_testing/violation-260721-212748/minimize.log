@@ -1,0 +1,107 @@
+
+INFO: [prog_gen] Setting program_generator_seed to random value: 26687
+
+WARNING: [executor] SMT is on! You may experience false positives.
+[PASS 1] Reproducing the violation
+  > Violation reproduced. Proceeding with minimization
+  > Violating input IDs: [14, 114]
+[INFO] Minimization attempt 1/5
+[PASS 2] Instruction Removal Pass
+
+.-.-.--........-..............
+[PASS 3] Instruction Simplification Pass
+
+-.---..--..-...-.
+[PASS 4] NOP Replacement Pass
+
+-.---......-.....
+[PASS 5] Constant Simplification Pass
+
+.--------------------
+[PASS 6] Mask Simplification Pass
+
+-.--.--.--.-.--.--------.-
+[PASS 7] Label Removal Pass
+
+.--------------------------.
+[INFO] Minimization attempt 2/5
+[PASS 8] Instruction Removal Pass
+
+-.---.........-......
+[PASS 9] Instruction Simplification Pass
+
+----.-.
+[PASS 10] NOP Replacement Pass
+
+----.-.
+[PASS 11] Constant Simplification Pass
+
+-------
+[PASS 12] Mask Simplification Pass
+
+-.-.--.---
+[PASS 13] Label Removal Pass
+
+----------
+[INFO] Minimization attempt 3/5
+[PASS 14] Instruction Removal Pass
+
+----.-.
+[PASS 15] Instruction Simplification Pass
+
+-----
+[PASS 16] NOP Replacement Pass
+
+-----
+[PASS 17] Constant Simplification Pass
+
+-----
+[PASS 18] Mask Simplification Pass
+
+-.-.--.-
+[PASS 19] Label Removal Pass
+
+--------
+[INFO] Minimization attempt 4/5
+[PASS 20] Instruction Removal Pass
+
+-----
+[PASS 21] Instruction Simplification Pass
+
+-----
+[PASS 22] NOP Replacement Pass
+
+-----
+[PASS 23] Constant Simplification Pass
+
+-----
+[PASS 24] Mask Simplification Pass
+
+-.-.--.-
+[PASS 25] Label Removal Pass
+
+--------
+[INFO] Minimization attempt 5/5
+[PASS 26] Instruction Removal Pass
+
+-----
+[PASS 27] Instruction Simplification Pass
+
+-----
+[PASS 28] NOP Replacement Pass
+
+-----
+[PASS 29] Constant Simplification Pass
+
+-----
+[PASS 30] Mask Simplification Pass
+
+-.-.--.-
+[PASS 31] Label Removal Pass
+
+--------
+[PASS 32] Violation Comment Insertion
+[PASS 33] Label Removal Pass
+
+---------
+[PASS 34] Storing the results

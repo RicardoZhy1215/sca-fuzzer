@@ -180,7 +180,19 @@ class SpecEnv(gym.Env):
         # if the program actually FAULTS (div-by-zero via div_r, etc.).
         # To go back: ["cond"] (v1) or ["cond","bpas"] (beyond-bpas) here + matching
         # big_fuzz.yaml + SSBD setting.
-        setattr(CONF, "contract_execution_clause", ["delayed-exception-handling"])
+        # Per-campaign FAULT AXIS. Prefer env_config['exec_clause']; otherwise keep
+        # whatever the --config yaml set via CONF.load above (that's how you switch
+        # fault type per training run: one fault_*.yaml per campaign). Falls back to
+        # the config default (delayed-exception-handling) only if neither is set.
+        _exec = env_config.get("exec_clause")
+        if _exec is not None:
+            setattr(CONF, "contract_execution_clause",
+                    _exec if isinstance(_exec, list) else [_exec])
+        # else: leave CONF.contract_execution_clause as loaded from the yaml
+        # Force the Intel executor. CONF.executor otherwise defaults to
+        # _get_cpu_vendor() (auto-detects the host CPU -> x86-64-amd on this box);
+        # pin x86-64-intel so factory.get_executor() builds X86IntelExecutor.
+        setattr(CONF, "executor", "x86-64-intel")
         print(f"[CONTRACT-CHECK][worker pid={os.getpid()}] "
               f"obs={CONF.contract_observation_clause} "
               f"exec={CONF.contract_execution_clause} "
@@ -325,7 +337,7 @@ class SpecEnv(gym.Env):
         # initialize Printer, Program, Executor, Model, Analyzer, Input Generator
         target_desc = X86TargetDesc()
         self.printer = _X86Printer(target_desc)
-        instruction_set = InstructionSet("/home/mluo/sca-fuzzer/base.json")
+        instruction_set = InstructionSet("/home/hz25d/beyond_v1_v4/sca-fuzzer/base.json")
         # Keep observation opcode IDs aligned with the hierarchical action space.
         self.opcode_vocab = list(OPERAND_SPACE)
         self.reg_vocab = list(DST_REGS_SPACE)
@@ -336,7 +348,7 @@ class SpecEnv(gym.Env):
         self.generator = X86Generator(seed=CONF.program_generator_seed, instruction_set=instruction_set, target_desc=target_desc, asm_parser=self.asm_parser, \
                                       elf_parser=self.elf_parser)
         self.generator.instruction_space = self.instruction_space
-        self.new_program = self.generator.create_test_case_SpecRL("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/beyond_v1_v4/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
         self.base_program = deepcopy(self.new_program)
         self.executor = factory.get_executor()
         self.executor.valid_mem_base = 0x0
@@ -377,7 +389,7 @@ class SpecEnv(gym.Env):
         # any vulnerability. Empty default => similarity reward is disabled.
         ref_dir = env_config.get(
             "similarity_reference_dir",
-            "/home/mluo/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
+            "/home/hz25d/beyond_v1_v4/attack_seq_generation/side-channel-fuzzer/spectre_v4_example",
         )
         self._sim_tokenizer = None
         self._sim_model = None
@@ -707,7 +719,7 @@ class SpecEnv(gym.Env):
         self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
         self.similarity_score = 0.0
-        self.new_program = self.generator.create_test_case_SpecRL("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
+        self.new_program = self.generator.create_test_case_SpecRL("/home/hz25d/beyond_v1_v4/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", disable_assembler=True, generate_empty_case=True)
 
         # Re-sample inputs every episode so the htrace side-channel signal
         # actually varies across episodes — v4 observability relies on the
@@ -771,7 +783,7 @@ class SpecEnv(gym.Env):
                 # temp program / file creation
                 temp_asm_path = f"temp_obs_{i}.asm"
                 temp_bin_path = f"temp_obs_{i}.o"
-                os.makedirs("/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm", exist_ok=True)
+                os.makedirs("/home/hz25d/beyond_v1_v4/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm", exist_ok=True)
                 # we can not create new test cases here, cuz the instruments are randomly generated.
                 temp_program = self.generator.create_asm_with_existing_test_case(temp_asm_path, self.base_program)
                 for j in range(1, i + 1):
@@ -1039,7 +1051,7 @@ class SpecEnv(gym.Env):
         self.trace_divergence_score = 0.0
         self.similarity_score = 0.0
 
-        self.fuzzer = X86Fuzzer("/home/mluo/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
+        self.fuzzer = X86Fuzzer("/home/hz25d/beyond_v1_v4/sca-fuzzer/base.json", os.getcwd(), existing_test_case= "/home/hz25d/beyond_v1_v4/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/my_test_case.asm", input_paths=self.inputs)
         self.fuzzer.model = self.model
         self.fuzzer.data_gen = self.input_gen
         self.fuzzer.analyser = self.analyser
@@ -1102,7 +1114,7 @@ class SpecEnv(gym.Env):
             fenced = tempfile.NamedTemporaryFile(delete=False)
             fenced_obj = tempfile.NamedTemporaryFile(delete=False)
 
-            debug_path = "/home/mluo/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
+            debug_path = "/home/hz25d/beyond_v1_v4/sca-fuzzer/rvzr/SpecRL/hierarchical_testing/debug_asm"
             os.makedirs(debug_path, exist_ok=True)
             fenced_test_case = _create_fenced_test_case(temp._asm_path, fenced.name, self.asm_parser, self.generator, self.elf_parser)
 

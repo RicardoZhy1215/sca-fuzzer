@@ -3,7 +3,7 @@ instruction_set: x86-64
 # Model
 contract_observation_clause: ct
 contract_execution_clause:
-  - delayed-exception-handling
+  - cond
 # ct + delayed-exception-handling (DEH): the contract models transient execution
 # that continues PAST a faulting instruction. A violation = hardware leaks beyond
 # that. NOTE: DEH only does something if the program actually FAULTS — with
@@ -15,7 +15,7 @@ contract_execution_clause:
 actors:
   - main:
     - data_properties:
-      - present: false
+      - present: True
 
 # Executor
 executor_mode: P+P

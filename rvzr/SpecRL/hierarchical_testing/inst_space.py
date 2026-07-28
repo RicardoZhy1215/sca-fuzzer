@@ -42,16 +42,15 @@ OPERAND_SPACE = [
     # BASE-SEMAPHORE atomics — store-forwarding / MDS class probes.
     "lock_xadd_mr",     # lock xadd [reg64], reg64
     "lock_xchg_mr",     # xchg [reg64], reg64      -- implicit lock when mem operand
-    # DISABLED for the DEH contract: X86UnicornDEH._handle_isa_specific_corner_cases
-    # (speculators_fault.py:260) does `assert instruction.get_flags_operand()` for
-    # cmpxchg, but the action-space cmpxchg is built without a FlagsOp -> crash.
-    # Re-enable only after adding a proper FlagsOp to lock_cmpxchg_mr below.
-    # "lock_cmpxchg_mr",  # lock cmpxchg [reg64], reg64  -- implicit rax
+    # RE-ENABLED: FlagsOp added to the lock_cmpxchg_mr builder below, satisfying
+    # X86UnicornDEH._handle_isa_specific_corner_cases (speculators_fault.py:260)
+    # which does `assert instruction.get_flags_operand()` for cmpxchg.
+    "lock_cmpxchg_mr",  # lock cmpxchg [reg64], reg64  -- implicit rax
     "lock_add_mr",      # lock add  [reg64], reg64
     # BASE-STRINGOP — rep-prefixed loops; SCO and MDS-frontend probes.
     # All four use implicit registers (RSI/RDI/RCX/AL), so the action's
     # reg_src/reg_dst/imm slots are all forced to empty.
-    # "rep_movsb",        # repe movsb  -- DS:[RSI] -> ES:[RDI], iterate RCX
+    # "rep_movsb",        # repe movsb  -- DS:[RSI] -> ES:[RDI], iterate RCX  (DISABLED: model rep-loop handling unverified)
     # "rep_stosb",        # repe stosb  -- AL -> ES:[RDI], iterate RCX
     # "rep_cmpsb",        # repe cmpsb  -- DS:[RSI] cmp ES:[RDI], iterate RCX
     # "rep_scasb",        # repe scasb  -- AL cmp ES:[RDI], iterate RCX
@@ -132,16 +131,16 @@ OPERAND_SPACE = [
     # "movdqu_mx",        # movdqu [reg64], xmm   -- 128-bit store (needs speculator fix)
     # ---- XMM opcodes DISABLED (GPR-only stage). Re-enable together with
     #      XMM_REGS_SPACE and the XMM OPCODE_OPERAND_SPEC entries below. ----
-    # "movq_xr",            # movq   xmm, reg64     -- GPR -> XMM (low 64, zeroes high 64)
-    # "movd_xr",          # movd   xmm, reg32     -- GPR -> XMM (low 32); optional, Route-A safe
-    # "pxor_xx",            # pxor   xmm, xmm       -- 128-bit XOR
-    # "paddq_xx",           # paddq  xmm, xmm       -- 2x packed-uint64 add
-    # "pmuludq_xx",         # pmuludq xmm, xmm      -- 2x 32->64 unsigned multiply (slow producer)
-    # "pand_xx",            # pand   xmm, xmm       -- 128-bit AND
-    # "por_xx",             # por    xmm, xmm       -- 128-bit OR
-    # "psubq_xx",           # psubq  xmm, xmm       -- 2x packed-uint64 sub
-    # "pcmpeqd_xx",         # pcmpeqd xmm, xmm      -- packed 32-bit compare-equal
-    # "pextrq_rx",          # pextrq reg64, xmm, 0  -- XMM lane0 -> GPR (Route A return path)
+    "movq_xr",          # movq   xmm, reg64     -- GPR -> XMM (low 64, zeroes high 64)
+    "movd_xr",          # movd   xmm, reg32     -- GPR -> XMM (low 32); optional, Route-A safe
+    "pxor_xx",          # pxor   xmm, xmm       -- 128-bit XOR
+    "paddq_xx",         # paddq  xmm, xmm       -- 2x packed-uint64 add
+    "pmuludq_xx",       # pmuludq xmm, xmm      -- 2x 32->64 unsigned multiply (slow producer)
+    "pand_xx",          # pand   xmm, xmm       -- 128-bit AND
+    "por_xx",           # por    xmm, xmm       -- 128-bit OR
+    "psubq_xx",         # psubq  xmm, xmm       -- 2x packed-uint64 sub
+    "pcmpeqd_xx",       # pcmpeqd xmm, xmm      -- packed 32-bit compare-equal
+    "pextrq_rx",        # pextrq reg64, xmm, 0  -- XMM lane0 -> GPR (Route A return path)
 ]
 # Register pools. Layout:
 #   indices 1..6  : GPR  (rax, rbx, rcx, rdx, rsi, rdi)
@@ -156,7 +155,7 @@ GPR_REGS_SPACE = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi"]
 #   XMM_REGS_SPACE = ["xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"]
 # Model supports exactly xmm0..xmm7 (x86/target_desc.py usable_simd128_registers);
 # do NOT add xmm8..15.
-XMM_REGS_SPACE = []
+XMM_REGS_SPACE = ["xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"]
 NUM_GPR = len(GPR_REGS_SPACE)
 NUM_XMM = len(XMM_REGS_SPACE)
 DST_REGS_SPACE = GPR_REGS_SPACE + XMM_REGS_SPACE
@@ -256,18 +255,18 @@ OPCODE_OPERAND_SPEC = {
     # ---- XMM specs DISABLED (GPR-only stage). Re-enable with the opcodes/regs. ----
     # "movdqu_xm":       {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
     # "movdqu_mx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},  # DISABLED: 2-write store breaks bpas
-    # "movq_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
-    # "movd_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
-    # "pxor_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "paddq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "pmuludq_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "pand_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "por_xx":          {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "psubq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
-    # "pcmpeqd_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "movq_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
+    "movd_xr":         {"dst_reg": "required:xmm", "src_reg": "required:gpr", "imm": "forbidden"},
+    "pxor_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "paddq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "pmuludq_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "pand_xx":         {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "por_xx":          {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "psubq_xx":        {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
+    "pcmpeqd_xx":      {"dst_reg": "required:xmm", "src_reg": "required:xmm", "imm": "forbidden"},
     # pextrq reg64, xmm, imm8: dst=GPR (extracted lane), src=XMM. imm forbidden
     # because the lane is hard-coded to 0 in the encoder (Route A: low 64 only).
-    # "pextrq_rx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},
+    "pextrq_rx":       {"dst_reg": "required:gpr", "src_reg": "required:xmm", "imm": "forbidden"},
 }
 # Exclude dst_reg == src_reg for opcodes where it is pointless (mov rax,rax no-op).
 OPCODE_EXCLUDE_DST_EQ_SRC = ["mov_rr"]
@@ -630,7 +629,8 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
     Convert (opcode_id, reg_src_id, reg_dst_id, imm_id) to rvzr Instruction.
     Returns None for end_game (0,0,0,0).
     """
-    from rvzr.tc_components.instruction import Instruction, RegisterOp, ImmediateOp, MemoryOp, AgenOp
+    from rvzr.tc_components.instruction import (
+        Instruction, RegisterOp, ImmediateOp, MemoryOp, AgenOp, FlagsOp)
 
     if opcode_id == 0:
         return None
@@ -779,9 +779,14 @@ def tuple_to_instruction(opcode_id: int, reg_src_id: int, reg_dst_id: int, imm_i
         # cmpxchg also implicitly reads/writes RAX as the comparand.  We do
         # not surface that in the action space; the sandbox pass and ISA spec
         # handle the implicit operand.
+        # FlagsOp is REQUIRED: X86UnicornDEH._handle_isa_specific_corner_cases
+        # (speculators_fault.py:260) asserts instruction.get_flags_operand().
+        # cmpxchg writes the arithmetic flags (from the RAX-vs-dest compare),
+        # same pattern the generator uses for add/sub-like flag writers.
         return Instruction("lock cmpxchg", False, "", False).add_op(
             MemoryOp(rd, 64, True, True)
-        ).add_op(RegisterOp(rs, 64, True, False))
+        ).add_op(RegisterOp(rs, 64, True, False)).add_op(
+            FlagsOp(("w", "w", "undef", "w", "w", "", "", "", "w")), True)
 
     if opcode == "lock_add_mr":
         return Instruction("lock add", False, "", False).add_op(
