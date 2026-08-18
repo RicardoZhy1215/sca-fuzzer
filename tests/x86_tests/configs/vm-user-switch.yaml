@@ -1,0 +1,8 @@
+file: !include common.yaml
+file: !include ct-seq.yaml
+
+
+actors:
+  - actor2:
+      - mode: "guest"
+      - privilege_level: "user"

@@ -1,0 +1,57 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+
+# Injection STEERING (self-observe): attacker (vm) trains the BTB; the VICTIM (vmvictim) mispredicts
+# and leaks ITS OWN secret, and — to keep the readout inside the mispredictor and dodge the cross-actor
+# P+P wall — the victim is the OBSERVER (F+R self-leak, same round). This proves the attacker steers the
+# victim's branch into a disclosure; it does NOT claim attacker-side exfiltration (that needs L2 P+P).
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vm:                       # ATTACKER / trainer only
+    - mode: "guest"
+    - privilege_level: "user"
+  - vmvictim:                 # VICTIM / mispredictor + observer (self-reads its own leak)
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "user"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+max_bb_per_function: 3
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+executor_filtering_repetitions: 10
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+analyser_stat_threshold: 0.2
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info

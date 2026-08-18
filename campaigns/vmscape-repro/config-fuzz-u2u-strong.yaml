@@ -1,0 +1,59 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+
+# STRONG-sampling variant of config-fuzz-u2u.yaml, for reliable minimization / replay of the
+# guest-user -> guest-user fault leak. Same actors/contract; beefed-up measurement so the weak
+# minority effect is stable across the many per-step checks minimize performs.
+#   vmvictim = victim (guest user) ; vm = attacker/observer (guest user)
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vmvictim:
+    - mode: "guest"
+    - privilege_level: "user"
+  - vm:
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "user"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 1
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 80
+  - 320
+  - 1280
+  - 2560
+executor_filtering_repetitions: 10
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 20000000
+data_generator_seed: 1000000
+inputs_per_class: 2
+analyser_stat_threshold: 0.05
+
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info

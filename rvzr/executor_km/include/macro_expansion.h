@@ -62,6 +62,7 @@ typedef enum {
     TYPE_SWITCH_H2G,
     TYPE_SET_G2H_TARGET,
     TYPE_SWITCH_G2H,
+    TYPE_SWITCH_GU2H, // guest-to-host switch executed by a user-privilege (CPL 3) guest actor
     TYPE_LANDING_K2U,
     TYPE_LANDING_U2K,
     TYPE_LANDING_H2G,

@@ -126,6 +126,29 @@ static inline int set_last_pt_level(pte_t_ *pt, hgpa_t *translation, uint64_t pa
     return 0;
 }
 
+/// @brief Enable user-mode (CPL 3) accesses to all guest pages of the given actor.
+/// This is the guest-page-table counterpart of set_user_pages() (see page_tables_host.c), and it
+/// is required for actors with `mode: guest` + `privilege_level: user`: such actors execute at
+/// CPL 3 inside the VM, hence every page they touch (code, data, util, GDT) must have the U/S bit
+/// set. Note that the U/S bit is ANDed across page table levels, so all levels have to be updated.
+/// @param actor_id ID of the actor
+static inline void set_guest_user_pages(int actor_id)
+{
+    actor_page_table_t *page_table = &allocated_page_tables[actor_id];
+
+    // upper levels; a single entry per level is enough, as the whole guest memory of an actor
+    // fits into one last-level page table (see GUEST_MEMORY_SIZE)
+    page_table->l4[PML4_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
+    page_table->l3[PDPT_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
+    page_table->l2[PDT_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
+
+    // last level; all pages mapped into the guest belong to this actor
+    for (int i = 0; i < ENTRIES_PER_PAGE; i++) {
+        if (page_table->l1[i].present)
+            page_table->l1[i].user_supervisor = 1;
+    }
+}
+
 static inline int set_ept_entry(actor_ept_t *actor_ept_base, hgpa_t *translation, uint64_t l3_hpa,
                                 uint64_t l2_hpa, uint64_t l1_hpa, void *hva)
 {
@@ -225,10 +248,16 @@ static int set_guest_page_tables(void)
             err = set_last_pt_level(page_table->l1, &translations->util[i / 4096], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
+        // [EXTENSION] target host actor whose sandbox this guest aliases to (default 0 = main).
+        // This lets a guest attacker share a physical F+R channel with a specific host victim
+        // (e.g. vBTI_GS->HU) instead of always aliasing to main.
+        uint64_t alias_id = actor->alias_target;
+        if (alias_id >= n_actors)
+            alias_id = 0;
         for (int i = 0; i < sizeof(actor_data_t); i += 4096) {
             uint64_t vaddr = ((uint64_t)&guest_v_memory->data) + i;
             if (enable_hpa_gpa_collisions) {
-                uint64_t aliased_vaddr = ((uint64_t)&sandbox->data[0]) + i;
+                uint64_t aliased_vaddr = ((uint64_t)&sandbox->data[alias_id]) + i;
                 paddr = vmalloc_to_phys((void *)aliased_vaddr);
             } else {
                 paddr = ((uint64_t)&guest_p_memory->data) + i;
@@ -239,7 +268,7 @@ static int set_guest_page_tables(void)
         for (int i = 0; i < sizeof(actor_code_t); i += 4096) {
             vaddr = ((uint64_t)&guest_v_memory->code) + i;
             if (enable_hpa_gpa_collisions) {
-                uint64_t aliased_vaddr = ((uint64_t)&sandbox->code[0]) + i;
+                uint64_t aliased_vaddr = ((uint64_t)&sandbox->code[alias_id]) + i;
                 paddr = vmalloc_to_phys((void *)aliased_vaddr);
             } else {
                 paddr = ((uint64_t)&guest_p_memory->code) + i;
@@ -259,6 +288,10 @@ static int set_guest_page_tables(void)
             err = set_last_pt_level(page_table->l1, &translations->vmlaunch_page[0], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
+
+        // if the actor executes at CPL 3, make its guest memory user-accessible
+        if (actor->pl == PL_USER)
+            set_guest_user_pages(actor_id);
     }
 
     guest_pt_is_set = true;

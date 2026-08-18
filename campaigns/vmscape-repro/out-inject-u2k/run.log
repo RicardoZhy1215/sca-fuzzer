@@ -1,0 +1,17 @@
+==================================================================
+ INJECTION u->k: attacker(vm,guest USER) trains -> victim(vmvictim,guest KERNEL) mispredicts+self-leaks
+   template : /home/mluo/sca-fuzzer/campaigns/vmscape-repro/template-inject-selfobserve.asm
+   config   : /home/mluo/sca-fuzzer/campaigns/vmscape-repro/config-inject-u2k.yaml   (F+R + hpa_gpa; observer=vmvictim)
+   campaign : N=2000 x I=50   (SMOKE=0)
+==================================================================
+[mod] loaded: 1CD139EF2BF9FE9618F4A95  (want clean 1CD139EF)
+[env] governor=performance SMT=off  (want performance/off; run perf_env.sh if not)
+[run] tfuzz starting (06:29:38) — live log:
+------------------------------------------------------------------
+
+INFO: [fuzzer] Starting at 06:29:39
+1     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:1,CN:0,CT:0,P1:0,CS:0,P2:0,V:02     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:2,CN:0,CT:0,P1:0,CS:0,P2:0,V:03     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:3,CN:0,CT:0,P1:0,CS:0,P2:0,V:04     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:4,CN:0,CT:0,P1:0,CS:0,P2:0,V:05     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:5,CN:0,CT:0,P1:0,CS:0,P2:0,V:06     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:6,CN:0,CT:0,P1:0,CS:0,P2:0,V:07     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:7,CN:0,CT:0,P1:0,CS:0,P2:0,V:08     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:8,CN:0,CT:0,P1:0,CS:0,P2:0,V:09     ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:9,CN:0,CT:0,P1:0,CS:0,P2:0,V:010    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:10,CN:0,CT:0,P1:0,CS:0,P2:0,V:011    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:11,CN:0,CT:0,P1:0,CS:0,P2:0,V:012    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:12,CN:0,CT:0,P1:0,CS:0,P2:0,V:013    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:13,CN:0,CT:0,P1:0,CS:0,P2:0,V:014    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:14,CN:0,CT:0,P1:0,CS:0,P2:0,V:015    ( 1%)| Stats: Cls:50/50,In:100,R:90,SF:0,OF:0,Fst:15,CN:0,CT:0,P1:0,CS:0,P2:0,V:0campaigns/vmscape-repro/run_inject_u2k.sh: line 50: 2532434 Killed                  "$PY" revizor.py tfuzz -s "$BASE" -c "$CONFIG" -t "$TEMPLATE" -n "$N" -i "$I" -w "$OUT"
+------------------------------------------------------------------
+ violations: 0   (in /home/mluo/sca-fuzzer/campaigns/vmscape-repro/out-inject-u2k)
+ => clean at N=2000. Weak signal like residue — try N=2000, confirm perf_env.sh + clean module.
+==================================================================

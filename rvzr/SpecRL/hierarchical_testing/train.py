@@ -295,7 +295,20 @@ if __name__ == "__main__":
             }
         )
 
-    num_gpus = 0 if local_debug else 1
+    # Auto-detect a usable CUDA GPU instead of hardcoding 1. The collaborator's
+    # Intel box has an NVIDIA GPU; this AMD (Zen4) box does not (NVML can't init),
+    # so RLlib's default of 1 GPU/env-runner would crash with "Found 0 GPUs".
+    # Degrade safely to CPU (num_gpus=0) whenever no usable GPU is present.
+    if local_debug:
+        num_gpus = 0
+    else:
+        try:
+            import torch
+            num_gpus = 1 if torch.cuda.is_available() else 0
+        except Exception:
+            num_gpus = 0
+    if num_gpus == 0 and not local_debug:
+        print("No usable CUDA GPU detected -> training on CPU (num_gpus=0).")
 
     config = (
         PPOConfig()

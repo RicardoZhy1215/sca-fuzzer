@@ -638,6 +638,19 @@ static void __attribute__((noipa)) body_macro_switch_g2h(void)
     asm volatile(".quad " xstr(MACRO_END));
 }
 
+// MACRO_SWITCH_G2H (user-privilege guests) --------------------------------------------------------
+// vmcall/vmmcall are not available at CPL 3 (on Intel, VMCALL raises #UD outside of CPL 0), hence
+// guests that execute at CPL 3 leave the VM with PAUSE, which is unconditionally intercepted both
+// by VMX (CPU_BASED_PAUSE_EXITING, see vmx_config.h) and by SVM (VMCB_INTERCEPT_PAUSE, see svm.c).
+// PAUSE is used in preference to other intercepted instructions because it modifies neither
+// registers nor flags, and hence requires no compensation in the landing macro.
+static void __attribute__((noipa)) body_macro_switch_gu2h(void)
+{
+    asm volatile(".quad " xstr(MACRO_START));
+    asm_volatile_intel("pause\n");
+    asm volatile(".quad " xstr(MACRO_END));
+}
+
 // MACRO_LANDING_K2U -------------------------------------------------------------------------------
 static inline size_t start_macro_landing_k2u(macro_args_t args, uint8_t *dest)
 {
@@ -775,6 +788,7 @@ macro_descr_t macro_descriptors[] = {
     [TYPE_SET_G2H_TARGET] = {.start = start_macro_set_g2h_target,
                              .body = body_macro_set_g2h_target},
     [TYPE_SWITCH_G2H] = {.start = NULL, .body = body_macro_switch_g2h},
+    [TYPE_SWITCH_GU2H] = {.start = NULL, .body = body_macro_switch_gu2h},
     [TYPE_LANDING_K2U] = {.start = start_macro_landing_k2u, .body = NULL},
     [TYPE_LANDING_U2K] = {.start = start_macro_landing_u2k, .body = NULL},
     [TYPE_LANDING_H2G] = {.start = start_macro_landing_h2g, .body = NULL},

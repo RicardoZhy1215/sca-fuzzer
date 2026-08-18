@@ -33,10 +33,12 @@ class ActorConf(TypedDict):
     data_ept_properties: PageConf
     instruction_blocklist: Set[str]
     fault_blocklist: Set[str]
+    data_alias: str
 
 
 ActorConfKey = Literal["name", "mode", "privilege_level", "observer", "data_properties",
-                       "data_ept_properties", "instruction_blocklist", "fault_blocklist"]
+                       "data_ept_properties", "instruction_blocklist", "fault_blocklist",
+                       "data_alias"]
 
 ActorsConf = Dict[str, ActorConf]
 

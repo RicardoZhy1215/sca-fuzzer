@@ -1,0 +1,71 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+  # (see config.yaml for why BASE-UNCOND_BR/CALL/RET are omitted)
+
+# vBTI_GS->HU: guest-kernel ATTACKER injects, host-user VICTIM mispredicts & leaks.
+#   main     : host kernel, orchestrator only
+#   victim   : host user, the mispredicting/leaking side (its data is what may leak)
+#   attacker : guest kernel, observer (trains BTB + measures)
+#
+# [EXTENSION] attacker.data_alias = "victim": the guest attacker's memory GPA-collides with the
+# HOST-USER victim's sandbox (instead of the default actor 0/main), building the cross-domain
+# F+R channel between them. Requires x86_enable_hpa_gpa_collisions.
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - victim:
+    - mode: "host"
+    - privilege_level: "user"
+  - attacker:
+    - mode: "guest"
+    - privilege_level: "kernel"
+    - observer: true
+    - data_alias: "victim"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 3
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+
+executor_filtering_repetitions: 10
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.2
+
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 1610250
+inputs_per_class: 1

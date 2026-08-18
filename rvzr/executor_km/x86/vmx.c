@@ -43,7 +43,7 @@ static uint64_t supported_vmcs_pin_ctrl = 0;
 static uint64_t supported_vmcs_primary_ctrl = 0;
 static uint64_t supported_vmcs_secondary_ctrl = 0;
 
-static int set_vmcs_guest_state(void);
+static int set_vmcs_guest_state(int actor_id);
 static int set_vmcs_host_state(void);
 static int set_vmcs_exec_control(int actor_id);
 static int set_vmcs_exit_control(void);
@@ -408,7 +408,7 @@ int set_vmcs_state(void)
         CHECK_VMFAIL("set_vmcs_state:vmptrld");
 
         // set VMCS fields
-        err = set_vmcs_guest_state();
+        err = set_vmcs_guest_state(actor_id);
         CHECK_ERR("set_vmcs_guest_state");
 
         err = set_vmcs_host_state();
@@ -430,11 +430,12 @@ int set_vmcs_state(void)
     return 0;
 }
 
-static int set_vmcs_guest_state(void)
+static int set_vmcs_guest_state(int actor_id)
 {
     uint8_t err_inv = 0, err_val = 0;
     guest_memory_t *guest_v_memory = (guest_memory_t *)(GUEST_V_MEMORY_START);
     guest_memory_t *guest_p_memory = (guest_memory_t *)(GUEST_P_MEMORY_START);
+    bool is_user = actors[actor_id].pl == PL_USER;
 
     // SDM 25.4 Guest-State Area
     // - Control registers
@@ -454,8 +455,13 @@ static int set_vmcs_guest_state(void)
     CHECKED_VMWRITE(GUEST_RFLAGS, (X86_EFLAGS_FIXED));
 
     // - Segments (values mainly based on https://www.sandpile.org/x86/initial.htm)
-    VMWRITE_GUEST_SEGMENT(CS, 0x10, 0, 0xFFFF, 0xa09B);
-    VMWRITE_GUEST_SEGMENT(SS, 0x20, 0, 0xFFFF, 0xc093);
+    // CS and SS define the privilege level at which the guest executes: the CPL of a VM entry
+    // is taken from the RPL of the CS selector. For user-privilege actors, we thus enter the
+    // guest at CPL 3 instead of CPL 0.
+    // Note: SDM 27.3.1.2 requires CS.RPL == SS.RPL and, for non-conforming code segments
+    // (type 11), CS.DPL == SS.DPL == SS.RPL; hence all four values are updated together.
+    VMWRITE_GUEST_SEGMENT(CS, is_user ? 0x13 : 0x10, 0, 0xFFFF, is_user ? 0xa0FB : 0xa09B);
+    VMWRITE_GUEST_SEGMENT(SS, is_user ? 0x23 : 0x20, 0, 0xFFFF, is_user ? 0xc0F3 : 0xc093);
     VMWRITE_GUEST_SEGMENT(DS, 0, 0, 0xFFFF, 0x10000); // 0xc093
     VMWRITE_GUEST_SEGMENT(ES, 0, 0, 0xFFFF, 0x10000);
     VMWRITE_GUEST_SEGMENT(FS, 0, 0, 0xFFFF, 0x10000);

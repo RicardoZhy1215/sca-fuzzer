@@ -30,7 +30,10 @@ typedef struct {
     actor_pl_t pl;
     uint64_t data_permissions;
     uint64_t data_ept_properties;
-    uint64_t code_permissions;
+    // [EXTENSION] id of the host actor whose sandbox this (guest) actor's memory physically
+    // aliases to under hpa_gpa_collisions. 0 (=main) preserves the original behavior. This
+    // reuses the trailing metadata word that was previously unused ("code_permissions").
+    uint64_t alias_target;
 } actor_metadata_t;
 
 extern size_t n_actors;

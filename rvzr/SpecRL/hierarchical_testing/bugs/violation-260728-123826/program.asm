@@ -1,0 +1,41 @@
+.intel_syntax noprefix
+.section .data.main
+.function_0:
+.bb_0.0:
+.macro.measurement_start: nop qword ptr [rax + 0xff]
+mov rbx, 7752
+and rsi, 0b1111111111111 # instrumentation
+cmovns rcx, qword ptr [r14 + rsi]
+and rdx, 0b1111111111111 # instrumentation
+cmp rdx, qword ptr [r14 + rdx]
+pextrq rdx, xmm1, 0
+and rbx, 0b1111111111111 # instrumentation
+cmovle rcx, qword ptr [r14 + rbx]
+and rbx, 0b1111111111000 # instrumentation
+lock cmpxchg qword ptr [r14 + rbx], rdi
+and rax, 0b1111111111000 # instrumentation
+lock xor qword ptr [r14 + rax], rbx
+adc rdx, rbx
+imul rdx, rax
+and rbx, 0b1111111111000 # instrumentation
+lock inc qword ptr [r14 + rbx]
+and rcx, rax
+setl sil
+setl bl
+and rdx, 0b1111111111111 # instrumentation
+mul qword ptr [r14 + rdx]
+and rdi, 0b1111111111111 # instrumentation
+movzx rax, byte ptr [r14 + rdi]
+setb sil
+psubq xmm2, xmm1
+pextrq rcx, xmm6, 0
+inc rdi
+and rax, 0b1111111111111 # instrumentation
+cmovl rdx, qword ptr [r14 + rax]
+and rcx, 0b1111111111111 # instrumentation
+cmovl rcx, qword ptr [r14 + rcx]
+.exit_0:
+.macro.measurement_end: nop qword ptr [rax + 0xff]
+jmp .test_case_exit
+.section .data.main
+.test_case_exit:nop

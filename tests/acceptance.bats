@@ -288,3 +288,15 @@ function arm_only() {
     fi
 }
 
+@test "Feature: VMX/SVM with a user-mode guest" {
+    x86_only
+    amd_only  # see https://github.com/microsoft/sca-fuzzer/issues/122
+    if cat /proc/cpuinfo | grep -e "vmx" -e "svm" >/dev/null; then
+        echo "1" >/sys/rvzr_executor/enable_hpa_gpa_collisions
+        assert_no_violation "$fuzz_opt -t $ASM_DIR/vm_switch.asm -c $CONF_DIR/vm-user-switch.yaml -i 20"
+        [[ $status -eq 0 ]]
+    else
+        skip
+    fi
+}
+

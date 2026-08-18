@@ -1,0 +1,52 @@
+# Violation Report
+
+* Test Case ID: 0
+* Detected: 13.08.26 at 19:32:52
+
+* Time to detection: 72.20253
+* Statistics:
+Test Cases: 1
+Inputs per test case: 100.0
+Violations: 0
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 0
+  Observation Filter: 0
+  Fast Path: 0
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 30000000
+* Input seed: 1500000
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+  - Actor 1:
+    * PTE: 
+    * EPTE: user=False
+  - Actor 2:
+    * PTE: writable=False
+    * EPTE: user=False
+
+## Counterexample Inputs
+
+Input #26
+* Hardware trace:
+ ^^^^^...^.......^^^^.^^^^^.^...^.......^....^.......^.^^^..^.^.. [1280]
+
+* Contract trace (hash): 17099477998017268125
+* Contract trace (detailed): [pc: 0x60e1, pc: 0x18, pc: 0x20, pc: 0x28, pc: 0x30, pc: 0x6000, pc: 0x6008, pc: 0x600b, pc: 0x600e, mem: 0xb000, pc: 0x6015, mem: 0xb008, pc: 0x601c, mem: 0xb010, pc: 0x6023, mem: 0xb018, pc: 0x602a, mem: 0xb020, pc: 0x6031, mem: 0xb028, pc: 0x6038, pc: 0x603b, pc: 0x603e, pc: 0x6045, mem: 0xaec2, pc: 0x6049, pc: 0x604e, pc: 0x6054, mem: 0x9d00, mem: 0x9d00, pc: 0x605b, pc: 0x605e, pc: 0x6060, pc: 0x6066, mem: 0x97c8, mem: 0x97c8, pc: 0x606b, pc: 0x6073, pc: 0x6079, pc: 0x6081, pc: 0x6083, pc: 0x6089, pc: 0x608d, pc: 0x608f, pc: 0x6095, pc: 0x609c, mem: 0xaec0, mem: 0xaec0, mem: 0x1ff8, pc: 0x60a1, pc: 0x60a8, mem: 0xa40c, mem: 0xa40c, mem: 0x1ff8, pc: 0x60ac, pc: 0x60b3, pc: 0x60b5, pc: 0x72, pc: 0x7a, pc: 0x82, pc: 0x8a, pc: 0x60ec, pc: 0x60f4, pc: 0x60f7, pc: 0x60fa, pc: 0x60fd, pc: 0x6100, pc: 0x6103, pc: 0x6106, val: 0x6f4ff0597c1ffce9]
+
+Input #76
+* Hardware trace:
+ ^^^^^...^.......^^^^.^^^^^.^...^.....^.^....^.......^..^^..^.^.. [1280]
+
+* Contract trace (hash): 17099477998017268125
+* Contract trace (detailed): [pc: 0x60e1, pc: 0x18, pc: 0x20, pc: 0x28, pc: 0x30, pc: 0x6000, pc: 0x6008, pc: 0x600b, pc: 0x600e, mem: 0xb000, pc: 0x6015, mem: 0xb008, pc: 0x601c, mem: 0xb010, pc: 0x6023, mem: 0xb018, pc: 0x602a, mem: 0xb020, pc: 0x6031, mem: 0xb028, pc: 0x6038, pc: 0x603b, pc: 0x603e, pc: 0x6045, mem: 0xaec2, pc: 0x6049, pc: 0x604e, pc: 0x6054, mem: 0x9d00, mem: 0x9d00, pc: 0x605b, pc: 0x605e, pc: 0x6060, pc: 0x6066, mem: 0x97c8, mem: 0x97c8, pc: 0x606b, pc: 0x6073, pc: 0x6079, pc: 0x6081, pc: 0x6083, pc: 0x6089, pc: 0x608d, pc: 0x608f, pc: 0x6095, pc: 0x609c, mem: 0xaec0, mem: 0xaec0, mem: 0x1ff8, pc: 0x60a1, pc: 0x60a8, mem: 0xa40c, mem: 0xa40c, mem: 0x1ff8, pc: 0x60ac, pc: 0x60b3, pc: 0x60b5, pc: 0x72, pc: 0x7a, pc: 0x82, pc: 0x8a, pc: 0x60ec, pc: 0x60f4, pc: 0x60f7, pc: 0x60fa, pc: 0x60fd, pc: 0x6100, pc: 0x6103, pc: 0x6106, val: 0x6f4ff0597c1ffce9]

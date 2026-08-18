@@ -469,15 +469,18 @@ class ELFParser:
                         f"Macro references an unknown actor id {target_actor_id}") from e
 
                 # validate that the actor type matches the macro
+                # (note: the argument of these macros is the *target* of the transition, i.e., the
+                #  actor that will be executing after the corresponding switch macro)
+                # kernel-user transitions are implemented with syscall/sysret and hence are
+                # available only within the host; the privilege level of a guest actor is instead
+                # determined by the VM entry, and thus guests are targets of h2g regardless of it
                 if macro_spec.name == "set_k2u_target" and \
-                   actor.privilege_level != ActorPL.USER and actor.mode != ActorMode.HOST:
-                    raise _ParsingError("Macro set_k2u_target expects a user actor")
+                   (actor.privilege_level != ActorPL.USER or actor.mode != ActorMode.HOST):
+                    raise _ParsingError("Macro set_k2u_target expects a host user actor")
                 if macro_spec.name == "set_u2k_target" and \
-                   actor.privilege_level != ActorPL.KERNEL and actor.mode != ActorMode.HOST:
-                    raise _ParsingError("Macro set_u2k_target expects a kernel actor")
-                if macro_spec.name == "set_h2g_target" and \
-                   actor.mode != ActorMode.HOST and actor.privilege_level != ActorPL.KERNEL:
-                    raise _ParsingError("Macro set_h2g_target expects a host actor")
-                if macro_spec.name == "set_g2h_target" and \
-                   actor.mode != ActorMode.GUEST and actor.privilege_level != ActorPL.KERNEL:
-                    raise _ParsingError("Macro set_g2h_target expects a guest actor")
+                   (actor.privilege_level != ActorPL.KERNEL or actor.mode != ActorMode.HOST):
+                    raise _ParsingError("Macro set_u2k_target expects a host kernel actor")
+                if macro_spec.name == "set_h2g_target" and actor.mode != ActorMode.GUEST:
+                    raise _ParsingError("Macro set_h2g_target expects a guest actor")
+                if macro_spec.name == "set_g2h_target" and actor.mode != ActorMode.HOST:
+                    raise _ParsingError("Macro set_g2h_target expects a host actor")

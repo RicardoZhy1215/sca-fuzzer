@@ -1,0 +1,76 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+  # (see config.yaml for why BASE-UNCOND_BR/CALL/RET are omitted)
+
+# V2V INJECTION (the clean test of whether vBTI *injection* works at all, with BTB alignment removed
+# as a variable). Both attacker and victim are GUEST actors, so they execute at the SAME guest-virtual
+# base (GUEST_V_MEMORY_START=0) -> their indirect jmps sit at the same VA -> BTB collision is FREE.
+# This is the only pair that gets same-VA "for nothing"; it is exactly what makes the residue V2V test
+# work, reused here for the opposite direction (attacker trains -> victim mispredicts & leaks).
+#
+#   main     : host kernel, orchestrator only
+#   vmvictim : guest user, the VICTIM (reads its own secret; disclosure reached only via mispredict)
+#   vm       : guest user, observer = the ATTACKER (trains the BTB + F+R measures)
+#
+# Channel: the observer's MAIN page is EPT-aliased to the victim's physical backing frame
+# (vm.data_alias = "vmvictim" -> set_extended_page_tables), so the two guests share REAL cache lines
+# and the victim's transient imprint is visible to the observer's Flush+Reload. This is the piece
+# hpa_gpa_collisions alone does NOT provide (it only collides the numerical GPA; the EPT still backs
+# each guest with its own frame). See FINDINGS-injection.md.
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vmvictim:
+    - mode: "guest"
+    - privilege_level: "user"
+  - vm:
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "user"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 3
+
+executor_mode: P+P
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+
+executor_filtering_repetitions: 10
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.2
+
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 1500400

@@ -16,6 +16,7 @@ _option_values = {
         'observer',
         'instruction_blocklist',
         'fault_blocklist',
+        'data_alias',
     ],
     "actor_mode": [
         'host',
@@ -323,6 +324,11 @@ _actor_default = {
     'mode': "host",
     'privilege_level': "kernel",
     'observer': False,
+    # [EXTENSION] Name of the host actor whose sandbox this actor's guest memory physically
+    # aliases to under x86_enable_hpa_gpa_collisions. Default "main" (=actor 0) preserves the
+    # original behavior. Used to build a cross-domain F+R channel between a guest attacker and a
+    # specific host victim (e.g. vBTI_GS->HU). Only meaningful for guest actors.
+    'data_alias': "main",
     'data_properties': {
         'present': True,
         'writable': True,

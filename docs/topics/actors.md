@@ -34,7 +34,18 @@ actors:
     - privilege_level: "user"
     - data_properties:          # Custom page table properties of the faulty page
       - writable: false         # Faulty page of the user actor is read-only
+
+  - vm_user:                    # Example user-mode actor inside a VM
+    - mode: "guest"
+    - privilege_level: "user"
 ```
+
+`mode` and `privilege_level` are independent of each other, i.e., all four combinations are
+supported. A guest actor executes at the privilege level given by `privilege_level` from the very
+first instruction: the VM entry sets CPL to 0 or to 3 accordingly, and the guest page tables of a
+user-privilege actor are made user-accessible. Note that each guest actor gets a VM of its own,
+hence a guest kernel actor and a guest user actor are two separate VMs, and there is no
+kernel-user transition within a single guest (see below).
 
 
 !!! note "Related Documentation"
@@ -45,6 +56,8 @@ actors:
 Multi-actor execution requires template-based mode. Templates define actors along with their code and data sections.
 
 Transitions between actors use dedicated macros for setting entry and exit points, switching contexts, and defining landing locations. Macros are available for kernel-user transitions (`.set_k2u_target`, `.switch_k2u`, etc.) and host-guest transitions (`.set_h2g_target`, `.switch_h2g`, etc.).
+
+Kernel-user transitions are implemented with `syscall`/`sysret` and are therefore available only between host actors; the target of `.set_k2u_target`/`.set_u2k_target` must be a host actor. Guest actors of any privilege level are entered and left with the host-guest macros: the target of `.set_h2g_target` must be a guest actor, and the target of `.set_g2h_target` must be a host actor.
 
 !!! note "Related Documentation"
     See [Macro Reference](../ref/macros.md#transition-macros) for detailed descriptions of all transition macros.

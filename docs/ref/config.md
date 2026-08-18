@@ -413,6 +413,9 @@ The following options are available for each actor:
         * `host` - the actor runs in the normal, non-virtualized mode.
         * `guest` - the actor runs in a VM (one VM per actor).
 
+:   This option is independent of [`privilege_level`](#privilege_level): a guest actor is entered
+    by the VM entry directly at the privilege level given by `privilege_level`.
+
 #### `privilege_level`
 
 :   <span class="inline-box" title="Default Value">:material-water: `kernel`</span> The privilege level of the actor.
@@ -428,6 +431,10 @@ The following options are available for each actor:
     === "Options Explained"
         * `user` - the actor runs in user mode (CPL=3).
         * `kernel` - the actor runs in kernel mode (CPL=0).
+
+:   For actors with `mode: guest`, this option sets the privilege level *within* the VM; such an
+    actor is still entered from the host with the `switch_h2g` macro, as there is no kernel-user
+    transition inside a guest.
 
 #### `data_properties`
 

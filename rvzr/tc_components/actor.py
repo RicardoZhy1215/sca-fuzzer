@@ -139,6 +139,7 @@ class Actor:
     data_ept_properties: Final[PTEMask]
     observer: Final[bool]
     is_main: Final[bool]
+    data_alias: Final[ActorName]
 
     _code_section: Optional[CodeSection] = None
 
@@ -151,7 +152,8 @@ class Actor:
                  name: ActorName,
                  data_properties: PTEMask = 0,
                  data_ept_properties: PTEMask = 0,
-                 is_observer: bool = False) -> None:
+                 is_observer: bool = False,
+                 data_alias: ActorName = "main") -> None:
         self.mode = mode
         self.privilege_level = pl
         self.name = name
@@ -159,6 +161,8 @@ class Actor:
         self.data_ept_properties = data_ept_properties
         self.observer = is_observer
         self.is_main = name == "main"
+        # [EXTENSION] Name of the host actor this actor's guest memory aliases to (hpa_gpa_collisions)
+        self.data_alias = data_alias
 
     @classmethod
     def from_dict(cls, actor_dict: ActorConf, target_desc: TargetDesc) -> 'Actor':
@@ -205,6 +209,7 @@ class Actor:
             data_properties=data_properties,
             data_ept_properties=data_ept_properties,
             is_observer=actor_dict["observer"],
+            data_alias=actor_dict.get("data_alias", "main"),
         )
 
     @classmethod

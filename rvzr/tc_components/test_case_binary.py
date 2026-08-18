@@ -155,12 +155,16 @@ class TestCaseBinary:
 
             # actor metadata
             for actor in actors:
+                # [EXTENSION] resolve data_alias (actor name) -> target actor id. This host actor's
+                # sandbox is what the guest memory of `actor` physically aliases to under
+                # hpa_gpa_collisions. Defaults to "main" (id 0), preserving original behavior.
+                alias_target_id = self._parent.find_actor(name=actor.data_alias).get_id()
                 f.write((actor.get_id()).to_bytes(8, byteorder='little'))
                 f.write((actor.mode.value).to_bytes(8, byteorder='little'))
                 f.write((actor.privilege_level.value).to_bytes(8, byteorder='little'))
                 f.write((actor.data_properties).to_bytes(8, byteorder='little'))
                 f.write((actor.data_ept_properties).to_bytes(8, byteorder='little'))
-                f.write((0).to_bytes(8, byteorder='little'))  # unused
+                f.write((alias_target_id).to_bytes(8, byteorder='little'))  # alias_target
 
             # symbol table (first functions sorted by argument, then macros sorted by actor+offset)
             function_symbols = [s for s in symbol_table if s[2] == 0]

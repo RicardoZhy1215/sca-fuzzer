@@ -134,10 +134,16 @@ static int __batch_tc_parsing_end(void)
         }
 
         // check targets
-        if (e->id == MACRO_SET_K2U_TARGET)
+        // (note: kernel-user transitions are implemented with syscall/sysret, which are available
+        //  only to host actors; guest actors are entered directly at their privilege level)
+        if (e->id == MACRO_SET_K2U_TARGET) {
             ASSERT((actors[e->args & 0xFF].pl == PL_USER), "__batch_tc_parsing_end");
-        if (e->id == MACRO_SET_U2K_TARGET)
+            ASSERT((actors[e->args & 0xFF].mode == MODE_HOST), "__batch_tc_parsing_end");
+        }
+        if (e->id == MACRO_SET_U2K_TARGET) {
             ASSERT((actors[e->args & 0xFF].pl == PL_KERNEL), "__batch_tc_parsing_end");
+            ASSERT((actors[e->args & 0xFF].mode == MODE_HOST), "__batch_tc_parsing_end");
+        }
         if (e->id == MACRO_SET_H2G_TARGET)
             ASSERT((actors[e->args & 0xFF].mode == MODE_GUEST), "__batch_tc_parsing_end");
         if (e->id == MACRO_SET_G2H_TARGET)
@@ -160,15 +166,15 @@ static int __batch_tc_parsing_end(void)
     }
 
     // Set test case features
+    // Note: includes_user_actors describes *host* user actors only, because it enables the
+    // host-side machinery for kernel-user transitions (syscall MSRs, U/S bits in the host page
+    // tables, SMAP/SMEP). User-privilege guest actors need none of it: they are entered at CPL 3
+    // by the VM entry itself, and their pages are configured in the guest page tables.
     for (int i = 0; i < n_actors; i++) {
-        if (actors[i].mode == MODE_GUEST) {
+        if (actors[i].mode == MODE_GUEST)
             test_case->features.includes_vm_actors = true;
-            break;
-        }
-        if (actors[i].pl == PL_USER) {
+        else if (actors[i].pl == PL_USER)
             test_case->features.includes_user_actors = true;
-            break;
-        }
     }
 
     bool fault_handler_found = false;

@@ -1,0 +1,67 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+
+# K2U BTI: host-user ATTACKER trains the BTB; host-kernel VICTIM mispredicts & discloses.
+#   main    : host kernel, orchestrator only
+#   kvictim : host kernel, the victim (has the secret; disclosure reached only via mispredict).
+#             MUST be a non-main actor so the alias below is a "real" (non-default) target.
+#   user    : host user, observer/attacker (trains BTB + measures).
+#
+# [EXTENSION] user.data_alias = "kvictim": host<->host aliasing points the host-user observer's
+# data at the host-kernel victim's physical frames (set_host_data_alias), giving them a shared
+# F+R channel. No x86_enable_hpa_gpa_collisions needed (no guests). Both actors live in the host
+# address space, so BTB source/target alignment is feasible (unlike GS->HU).
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - kvictim:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - user:
+    - mode: "host"
+    - privilege_level: "user"
+    - observer: true
+    - data_alias: "kvictim"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 3
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+
+executor_filtering_repetitions: 10
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.2
+
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info

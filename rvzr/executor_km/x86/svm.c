@@ -32,7 +32,7 @@ static uint64_t iopm_hpa = 0;
 static void *msrpm_hva = NULL;
 static uint64_t msrpm_hpa = 0;
 
-static int set_vmcb_guest_state(vmcb_t *vmcb_hva);
+static int set_vmcb_guest_state(vmcb_t *vmcb_hva, uint64_t actor_id);
 static int set_vmcb_control(vmcb_t *vmcb_hva, uint64_t actor_id);
 
 // =================================================================================================
@@ -163,7 +163,7 @@ int set_vmcb_state(void)
         memset(vmcb_hva, 0, VMCB_SIZE);
 
         // set VMCB fields
-        err = set_vmcb_guest_state(vmcb_hva);
+        err = set_vmcb_guest_state(vmcb_hva, actor_id);
         CHECK_ERR("set_vmcb_state");
 
         err = set_vmcb_control(vmcb_hva, actor_id);
@@ -173,12 +173,17 @@ int set_vmcb_state(void)
     return 0;
 }
 
-static int set_vmcb_guest_state(vmcb_t *vmcb_hva)
+static int set_vmcb_guest_state(vmcb_t *vmcb_hva, uint64_t actor_id)
 {
     int err = 0;
     vmcb_save_t *save = &vmcb_hva->save;
     guest_memory_t *guest_v_memory = (guest_memory_t *)(GUEST_V_MEMORY_START);
     guest_memory_t *guest_p_memory = (guest_memory_t *)(GUEST_P_MEMORY_START);
+
+    // Privilege level at which the guest will execute; unlike VMX, SVM takes the CPL from a
+    // dedicated VMCB field, and the segment DPLs are set only to keep the state self-consistent
+    bool is_user = actors[actor_id].pl == PL_USER;
+    uint16_t seg_dpl = is_user ? (3 << SVM_SELECTOR_DPL_SHIFT) : 0;
 
     // - Control registers
     save->cr0 = (read_cr0() | MUST_SET_BITS_CR0_SVM_GUEST) & ~MUST_CLEAR_BITS_CR0_SVM_GUEST;
@@ -198,8 +203,10 @@ static int set_vmcb_guest_state(vmcb_t *vmcb_hva)
     save->rax = 0;
 
     // - Segment registers (values mainly based on https://www.sandpile.org/x86/initial.htm)
-    init_seg(&save->cs, 0x10, 0, 0xffffffff, MUST_SET_BITS_CS_SVM_GUEST);
-    init_seg(&save->ss, 0x20, 0, 0xffffffff, MUST_SET_BITS_SS_SVM_GUEST);
+    init_seg(&save->cs, is_user ? 0x13 : 0x10, 0, 0xffffffff,
+             MUST_SET_BITS_CS_SVM_GUEST | seg_dpl);
+    init_seg(&save->ss, is_user ? 0x23 : 0x20, 0, 0xffffffff,
+             MUST_SET_BITS_SS_SVM_GUEST | seg_dpl);
     init_seg(&save->ds, 0, 0, 0xffffffff, MUST_SET_BITS_DS_SVM_GUEST);
     init_seg(&save->es, 0, 0, 0xffffffff, 0);
     init_seg(&save->fs, 0, 0, 0xffffffff, 0);
@@ -240,7 +247,7 @@ static int set_vmcb_guest_state(vmcb_t *vmcb_hva)
     save->perf_ctr3 = rdmsr64(MSR_F15H_PERF_CTR3);
 
     // Privilege level
-    save->cpl = 0;
+    save->cpl = is_user ? 3 : 0;
 
     // PAT
     uint64_t pat = 0;

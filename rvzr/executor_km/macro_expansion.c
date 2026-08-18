@@ -7,6 +7,7 @@
 
 #include "hardware_desc.h"
 
+#include "actor.h"
 #include "asm_snippets.h"
 #include "fault_handler.h"
 #include "macro_expansion.h"
@@ -35,8 +36,9 @@ size_t get_main_prologue_size(void) { return main_prologue_size; }
 
 /// @brief Determine the macro subtype from the macro ID and current configuration
 /// @param macro_id ID of the macro
+/// @param owner ID of the actor owning the macro
 /// @return Pointer to the macro descriptor
-static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id)
+static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id, uint64_t owner)
 {
     // determine macro subtype
     macro_subtype_e macro_subtype = TYPE_UNDEFINED;
@@ -119,7 +121,14 @@ static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id)
         macro_subtype = TYPE_SWITCH_H2G;
         break;
     case MACRO_SWITCH_G2H:
-        macro_subtype = TYPE_SWITCH_G2H;
+        // the default implementation of the switch relies on an instruction that is available
+        // only at CPL 0 (vmcall/vmmcall), hence user-privilege guests use a separate one
+        if (owner >= n_actors) {
+            PRINT_ERRS("get_macro_subtype_from_id", "macro owner %llu is not a valid actor\n",
+                       owner);
+            return NULL;
+        }
+        macro_subtype = (actors[owner].pl == PL_USER) ? TYPE_SWITCH_GU2H : TYPE_SWITCH_G2H;
         break;
     case MACRO_SET_H2G_TARGET:
         macro_subtype = TYPE_SET_H2G_TARGET;
@@ -313,7 +322,7 @@ int expand_macro(tc_symbol_entry_t *macro, uint8_t *code_dest, uint8_t *macro_de
     ASSERT(type_id != 0, "expand_macro");
 
     // Get the macro descriptor
-    macro_descr_t *descr = get_macro_subtype_from_id(type_id);
+    macro_descr_t *descr = get_macro_subtype_from_id(type_id, macro->owner);
     ASSERT(descr != NULL, "expand_macro");
 
     // Code area: Replace the NOP with a relative jump to the expanded macro + fence

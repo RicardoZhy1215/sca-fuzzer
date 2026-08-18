@@ -162,7 +162,11 @@ DST_REGS_SPACE = GPR_REGS_SPACE + XMM_REGS_SPACE
 SRC_REGS_SPACE = GPR_REGS_SPACE + XMM_REGS_SPACE
 _IMM_SMALL_LITERALS = range(8)
 _SANDBOX_IMM_STEP = 8
-_SANDBOX_IMM_LIMIT = CONF.input_main_region_size + CONF.input_faulty_region_size
+# getattr with the config defaults (4096) so this module still imports if CONF
+# isn't fully initialized yet (e.g. a Ray worker on a node with older code) --
+# otherwise an AttributeError here kills RolloutWorker.__init__ at import time.
+_SANDBOX_IMM_LIMIT = (getattr(CONF, "input_main_region_size", 4096)
+                      + getattr(CONF, "input_faulty_region_size", 4096))
 IMMS_SPACE = [str(imm) for imm in _IMM_SMALL_LITERALS]
 IMMS_SPACE.extend(str(imm) for imm in range(_SANDBOX_IMM_STEP, _SANDBOX_IMM_LIMIT, _SANDBOX_IMM_STEP))
 

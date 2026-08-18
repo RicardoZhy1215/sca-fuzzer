@@ -1,0 +1,74 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+  # NOTE: BASE-UNCOND_BR / BASE-CALL / BASE-RET are intentionally NOT listed.
+  # The Unicorn model doesn't categorize indirect branches as speculatable,
+  # so they can't appear in `instruction_categories`. We don't need random
+  # branches anyway — the template hand-writes the two indirect `call`s
+  # that drive the BTB-collision experiment, and those go straight through
+  # the assembler without category-filtering.
+
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vmvictim:
+    - mode: "guest"
+    - privilege_level: "user"
+  - vm:
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "user"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+# Allow a transient window after the observer's indirect call
+max_bb_per_function: 3
+
+executor_mode: F+R
+# Larger samples to back up the stricter analyser_stat_threshold (0.5):
+# a strong violation should still show through even with averaging,
+# and weak/noisy ones get filtered out at the executor level.
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+
+executor_filtering_repetitions: 10
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+
+# More sensitive analyser: BPU residue is a weak signal
+analyser_stat_threshold: 0.2
+
+# IMPORTANT: keep the fast-path model OFF — it tends to filter out
+# weak cross-domain BPU leaks as noise.
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 1714400
+inputs_per_class: 1

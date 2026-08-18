@@ -18,7 +18,7 @@ from rvzr.code_generator import CodeGenerator, Pass, Printer
 from rvzr.config import CONF
 from rvzr.sandbox import SandboxLayout, DataArea, PAGE_SIZE
 from rvzr.instruction_spec import OT, InstructionSpec
-from rvzr.tc_components.actor import ActorPL, ActorID
+from rvzr.tc_components.actor import ActorMode, ActorPL, ActorID
 from rvzr.tc_components.instruction import Instruction, Operand, RegisterOp, FlagsOp, \
     MemoryOp, ImmediateOp, AgenOp, copy_op_with_flow_modification, \
     copy_inst_with_modification
@@ -404,6 +404,10 @@ class _X86U2KAccessPass(Pass):
             owner = sec.owner
             # Only instrument user-privilege actors (kernel accesses don't trigger Meltdown)
             if owner.privilege_level != ActorPL.USER:
+                continue
+            # Skip guest actors: the kernel actor's sandbox is not mapped into the guest address
+            # space, so the calculated offset would point outside of the guest memory
+            if owner.mode != ActorMode.HOST:
                 continue
 
             for func in sec:

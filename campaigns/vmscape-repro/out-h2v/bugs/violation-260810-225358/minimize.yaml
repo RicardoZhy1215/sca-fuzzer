@@ -1,0 +1,65 @@
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+  # (see config.yaml for why BASE-UNCOND_BR/CALL/RET are omitted)
+
+# H2V boundary: host-kernel victim  ->  guest-kernel observer.
+# `main` is BOTH the orchestrator and the victim (it trains the BTB in host
+# context). `vm` is the guest-kernel attacker that measures via F+R.
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vm:
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "kernel"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 3
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 80
+  - 320
+  - 640
+  - 1280
+
+executor_filtering_repetitions: 10
+# Aliasing makes the guest observer's data/code alias the host victim's (actor 0)
+# physical pages. NOTE: with it ON, a violation may come from the shared-memory
+# F+R channel rather than BTB residue — use template-h2v-no-jmp.asm to tell them
+# apart (see run_h2v.sh and the notes below).
+x86_enable_hpa_gpa_collisions: true
+
+program_generator_seed: 30000000
+data_generator_seed: 1500000
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.2
+
+enable_observation_filter: true
+enable_fast_path_model: false
+
+logging_modes:
+  - info
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 1674000

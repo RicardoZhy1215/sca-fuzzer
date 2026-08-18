@@ -65,9 +65,14 @@ class ExtraInterpreter(ABC):
         if instruction.name == "macro":
             self._interpret_macro(instruction, address)
 
-        # emulate invalid opcode for certain instructions when executed in VM guest mode
+        # emulate invalid opcode for certain instructions, based on the execution context of the
+        # current actor; note that a guest actor may also run in user mode, in which case it is
+        # subject to the restrictions of both contexts
         if state.current_actor.mode == ActorMode.GUEST:
-            self._emulate_vm_execution(address)
+            if state.current_actor.privilege_level == ActorPL.USER:
+                self._emulate_guest_userspace_execution(address)
+            else:
+                self._emulate_vm_execution(address)
         elif state.current_actor.privilege_level == ActorPL.USER:
             self._emulate_userspace_execution(address)
 
@@ -86,6 +91,10 @@ class ExtraInterpreter(ABC):
     def _emulate_userspace_execution(self, address: int) -> None:
         """ Emulate the execution of an instruction in userspace mode """
 
+    @abstractmethod
+    def _emulate_guest_userspace_execution(self, address: int) -> None:
+        """ Emulate the execution of an instruction in a VM guest running in userspace mode """
+
 
 # ==================================================================================================
 # Architecture-specific Implementations
@@ -96,6 +105,7 @@ class X86ExtraInterpreter(ExtraInterpreter):
     _macro_interpreter: _X86MacroInterpreter
     _vm_interpreter: _X86VMInterpreter
     _userspace_interpreter: _X86UserspaceInterpreter
+    _guest_userspace_interpreter: _X86GuestUserspaceInterpreter
     _fault_interpreter: _X86FaultInterpreter
 
     def __init__(self, target_desc: TargetDesc, model: UnicornModel):
@@ -103,6 +113,7 @@ class X86ExtraInterpreter(ExtraInterpreter):
         self._macro_interpreter = _X86MacroInterpreter(model, target_desc)
         self._vm_interpreter = _X86VMInterpreter(model, target_desc)
         self._userspace_interpreter = _X86UserspaceInterpreter(model, target_desc)
+        self._guest_userspace_interpreter = _X86GuestUserspaceInterpreter(model, target_desc)
         self._fault_interpreter = _X86FaultInterpreter(model, target_desc)
 
     def load_test_case(self, test_case: TestCaseProgram) -> None:
@@ -110,6 +121,7 @@ class X86ExtraInterpreter(ExtraInterpreter):
         self._fault_interpreter.load_test_case(test_case)
         self._vm_interpreter.reset()
         self._userspace_interpreter.reset()
+        self._guest_userspace_interpreter.reset()
 
     def load_input(self, input_: InputData) -> None:
         self._fault_interpreter.load_input(input_)
@@ -126,6 +138,9 @@ class X86ExtraInterpreter(ExtraInterpreter):
 
     def _emulate_userspace_execution(self, address: int) -> None:
         self._userspace_interpreter.interpret(self._model.state.current_instruction, address)
+
+    def _emulate_guest_userspace_execution(self, address: int) -> None:
+        self._guest_userspace_interpreter.interpret(self._model.state.current_instruction, address)
 
 
 class ARMExtraInterpreter(ExtraInterpreter):
@@ -154,6 +169,9 @@ class ARMExtraInterpreter(ExtraInterpreter):
         pass
 
     def _emulate_userspace_execution(self, address: int) -> None:
+        pass
+
+    def _emulate_guest_userspace_execution(self, address: int) -> None:
         pass
 
 
@@ -528,6 +546,23 @@ class _X86UserspaceInterpreter(_X86VMInterpreter):
     ]
 
 
+class _X86GuestUserspaceInterpreter(_X86VMInterpreter):
+    """
+    Adds the ability to emulate execution of a VM guest that runs in user mode (CPL 3).
+
+    Such an actor is subject to the restrictions of both execution contexts at once: an
+    instruction leaves the guest either because it is intercepted by the hypervisor, or because
+    it is not permitted at CPL 3. Accordingly, the sets below are unions of the corresponding
+    sets of _X86VMInterpreter and _X86UserspaceInterpreter.
+    """
+    always_exit_instructions: Set[str] = \
+        _X86VMInterpreter.always_exit_instructions \
+        | _X86UserspaceInterpreter.always_exit_instructions
+    always_exiting_registers = sorted(
+        set(_X86VMInterpreter.always_exiting_registers)
+        | set(_X86UserspaceInterpreter.always_exiting_registers))
+
+
 # ==================================================================================================
 # Private: Fault Handling and Permissions
 # ==================================================================================================
@@ -561,7 +596,15 @@ class _FaultInterpreterCommon(ABC):
             pte: PTEMask = actor.data_properties
             self._faulty_page_readable[aid] = self._page_is_readable(pte)
             self._faulty_page_writable[aid] = self._page_is_writable(pte)
-            self._faulty_page_user_accessible[aid] = self._page_is_user_accessible(pte)
+            # A user-privilege actor runs at CPL 3, so the executor maps ALL of its pages as
+            # user-accessible (set_user_pages / set_guest_user_pages) — otherwise the actor could
+            # not fetch or access its own data at all. The model must mirror this: without the
+            # `or pl == USER` term, the model wrongly injects a #GP whenever a user actor touches
+            # its *own* faulty page, while the hardware does not, producing an architectural
+            # mismatch on essentially every test case. (Kernel actors are unaffected, so the
+            # Meltdown/K2U semantics — user accessing another actor's faulty page — are preserved.)
+            self._faulty_page_user_accessible[aid] = (
+                self._page_is_user_accessible(pte) or actor.privilege_level == ActorPL.USER)
             self._main_page_user_accessible[aid] = actor.privilege_level == ActorPL.USER
 
             if actor.mode == ActorMode.GUEST:

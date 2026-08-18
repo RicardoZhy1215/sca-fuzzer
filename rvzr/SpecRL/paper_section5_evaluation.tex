@@ -1,0 +1,188 @@
+% =====================================================================
+%  Section 5: Evaluation  --  paste into Overleaf
+%  Requires in your preamble:
+%     \usepackage{booktabs}
+%     \usepackage{xspace}
+%     \usepackage{amssymb}          % for \checkmark / \times if desired
+%     \newcommand{\tool}{\textsc{SpecRL}\xspace}   % <-- rename to your system name
+%     \newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}} % fill in real numbers
+%  (If you use the todonotes package instead, drop the \TODO definition above.)
+% =====================================================================
+
+\section{Evaluation}
+\label{sec:eval}
+
+We evaluate \tool along two axes.
+Section~\ref{sec:eval:config} describes the hardware and software platform.
+Section~\ref{sec:eval:security} then presents the security evaluation:
+we first show that \tool rediscovers known transient-execution attacks
+on our target CPU (Section~\ref{sec:eval:repro}), validating that the
+reinforcement-learning fuzzer drives the hardware into the intended
+speculative regimes.
+
+\subsection{Hardware and Software Configuration}
+\label{sec:eval:config}
+
+All experiments run on a desktop AMD~Zen~4 platform.
+Table~\ref{tab:platform} summarises the hardware and software stack, and
+Table~\ref{tab:mitigations} lists the CPU's speculative-execution
+vulnerability status as reported by the Linux kernel
+(\texttt{/sys/devices/system/cpu/vulnerabilities/}).
+The kernel marks this part as \emph{Vulnerable} to Spectre-v1, Spectre-v2,
+Speculative Store Bypass (v4), and SRSO, and \emph{Not affected} by
+Meltdown and MDS-class leakage; this delimits the attack classes that a
+correct fuzzer should be able to surface on this machine.
+
+\begin{table}[t]
+\centering
+\caption{Evaluation platform.}
+\label{tab:platform}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Component} & \textbf{Configuration} \\
+\midrule
+CPU            & AMD Ryzen 7 8700F (Zen~4, family \texttt{0x19}) \\
+Cores/Threads  & 8 cores / 16 threads (SMT disabled) \\
+Microcode      & \texttt{0xa705208} \\
+L1d / L1i      & 32\,KiB / 32\,KiB per core \\
+L2 / L3        & 1\,MiB per core / 16\,MiB shared \\
+\midrule
+OS             & Ubuntu 24.04.4 LTS \\
+Kernel         & Linux 6.8.0-136-generic \\
+Runtime        & Python 3.10, Unicorn 1.0.3 \\
+RL stack       & Ray/RLlib 2.55 (PPO), PyTorch 2.11 \\
+Fuzzer         & \tool, built on Revizor~\cite{revizor} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Kernel-reported vulnerability status of the target CPU.}
+\label{tab:mitigations}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Class} & \textbf{Status (kernel report)} \\
+\midrule
+Spectre-v1 (BCB)             & Vulnerable \\
+Spectre-v2 (BTI)             & Vulnerable (IBPB / STIBP disabled) \\
+Spec.\ Store Bypass (v4)     & Vulnerable \\
+SRSO                         & Vulnerable \\
+Meltdown                     & Not affected \\
+MMIO Stale Data / MDS        & Not affected \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Measurement setup.}
+To keep the hardware channel stable we disable simultaneous
+multithreading (SMT), turn off the NMI watchdog, and pin the CPU
+frequency governor to \texttt{performance}; the kernel-side executor
+pins every measurement to a single physical core and serialises
+repetitions. These steps suppress the cross-thread and
+frequency-scaling noise that otherwise dominates the false-positive
+rate. Hardware traces (\emph{htraces}) are collected with a
+Prime+Probe monitor over the 64 sets of the L1 data cache, yielding a
+per-input cache-set occupancy vector. Contract traces (\emph{ctraces})
+are produced by a Unicorn-based emulator that implements the leakage
+contract under test. For every candidate program each input is measured
+with warm-up rounds followed by an adaptive sampling schedule that
+escalates the sample size (up to $5000$) and re-primes when a signal is
+borderline, so that a reported violation reflects a statistically stable
+htrace difference rather than a transient measurement artifact.
+
+\subsection{Security Evaluation}
+\label{sec:eval:security}
+
+\tool casts test-program generation as a reinforcement-learning
+problem. A PPO agent emits an instruction sequence from a
+Unicorn-modellable action space; for each generated program the
+emulator computes the ctrace under a target leakage
+contract while the executor measures the htrace on the real CPU.
+Following the leakage-contract framework~\cite{contracts,revizor}, a
+\emph{contract violation} is a pair of inputs that share the same
+ctrace---i.e.\ are indistinguishable under the contract---yet yield
+different htraces---i.e.\ the hardware \emph{does} distinguish
+them---witnessing leakage beyond what the contract permits.
+Same-ctrace input classes are built cheaply by taint-guided input
+\emph{boosting}: the emulator records which input bytes flow into the
+ctrace, and boosting holds those bytes fixed while randomising the
+rest, so every boosted input in a class provably shares the ctrace.
+The agent's reward is driven by htrace divergence within a ctrace
+class, steering generation toward violating programs.
+
+\subsubsection{Reproducing Existing Attacks}
+\label{sec:eval:repro}
+
+\paragraph{Methodology.}
+To reproduce a known transient-execution attack with \tool we
+(i)~enable the microarchitectural primitive it relies on in the program
+generator, (ii)~fuzz against the \emph{weakest} contract---one that
+forbids the corresponding speculation---so that any hardware
+speculation manifests as a violation, and (iii)~\emph{attribute} the
+violation to a specific variant by identifying the minimal execution
+clause that, once added to the contract, makes the violation disappear.
+Step~(iii) converts a raw leak signal into a mechanistic attribution and
+rules out unrelated sources of speculation. Table~\ref{tab:repro}
+summarises the two reproduced attacks.
+
+\paragraph{Spectre-V1 (Bounds-Check Bypass).}
+We configure the observation clause to \texttt{loads+stores+pc} and the
+execution clause to \texttt{no\_speculation} (the sequential, non-speculative
+contract), and enable conditional branches (\texttt{BASE-COND\_BR}) in the
+instruction pool. \tool synthesises programs in which a conditional branch
+guards a subsequent, address-dependent memory access; under branch
+misprediction the guarded access executes transiently and imprints a
+secret-dependent line into the cache, which the Prime+Probe monitor
+observes. Because the sequential contract predicts no such access, the two
+boosted inputs share a ctrace but differ in htrace, and \tool reports a
+violation after \TODO{time / \#test cases to first V1 violation}.
+Adding the \texttt{cond} clause---which models conditional-branch
+misprediction---to the contract eliminates the violation, attributing the
+leak to bounds-check-bypass speculation.
+
+\paragraph{Spectre-V4 (Speculative Store Bypass).}
+We set the observation clause to \texttt{ct} and the execution clause to
+\texttt{seq}, and \emph{disable} the hardware store-bypass mitigation by
+clearing the SSBD control (\texttt{x86\_executor\_enable\_ssbp\_patch =
+false}). \tool synthesises store/load pairs that target aliasing sandbox
+addresses; the younger load speculatively bypasses the older, unresolved
+store and forwards stale memory, which then leaks through a dependent
+access. The sequential contract forbids store-to-load bypass, so the
+resulting htrace difference is flagged as a violation after
+\TODO{time / \#test cases to first V4 violation}. We confirm the
+attribution with two independent controls: (a)~adding the \texttt{bpas}
+(speculative store-bypass) clause to the contract eliminates the
+violation, and (b)~re-enabling the hardware SSBD mitigation
+(setting the \texttt{SPEC\_CTRL.SSBD} bit) also eliminates it. Together
+these establish that the leak is genuine speculative store bypass rather
+than an emulator-modelling artifact.
+
+\begin{table*}[t]
+\centering
+\caption{Reproduction of known transient-execution attacks with \tool
+on AMD Zen~4. Each attack is fuzzed against the weakest (non-speculative)
+contract; the ``Attribution'' column gives the minimal execution clause
+that eliminates the violation.}
+\label{tab:repro}
+\small
+\begin{tabular}{lllll l}
+\toprule
+\textbf{Variant} & \textbf{Primitive} & \textbf{Obs.\ clause} & \textbf{Exec.\ clause} & \textbf{Key config} & \textbf{Detected / Attribution} \\
+\midrule
+Spectre-V1 (BCB) & Conditional branch      & \texttt{loads+stores+pc} & \texttt{no\_speculation} & \texttt{COND\_BR} enabled & \checkmark\ (\TODO{}) / \texttt{cond} \\
+Spectre-V4 (SSB) & Store-to-load bypass    & \texttt{ct}              & \texttt{seq}             & SSBD off                  & \checkmark\ (\TODO{}) / \texttt{bpas} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\paragraph{Summary.}
+On a CPU the kernel reports as vulnerable to both variants, \tool
+independently rediscovers Spectre-V1 and Spectre-V4 from a generic
+action space, without any variant-specific templates, and attributes
+each leak to its speculation primitive via the minimal explaining
+contract. This validates that the RL-driven generator reaches the
+speculative regimes of interest and that the contract-based oracle
+correctly separates them.
