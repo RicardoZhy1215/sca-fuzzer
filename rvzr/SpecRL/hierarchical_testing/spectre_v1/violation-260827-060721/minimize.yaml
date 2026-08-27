@@ -1,0 +1,106 @@
+# ==============================================================================
+# Spectre V1 -- conditional branch misprediction
+# ==============================================================================
+# Goal: REPRODUCE a known violation, not find a new one.
+# Based on demo/detect-v1.yaml, adapted for the SpecRL environment.
+#
+#   sanity check (plain revizor, no RL):
+#       rvzr fuzz -s base.json -c rvzr/SpecRL/hierarchical_testing/v1.yaml -i 50 -n 10000
+#   RL training:
+#       python train.py --config v1.yaml ...
+#
+# Run the sanity check FIRST. If plain revizor cannot find V1 on this box with
+# this config, the RL agent will never find it either, and you will be debugging
+# the reward function for a hardware/config problem.
+# ==============================================================================
+
+instruction_set: x86-64
+
+# ------------------------------------------------------------------------------
+# Contract
+# ------------------------------------------------------------------------------
+# no_speculation (== seq) makes the model execute strictly in program order, so
+# ANY branch-misprediction leak counts as a violation. This is what makes V1
+# *reproducible*: under `cond` the contract models the mispredicted path itself
+# and explains V1 away, so the leak reward would never fire.
+contract_observation_clause: ct
+contract_execution_clause:
+  - no_speculation
+
+# ------------------------------------------------------------------------------
+# Program generator -- CFG skeleton
+# ------------------------------------------------------------------------------
+# In SpecRL the *agent* emits the instructions; the generator only builds the
+# empty basic-block skeleton and its terminators (create_test_case_SpecRL with
+# generate_empty_case=True). These four options are therefore the ONLY thing
+# that decides whether a conditional branch exists at all -- with
+# max_successors_per_bb=1, _add_terminators_in_function emits no jcc and V1 is
+# structurally unreachable.
+#
+# 2 BBs / 2 successors gives the minimal V1 shape:
+#     .bb_0.0:  <setup>   jcc .bb_0.1 / jmp .exit_0
+#     .bb_0.1:  <speculatively executed code>
+# i.e. exactly one mispredictable branch and exactly one speculative block.
+min_bb_per_function: 2
+max_bb_per_function: 2
+min_successors_per_bb: 2
+max_successors_per_bb: 2
+
+# max_bb_per_function > 1 also flips hi_SpecEnv's insert_bb_policy to "random",
+# so the agent's instructions land in BOTH blocks. That is essential: with the
+# old fixed bb0 placement every instruction sits BEFORE the jcc, the speculative
+# block stays empty, and V1 can never form. Override via env_config if needed.
+
+# Only used by the random generator (the plain `rvzr fuzz` path above); SpecRL
+# bypasses instruction filling entirely.
+program_size: 24
+avg_mem_accesses: 12
+
+# BASE-COND_BR is REQUIRED: isa_spec._set_categories() silently forces
+# min/max_successors_per_bb back to 1 when no control-flow spec survives
+# category filtering. The remaining entries must cover every opcode that
+# inst_space.tuple_to_instruction can emit, otherwise X86Fuzzer's asm parser
+# rejects the agent's program with "no matching spec".
+instruction_categories:
+  - BASE-COND_BR       # jcc -- the V1 branch (REQUIRED; jmp needs no category,
+                       #        get_unconditional_jump_spec() builds it inline)
+  - BASE-BINARY        # add sub adc sbb cmp imul mul div inc dec neg
+  - BASE-CMOV          # cmovcc
+  - BASE-DATAXFER      # mov movzx movsx xchg
+  - BASE-LOGICAL       # xor or and not test
+  - BASE-MISC          # lea
+  - BASE-SEMAPHORE     # lock xadd/cmpxchg/add/sub/and/or/xor/inc/dec
+  - BASE-SETCC         # setcc
+
+# ------------------------------------------------------------------------------
+# Executor
+# ------------------------------------------------------------------------------
+executor_mode: P+P
+# SSBD ON: store bypass (V4) is mitigated in hardware, so branch misprediction
+# is the only speculation source left. Without this, a V4 leak would also be a
+# violation under the seq contract and would pollute the V1 signal.
+x86_executor_enable_ssbp_patch: true
+
+# ------------------------------------------------------------------------------
+# Input generator
+# ------------------------------------------------------------------------------
+data_generator_entropy_bits: 24
+inputs_per_class: 2
+
+# ------------------------------------------------------------------------------
+# Fuzzer
+# ------------------------------------------------------------------------------
+# The speculation filter reads PFC branch-misprediction counters, so it is
+# effective for V1: test cases that never mispredict are discarded.
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+
+# ------------------------------------------------------------------------------
+# Reproducibility
+# ------------------------------------------------------------------------------
+program_generator_seed: 100
+data_generator_seed: 67890
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 77490

@@ -1,0 +1,50 @@
+# Violation Report
+
+* Test Case ID: 825
+* Detected: 27.08.26 at 00:08:50
+
+* Time to detection: 35.518312
+* Statistics:
+Test Cases: 826
+Inputs per test case: 100.0
+Violations: 4
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 758
+  Observation Filter: 28
+  Fast Path: 35
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 69140
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #33
+* Hardware trace:
+ ^.^......^....^...^^................^.^...........^^........^... [625]
+^.^......^....^...^^................^.^....^......^^........^... [1]
+^.^......^....^...^^................^.^..^........^^........^... [1]
+
+* Contract trace (hash): 16491772456953517814
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, pc: 0x16, mem: 0x14f3, pc: 0x1b, pc: 0x1f, pc: 0x22, pc: 0x25, pc: 0x2c, mem: 0x1938, mem: 0x1938, pc: 0x31, pc: 0x34, pc: 0x3a, mem: 0x1f01, pc: 0x3e, pc: 0x41, pc: 0x45, pc: 0x48, pc: 0x4e, mem: 0x1f01, pc: 0x53, pc: 0x56, pc: 0x5d, mem: 0x1cbc, pc: 0x62, pc: 0x69, mem: 0x1242, pc: 0x6d, pc: 0x72, pc: 0x79, mem: 0x1024, pc: 0x81, pc: 0x84, pc: 0x89, pc: 0x8f, pc: 0x93, pc: 0x94, mem: 0x13b4, pc: 0x99, pc: 0xa0, mem: 0x24b3, pc: 0xa5, pc: 0xaa, pc: 0xb1, mem: 0x1020, mem: 0x1020, pc: 0xb6, pc: 0xb8, pc: 0x1ad]
+
+Input #83
+* Hardware trace:
+ ^........^....^...^^................^.^...........^^........^... [625]
+^........^....^...^^................^.^....^......^^........^... [1]
+^........^....^...^^................^.^..^........^^........^... [1]
+
+* Contract trace (hash): 16491772456953517814
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, pc: 0x16, mem: 0x14f3, pc: 0x1b, pc: 0x1f, pc: 0x22, pc: 0x25, pc: 0x2c, mem: 0x1938, mem: 0x1938, pc: 0x31, pc: 0x34, pc: 0x3a, mem: 0x1f01, pc: 0x3e, pc: 0x41, pc: 0x45, pc: 0x48, pc: 0x4e, mem: 0x1f01, pc: 0x53, pc: 0x56, pc: 0x5d, mem: 0x1cbc, pc: 0x62, pc: 0x69, mem: 0x1242, pc: 0x6d, pc: 0x72, pc: 0x79, mem: 0x1024, pc: 0x81, pc: 0x84, pc: 0x89, pc: 0x8f, pc: 0x93, pc: 0x94, mem: 0x13b4, pc: 0x99, pc: 0xa0, mem: 0x24b3, pc: 0xa5, pc: 0xaa, pc: 0xb1, mem: 0x1020, mem: 0x1020, pc: 0xb6, pc: 0xb8, pc: 0x1ad]

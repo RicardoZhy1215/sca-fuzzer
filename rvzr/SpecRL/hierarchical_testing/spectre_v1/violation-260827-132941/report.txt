@@ -1,0 +1,49 @@
+# Violation Report
+
+* Test Case ID: 10014
+* Detected: 27.08.26 at 13:29:41
+
+* Time to detection: 35.560171
+* Statistics:
+Test Cases: 10015
+Inputs per test case: 100.0
+Violations: 166
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 8220
+  Observation Filter: 516
+  Fast Path: 1092
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 85990
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #44
+* Hardware trace:
+ ^..^........^...^.^..^.........^....^^^........^.............^.. [626]
+^..^........^...^.^..^.........^..^.^^^........^.............^.. [1]
+
+* Contract trace (hash): 744919923469379782
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x1410, pc: 0x15, pc: 0x1c, mem: 0x1308, pc: 0x20, pc: 0x27, mem: 0x1318, mem: 0x1318, pc: 0x2c, pc: 0x32, pc: 0x33, mem: 0x1410, pc: 0x38, pc: 0x3f, mem: 0x27ca, pc: 0x47, pc: 0x4d, mem: 0x1410, pc: 0x52, pc: 0x55, pc: 0x5c, mem: 0x2409, pc: 0x61, pc: 0x64, pc: 0x6a, mem: 0x1400, pc: 0x6f, pc: 0x74, pc: 0x7b, mem: 0x1003, pc: 0x7f, pc: 0x82, pc: 0x85, pc: 0x8c, mem: 0x2900, pc: 0x91, pc: 0x95, pc: 0x9c, mem: 0x2900, pc: 0xa1, pc: 0xa8, mem: 0x10c8, mem: 0x10c8, pc: 0xad, pc: 0xb4, pc: 0xb7, pc: 0xb9, pc: 0x151]
+
+Input #94
+* Hardware trace:
+ ^..^........^...^........^..^..^....^..........^..^..........^.. [625]
+^..^........^...^........^..^..^....^.^........^..^..........^.. [1]
+^..^........^...^........^..^..^..^.^..........^..^..........^.. [1]
+
+* Contract trace (hash): 744919923469379782
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x1410, pc: 0x15, pc: 0x1c, mem: 0x1308, pc: 0x20, pc: 0x27, mem: 0x1318, mem: 0x1318, pc: 0x2c, pc: 0x32, pc: 0x33, mem: 0x1410, pc: 0x38, pc: 0x3f, mem: 0x27ca, pc: 0x47, pc: 0x4d, mem: 0x1410, pc: 0x52, pc: 0x55, pc: 0x5c, mem: 0x2409, pc: 0x61, pc: 0x64, pc: 0x6a, mem: 0x1400, pc: 0x6f, pc: 0x74, pc: 0x7b, mem: 0x1003, pc: 0x7f, pc: 0x82, pc: 0x85, pc: 0x8c, mem: 0x2900, pc: 0x91, pc: 0x95, pc: 0x9c, mem: 0x2900, pc: 0xa1, pc: 0xa8, mem: 0x10c8, mem: 0x10c8, pc: 0xad, pc: 0xb4, pc: 0xb7, pc: 0xb9, pc: 0x151]

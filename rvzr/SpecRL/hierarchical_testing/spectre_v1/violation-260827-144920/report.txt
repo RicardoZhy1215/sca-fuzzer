@@ -1,0 +1,54 @@
+# Violation Report
+
+* Test Case ID: 10863
+* Detected: 27.08.26 at 14:49:20
+
+* Time to detection: 35.017484
+* Statistics:
+Test Cases: 10864
+Inputs per test case: 100.0
+Violations: 180
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 8824
+  Observation Filter: 592
+  Fast Path: 1241
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 87390
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #42
+* Hardware trace:
+ ^...^...............................^..^...........^............ [622]
+^...^...............................^........................... [2]
+^...^...............................^..^..^........^............ [1]
+^...^...............................^..^...........^...........^ [1]
+^..^^^..............................^..^...........^............ [1]
+
+* Contract trace (hash): 10714057870973763249
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x1110, pc: 0x16, pc: 0x1d, mem: 0x1108, mem: 0x1108, pc: 0x22, pc: 0x28, mem: 0x191b, pc: 0x2c, pc: 0x31, pc: 0x38, mem: 0x2020, mem: 0x2020, pc: 0x3d, pc: 0x44, mem: 0x2020, pc: 0x4c, pc: 0x50, pc: 0x53, pc: 0x5a, mem: 0x2020, pc: 0x5e, pc: 0x61, pc: 0x63, pc: 0x9b]
+
+Input #92
+* Hardware trace:
+ ^...^...............................^..^................^....... [620]
+^...^...............................^........................... [3]
+^...^...............................^..^................^......^ [2]
+^...^...............................^..^..^.............^....... [1]
+^..^^^..............................^..^................^....... [1]
+
+* Contract trace (hash): 10714057870973763249
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x1110, pc: 0x16, pc: 0x1d, mem: 0x1108, mem: 0x1108, pc: 0x22, pc: 0x28, mem: 0x191b, pc: 0x2c, pc: 0x31, pc: 0x38, mem: 0x2020, mem: 0x2020, pc: 0x3d, pc: 0x44, mem: 0x2020, pc: 0x4c, pc: 0x50, pc: 0x53, pc: 0x5a, mem: 0x2020, pc: 0x5e, pc: 0x61, pc: 0x63, pc: 0x9b]

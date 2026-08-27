@@ -1,0 +1,50 @@
+# Violation Report
+
+* Test Case ID: 7405
+* Detected: 27.08.26 at 09:26:51
+
+* Time to detection: 35.220685
+* Statistics:
+Test Cases: 7406
+Inputs per test case: 100.0
+Violations: 121
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 6203
+  Observation Filter: 395
+  Fast Path: 677
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 81840
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #3
+* Hardware trace:
+ ^.^.......^........^.......................^^.......^....^^..... [625]
+^.^.......^........^.............^^........^^.......^....^^..... [1]
+^.^.......^........^...................^...^^.......^....^^..... [1]
+
+* Contract trace (hash): 18349103687796570738
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2e7e, pc: 0x1a, pc: 0x1d, pc: 0x24, mem: 0x2e7e, pc: 0x29, pc: 0x2e, pc: 0x33, pc: 0x3a, mem: 0x2b18, mem: 0x2b18, pc: 0x3f, pc: 0x44, pc: 0x4b, mem: 0x10b0, mem: 0x10b0, pc: 0x51, pc: 0x55, pc: 0x58, pc: 0x5b, pc: 0x5e, pc: 0x65, mem: 0x2e7e, pc: 0x6a, pc: 0x6d, pc: 0x74, mem: 0x1d30, mem: 0x1d30, pc: 0x79, pc: 0x80, mem: 0x14c3, pc: 0x85, pc: 0x88, pc: 0x8f, pc: 0x91, pc: 0x134]
+
+Input #53
+* Hardware trace:
+ ^.^.......^........^........................^.....^.^....^^..... [625]
+^.^.......^........^.............^^.........^.....^.^....^^..... [1]
+^.^.......^........^...................^....^.....^.^....^^..... [1]
+
+* Contract trace (hash): 18349103687796570738
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2e7e, pc: 0x1a, pc: 0x1d, pc: 0x24, mem: 0x2e7e, pc: 0x29, pc: 0x2e, pc: 0x33, pc: 0x3a, mem: 0x2b18, mem: 0x2b18, pc: 0x3f, pc: 0x44, pc: 0x4b, mem: 0x10b0, mem: 0x10b0, pc: 0x51, pc: 0x55, pc: 0x58, pc: 0x5b, pc: 0x5e, pc: 0x65, mem: 0x2e7e, pc: 0x6a, pc: 0x6d, pc: 0x74, mem: 0x1d30, mem: 0x1d30, pc: 0x79, pc: 0x80, mem: 0x14c3, pc: 0x85, pc: 0x88, pc: 0x8f, pc: 0x91, pc: 0x134]

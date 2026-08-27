@@ -1,0 +1,48 @@
+# Violation Report
+
+* Test Case ID: 8194
+* Detected: 27.08.26 at 10:36:59
+
+* Time to detection: 35.310179
+* Statistics:
+Test Cases: 8195
+Inputs per test case: 100.0
+Violations: 132
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 6802
+  Observation Filter: 447
+  Fast Path: 803
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 83040
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #12
+* Hardware trace:
+ ^........^.^............^^.....................^...............^ [626]
+^........^.^............^^................^....^...............^ [1]
+
+* Contract trace (hash): 7062486912010501773
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, pc: 0x19, mem: 0x1673, pc: 0x1e, pc: 0x25, mem: 0x2bf0, pc: 0x2a, pc: 0x2d, pc: 0x34, mem: 0x2bf0, mem: 0x2bf0, pc: 0x39, pc: 0x40, mem: 0x22dd, mem: 0x22dd, pc: 0x44, pc: 0x4b, mem: 0x1600, mem: 0x1600, pc: 0x50, pc: 0x57, mem: 0x1000, mem: 0x1000, pc: 0x5c, pc: 0x63, mem: 0x2bf0, pc: 0x68, pc: 0x6b, pc: 0x72, mem: 0x12c0, pc: 0x77, pc: 0x7e, mem: 0x1600, mem: 0x1600, pc: 0x83, pc: 0x8a, mem: 0x1600, mem: 0x1600, pc: 0x8f, pc: 0x91, pc: 0xf8]
+
+Input #62
+* Hardware trace:
+ ^........^.^............^^.....................^..............^. [626]
+^........^.^............^^................^....^..............^. [1]
+
+* Contract trace (hash): 7062486912010501773
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, pc: 0x19, mem: 0x1673, pc: 0x1e, pc: 0x25, mem: 0x2bf0, pc: 0x2a, pc: 0x2d, pc: 0x34, mem: 0x2bf0, mem: 0x2bf0, pc: 0x39, pc: 0x40, mem: 0x22dd, mem: 0x22dd, pc: 0x44, pc: 0x4b, mem: 0x1600, mem: 0x1600, pc: 0x50, pc: 0x57, mem: 0x1000, mem: 0x1000, pc: 0x5c, pc: 0x63, mem: 0x2bf0, pc: 0x68, pc: 0x6b, pc: 0x72, mem: 0x12c0, pc: 0x77, pc: 0x7e, mem: 0x1600, mem: 0x1600, pc: 0x83, pc: 0x8a, mem: 0x1600, mem: 0x1600, pc: 0x8f, pc: 0x91, pc: 0xf8]

@@ -1,0 +1,50 @@
+# Violation Report
+
+* Test Case ID: 2812
+* Detected: 27.08.26 at 02:55:32
+
+* Time to detection: 35.406076
+* Statistics:
+Test Cases: 2813
+Inputs per test case: 100.0
+Violations: 38
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 2443
+  Observation Filter: 113
+  Fast Path: 210
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 73140
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #29
+* Hardware trace:
+ ^...^....^...........^....^.........^^.......^.......^......^.^. [625]
+^...^....^...........^....^.........^^.......^.^.....^......^.^. [1]
+^...^....^...........^....^.........^^......^^.......^......^.^. [1]
+
+* Contract trace (hash): 12611776337581876636
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2b70, mem: 0x2b70, pc: 0x17, pc: 0x1e, mem: 0x1688, mem: 0x1688, pc: 0x23, pc: 0x28, pc: 0x2f, mem: 0x193a, pc: 0x34, pc: 0x3b, mem: 0x191e, pc: 0x40, pc: 0x45, pc: 0x4b, mem: 0x1d60, mem: 0x1d60, pc: 0x51, pc: 0x58, mem: 0x2b70, mem: 0x2b70, pc: 0x5e, pc: 0x65, mem: 0x2258, mem: 0x2258, pc: 0x69, pc: 0x6e, pc: 0x75, mem: 0x1100, pc: 0x7a, pc: 0x81, mem: 0x1fa0, mem: 0x1fa0, pc: 0x86, pc: 0x88, pc: 0x10e]
+
+Input #79
+* Hardware trace:
+ ^...^....^......^.........^.........^^.......^.......^......^.^. [625]
+^...^....^......^.........^.........^^.......^.^.....^......^.^. [1]
+^...^....^......^.........^.........^^......^^.......^......^.^. [1]
+
+* Contract trace (hash): 12611776337581876636
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x12, mem: 0x2b70, mem: 0x2b70, pc: 0x17, pc: 0x1e, mem: 0x1688, mem: 0x1688, pc: 0x23, pc: 0x28, pc: 0x2f, mem: 0x193a, pc: 0x34, pc: 0x3b, mem: 0x191e, pc: 0x40, pc: 0x45, pc: 0x4b, mem: 0x1d60, mem: 0x1d60, pc: 0x51, pc: 0x58, mem: 0x2b70, mem: 0x2b70, pc: 0x5e, pc: 0x65, mem: 0x2258, mem: 0x2258, pc: 0x69, pc: 0x6e, pc: 0x75, mem: 0x1100, pc: 0x7a, pc: 0x81, mem: 0x1fa0, mem: 0x1fa0, pc: 0x86, pc: 0x88, pc: 0x10e]

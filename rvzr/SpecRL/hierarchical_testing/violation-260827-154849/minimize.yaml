@@ -1,0 +1,97 @@
+# ==============================================================================
+# Spectre V4 -- speculative store bypass (SSB)
+# ==============================================================================
+# Goal: REPRODUCE a known violation, not find a new one.
+# Based on demo/detect-v4.yaml, adapted for the SpecRL environment.
+#
+#   sanity check (plain revizor, no RL):
+#       rvzr fuzz -s base.json -c rvzr/SpecRL/hierarchical_testing/v4.yaml -i 50 -n 10000
+#   RL training:
+#       python train.py --config v4.yaml ...
+#
+# Prerequisite: the CPU must actually be SSB-vulnerable. Check
+#   cat /sys/devices/system/cpu/vulnerabilities/spec_store_bypass
+# If it reports "Not affected" or a hard mitigation, no config or reward shaping
+# will produce a V4 leak.
+# ==============================================================================
+
+instruction_set: x86-64
+
+# ------------------------------------------------------------------------------
+# Contract
+# ------------------------------------------------------------------------------
+# seq: strictly in-order model, so any store-bypass leak is a violation.
+# (`bpas` would MODEL store bypass and explain V4 away -- that is the config for
+# looking BEYOND V4, not for reproducing it.)
+contract_observation_clause: ct
+contract_execution_clause:
+  - seq
+
+# ------------------------------------------------------------------------------
+# Program generator -- CFG skeleton
+# ------------------------------------------------------------------------------
+# Single basic block, no branches. This is deliberate: it removes branch
+# misprediction as a speculation source, so store bypass is the ONLY thing the
+# seq contract can be violated by, and every violation found is unambiguously
+# V4. It also sidesteps the hardcoded _insert_bb_index = 0 in hi_SpecEnv.step().
+min_bb_per_function: 1
+max_bb_per_function: 1
+min_successors_per_bb: 1
+max_successors_per_bb: 1
+
+# Only used by the random generator (the plain `rvzr fuzz` path above); SpecRL
+# bypasses instruction filling entirely.
+program_size: 20
+avg_mem_accesses: 10
+
+# No BASE-COND_BR here on purpose (see the single-BB note above); jmp needs no
+# category, get_unconditional_jump_spec() builds its spec inline. The list must
+# cover every opcode that inst_space.tuple_to_instruction can emit, otherwise
+# X86Fuzzer's asm parser rejects the agent's program with "no matching spec".
+instruction_categories:
+  - BASE-BINARY        # add sub adc sbb cmp imul mul div inc dec neg
+  - BASE-CMOV          # cmovcc
+  - BASE-DATAXFER      # mov movzx movsx xchg   -- the store and the bypass load
+  - BASE-LOGICAL       # xor or and not test
+  - BASE-MISC          # lea      -- slow-address producer for the victim store
+  - BASE-SEMAPHORE     # lock xadd/cmpxchg/add/sub/and/or/xor/inc/dec
+  - BASE-SETCC         # setcc
+
+# ------------------------------------------------------------------------------
+# Executor
+# ------------------------------------------------------------------------------
+executor_mode: P+P
+# SSBD OFF -- MANDATORY for V4. The kernel module must NOT set
+# MSR_IA32_SPEC_CTRL.SSBD when running test cases, otherwise store bypass is
+# mitigated in hardware and the leak simply does not happen.
+x86_executor_enable_ssbp_patch: false
+
+# ------------------------------------------------------------------------------
+# Input generator
+# ------------------------------------------------------------------------------
+# Low entropy is the single biggest speed-up for V4: it raises the probability
+# that the store address and the bypassing load address collide, which is the
+# precondition for the leak. demo/detect-v4.yaml uses 10 for the same reason.
+# Raise it toward 24 only if the resulting programs feel degenerate.
+data_generator_entropy_bits: 10
+inputs_per_class: 2
+
+# ------------------------------------------------------------------------------
+# Fuzzer
+# ------------------------------------------------------------------------------
+# NOTE: the speculation filter reads PFC branch/machine-clear counters. SSB
+# speculation does not reliably move those counters, so this filter can discard
+# genuine V4 test cases. It is left ON to match demo/detect-v4.yaml (which does
+# find V4), but it is the first thing to turn off if the campaign comes up empty.
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+
+# ------------------------------------------------------------------------------
+# Reproducibility
+# ------------------------------------------------------------------------------
+program_generator_seed: 1000000
+data_generator_seed: 67890
+
+# Overwrite some of the configuration options to reproduce the violation
+data_generator_seed: 68390

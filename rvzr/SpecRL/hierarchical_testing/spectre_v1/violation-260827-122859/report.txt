@@ -1,0 +1,52 @@
+# Violation Report
+
+* Test Case ID: 9361
+* Detected: 27.08.26 at 12:28:59
+
+* Time to detection: 35.353356
+* Statistics:
+Test Cases: 9362
+Inputs per test case: 100.0
+Violations: 155
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 7691
+  Observation Filter: 499
+  Fast Path: 998
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 84990
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #6
+* Hardware trace:
+ ^.^.....................^.^.^........^................^^^....^.. [348]
+^.........................^.^........^................^^^....... [277]
+^.^.....................^.^.^........^.........^......^^^....^.. [1]
+^.........................^.^......^.^................^^^....... [1]
+
+* Contract trace (hash): 13292645362806397734
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x296e, pc: 0x16, pc: 0x1d, mem: 0x2730, mem: 0x2730, pc: 0x23, pc: 0x2a, mem: 0x2dc0, pc: 0x32, pc: 0x35, pc: 0x3c, mem: 0x2dc0, pc: 0x41, pc: 0x48, mem: 0x2e10, mem: 0x2e10, pc: 0x4e, pc: 0x51, pc: 0x58, mem: 0x1d98, pc: 0x60, pc: 0x63, pc: 0x6a, mem: 0x2701, pc: 0x6e, pc: 0x75, mem: 0x2e10, pc: 0x7d, pc: 0x84, mem: 0x2701, pc: 0x89, pc: 0x8c, pc: 0x93, mem: 0x1692, pc: 0x98, pc: 0x9b, pc: 0xa2, mem: 0x1700, mem: 0x1700, pc: 0xa7, pc: 0xab, pc: 0xaf, pc: 0xb6, mem: 0x2e10, mem: 0x2e10, pc: 0xbb, pc: 0xbd, pc: 0x153]
+
+Input #56
+* Hardware trace:
+ ^.^.......................^.^........^................^^^....^.. [566]
+^.........................^.^........^................^^^....... [59]
+^.^.......................^.^........^.........^......^^^....^.. [1]
+^.........................^.^......^.^................^^^....... [1]
+
+* Contract trace (hash): 13292645362806397734
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0x11, mem: 0x296e, pc: 0x16, pc: 0x1d, mem: 0x2730, mem: 0x2730, pc: 0x23, pc: 0x2a, mem: 0x2dc0, pc: 0x32, pc: 0x35, pc: 0x3c, mem: 0x2dc0, pc: 0x41, pc: 0x48, mem: 0x2e10, mem: 0x2e10, pc: 0x4e, pc: 0x51, pc: 0x58, mem: 0x1d98, pc: 0x60, pc: 0x63, pc: 0x6a, mem: 0x2701, pc: 0x6e, pc: 0x75, mem: 0x2e10, pc: 0x7d, pc: 0x84, mem: 0x2701, pc: 0x89, pc: 0x8c, pc: 0x93, mem: 0x1692, pc: 0x98, pc: 0x9b, pc: 0xa2, mem: 0x1700, mem: 0x1700, pc: 0xa7, pc: 0xab, pc: 0xaf, pc: 0xb6, mem: 0x2e10, mem: 0x2e10, pc: 0xbb, pc: 0xbd, pc: 0x153]

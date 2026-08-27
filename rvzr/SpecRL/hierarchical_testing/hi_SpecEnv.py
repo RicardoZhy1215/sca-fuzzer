@@ -9,7 +9,7 @@ import ctypes
 from gymnasium import spaces
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Counter, Dict, FrozenSet, List, Optional, Sequence, Tuple
+from typing import Counter, Dict, List, Optional
 from rvzr.code_generator import Printer
 from rvzr.arch.x86.generator import _X86Printer
 from rvzr.tc_components.test_case_code import TestCaseProgram
@@ -53,7 +53,6 @@ import shutil
 from datetime import datetime
 from subprocess import run, CalledProcessError
 from inst_space import OPERAND_SPACE, DST_REGS_SPACE, SRC_REGS_SPACE, IMMS_SPACE
-from pattern_matching import VulnerabilityPatternMatcher, PatternToken
 
 # Machine-independent paths derived from THIS file's location, so the code works
 # on any checkout (mluo's AMD box, hz25d's Intel box, ...) without editing paths.
@@ -64,14 +63,6 @@ _REPO_ROOT = os.path.abspath(os.path.join(_HERE, "..", "..", ".."))
 BASE_JSON = os.path.join(_REPO_ROOT, "base.json")
 MY_TEST_CASE_ASM = os.path.join(_HERE, "my_test_case.asm")
 DEBUG_ASM_DIR = os.path.join(_HERE, "debug_asm")
-# similarity reference (only read if the disabled similarity reward is turned on);
-# a sibling of the sca-fuzzer checkout. Best-effort — may not exist on every box.
-SIMILARITY_REF_DIR = os.path.join(
-    os.path.dirname(_REPO_ROOT),
-    "attack_seq_generation", "side-channel-fuzzer", "spectre_v4_example",
-)
-
-
 # Speculative Store Bypass prctl constants. Originally V4-only, but the
 # `_force_kernel_ssb_vulnerable()` hook below is required for Ray rollout
 # workers regardless of vulnerability_type — without it the workers boot
@@ -81,52 +72,6 @@ SIMILARITY_REF_DIR = os.path.join(
 PR_SET_SPECULATION_CTRL = 53
 PR_SPEC_STORE_BYPASS = 0
 PR_SPEC_ENABLE = 1 << 1
-
-
-
-_EMBEDDER_CACHE: Dict[Tuple[str, str], Tuple[object, object]] = {}
-
-
-def _get_text_embedder(model_name: str, device: str):
-    key = (model_name, device)
-    if key in _EMBEDDER_CACHE:
-        return _EMBEDDER_CACHE[key]
-    from transformers import AutoTokenizer, AutoModel  # lazy import
-    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
-    tok = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name).to(device).eval()
-    _EMBEDDER_CACHE[key] = (tok, model)
-    return tok, model
-
-
-def _filter_reference_asm_text(path: str) -> str:
-    """
-    Extract just the agent-emitted instructions from a reference .asm file.
-    Skips:
-        - directives / labels (lines starting with '.')
-        - lines tagged '# instrumentation' (sandbox-inserted ops like
-          `and rax, 0b1111111111111`)
-        - pure comments
-    Trailing inline comments are stripped. The output is a newline-joined
-    string of one instruction per line, matching the format we'll generate
-    for SpecRL programs.
-    """
-    out: List[str] = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("."):
-                continue
-            if "# instrumentation" in s:
-                continue
-            if s.startswith("#"):
-                continue
-            s = s.split("#", 1)[0].strip()
-            if s:
-                out.append(s)
-    return "\n".join(out)
 
 
 class SpecEnv(gym.Env):
@@ -176,10 +121,17 @@ class SpecEnv(gym.Env):
                 print(f"[CONF-LOAD][worker pid={os.getpid()}] FAILED to load "
                       f"{_cfg_path}: {exc} -- generator falls back to DEFAULTS "
                       f"(no conditional branches!)", flush=True)
-        # Per-process SSB opt-in. Originally V4-only but kept on at all times:
-        # Ray rollout workers re-import CONF fresh, so the only reliable place
-        # to switch SSBD off is here, inside the worker's __init__.
-        self._ensure_ssb_vulnerable_for_process()
+        # Per-process SSB policy, driven by the campaign config
+        # (x86_executor_enable_ssbp_patch, loaded just above):
+        #   false (v4.yaml) -> opt this process INTO store bypass so Spectre-v4 can fire
+        #   true  (v1.yaml) -> leave SSBD on so v4 cannot pollute the v1 signal
+        # Ray rollout workers re-import CONF fresh, so this must happen here,
+        # inside the worker's __init__.
+        if not CONF.x86_executor_enable_ssbp_patch:
+            self._ensure_ssb_vulnerable_for_process()
+        else:
+            print(f"[SSB][SpecEnv] ssbp_patch=True -> not opting into store bypass; "
+                  f"{self._read_ssb_status_line()}", flush=True)
         # Same reason as SSBD above: Ray rollout workers re-import rvzr.config
         # with DEFAULTS, so the `--config big_fuzz.yaml` contract loaded in the
         # driver (train.py __main__) never reaches the model built here. Without
@@ -240,10 +192,6 @@ class SpecEnv(gym.Env):
         # Default switched from "spectre_v4" -> "spectre_v1". v4 path is kept
         # (commented) for reference but not used during training.
         self.vulnerability_type = env_config.get("vulnerability_type", "spectre_v1")
-        # Bumped default from 1.0 -> 5.0 so partial structural pattern reward
-        # can out-weigh the per-step obs/misspec filter penalties below and
-        # drive the agent toward v4 gadget layouts before a real leak is seen.
-        self.pattern_reward_scale = float(env_config.get("pattern_reward_scale", 5.0))
         self.leak_reward = float(env_config.get("leak_reward", 600.0))
         self.trace_divergence_reward_scale = float(env_config.get("trace_divergence_reward_scale", 30.0))
         # Step-level shaping knobs (expose via env_config so train.py can tune):
@@ -267,7 +215,7 @@ class SpecEnv(gym.Env):
         # Single-sided observable reward (P0.2). The old symmetric form applied
         # -observable_bonus every step that was NOT observable, which compounds
         # into a huge negative floor (-50 * seq_size) and drowns the structural
-        # pattern signal. Default 0.0 here so "not observable yet" stops being
+        # trace-divergence signal. Default 0.0 here so "not observable yet" stops being
         # an active punishment and only the positive +observable_bonus remains.
         self.observable_penalty = float(env_config.get("observable_penalty", 0.0))
         # Consecutive-identical-instruction penalty: subtract when the agent inserts
@@ -276,6 +224,32 @@ class SpecEnv(gym.Env):
         # Compared against the last INSERTED op, so throwaway invalid actions in
         # between don't reset it.
         self.repeat_penalty = float(env_config.get("repeat_penalty", 10.0))
+        # Which basic block receives the agent's instruction each step.
+        #   "random" (default): uniformly pick a real (non-exit) basic block, so
+        #             the agent can populate the SPECULATIVE path. Required for
+        #             Spectre-v1: the jcc terminator sits at the END of bb0, so
+        #             anything appended to bb0 is BEFORE the branch and v1 can
+        #             never form. On a single-BB campaign (v4.yaml, fault_*.yaml)
+        #             this degenerates to bb0, so it is a safe default.
+        #   "first":  force everything into bb0 (the historical behavior).
+        # NOTE: the block count is read from the LIVE program in
+        # _pick_insert_bb_index, not cached from CONF here -- a cached value
+        # derived at __init__ time is impossible to tell apart from "first"
+        # once the run is going, and gets it wrong silently.
+        self.insert_bb_policy = str(env_config.get("insert_bb_policy", "random"))
+        # Private RNG for block selection -- it MUST NOT be the global `random`
+        # module. _full_obs_program() builds a fresh X86Fuzzer on every step, and
+        # Fuzzer.__init__ -> CodeGenerator._set_seed() calls
+        # random.seed(CONF.program_generator_seed) (code_generator.py), re-seeding
+        # the GLOBAL RNG with the same constant each step. Every global random.*
+        # draw in the env then replays an identical stream and collapses to a
+        # constant -- which pinned every instruction to bb0 and made Spectre-v1
+        # unreachable. A private Random() instance is immune to that.
+        self._bb_rng = random.Random(env_config.get("bb_rng_seed", None))
+        print(f"[BB-POLICY][worker pid={os.getpid()}] insert_bb_policy="
+              f"{self.insert_bb_policy} (explicit="
+              f"{'insert_bb_policy' in env_config}, "
+              f"CONF.max_bb_per_function={CONF.max_bb_per_function})", flush=True)
         # Per-episode count of each inserted (opcode,rs,rd,imm). The Nth insertion
         # of the SAME instruction costs repeat_penalty*(N-1), so spamming one op
         # escalates (total for N copies ~ penalty*N(N-1)/2) while a diverse program
@@ -283,14 +257,7 @@ class SpecEnv(gym.Env):
         # "consecutive identical" case and also catches scattered A..A..A spam.
         self._action_counts = {}
         self._repeat_penalty_this_step = 0.0
-        self.pattern_matcher = VulnerabilityPatternMatcher(self.vulnerability_type)
-        self.pattern_stage_reward = 0.0
-        self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
-        # Per-episode running max of each pattern counter (for RLlib custom_metrics → wandb).
-        self.episode_pattern_match_max: Dict[str, int] = {}
-        # Snapshot taken at reset() after an episode ends; safe when callback runs after reset.
-        self._last_completed_episode_pattern_match: Dict[str, int] = {}
 
         # Per-episode micro-architectural signal trackers (wandb -> train/leak/*).
         #   trace_div_max : max trace_divergence_score ever hit in this episode
@@ -301,8 +268,8 @@ class SpecEnv(gym.Env):
         self.episode_observable_any: bool = False
         self.episode_leak_any: bool = False
         self.episode_steps_observable: int = 0
-        # Completed-episode snapshots for RLlib callbacks (mirrors the
-        # pattern_match_max pair above so on_episode_end can read after reset).
+        # Completed-episode snapshots for RLlib callbacks, taken at reset() so
+        # on_episode_end reads valid values whether it runs before or after reset.
         self._last_episode_trace_div_max: float = 0.0
         self._last_episode_observable_any: bool = False
         self._last_episode_leak_any: bool = False
@@ -389,103 +356,9 @@ class SpecEnv(gym.Env):
         self.input_gen = factory.get_data_generator(CONF.data_generator_seed)
         self.inputs = self.input_gen.generate(self.num_inputs, n_actors=1) # at some point would like these inputs to fall under action space
 
-        # SSBD-ON experiment: HARD-FORCE the kernel module's SSBD patch ON, so
-        # store bypass (v4) is mitigated in hardware. Ray rollout workers re-import
-        # CONF with defaults, so we set the executor sysfs here to guarantee SSBD=1
-        # in ring-0 test runs. Goal: find leaks that survive SSBD (beyond v1 & v4).
-        self._force_kernel_ssbd_on()
-
-        # self.similarity_model_name = env_config.get("similarity_model_name", "sentence-transformers/all-MiniLM-L6-v2")
-        # self.similarity_device = env_config.get("similarity_device", "cuda:0" if self._cuda_available() else "cpu")
-        # self.similarity_top_k = int(env_config.get("similarity_top_k", 3))
-        # self.similarity_reward_scale = float(env_config.get("similarity_reward_scale", 20.0))
-        # self.similarity_baseline_subtract = bool(env_config.get("similarity_baseline_subtract", False))
-        # self.similarity_max_length = int(env_config.get("similarity_max_length", 512))
-        # similarity machinery is generic (UniXcoder cosine vs. a directory of
-        # reference asm files). The hardcoded v4 example default is commented
-        # out — pass `similarity_reference_dir` in env_config to enable it for
-        # any vulnerability. Empty default => similarity reward is disabled.
-        ref_dir = env_config.get(
-            "similarity_reference_dir",
-            SIMILARITY_REF_DIR,
-        )
-        self._sim_tokenizer = None
-        self._sim_model = None
-        self._reference_embeddings = None  # (N_ref, hidden_dim) on similarity_device, normalized
-        self._reference_centroid = None    # (hidden_dim,) on similarity_device, normalized
-        self.similarity_score = 0.0
-        self.episode_similarity_max = 0.0
-        self._last_episode_similarity_max = 0.0
-        # self._init_similarity_embedder(ref_dir)
-
-    @staticmethod
-    def _cuda_available() -> bool:
-        try:
-            import torch
-            return bool(torch.cuda.is_available())
-        except Exception:
-            return False
-
-    def _init_similarity_embedder(self, ref_dir: str) -> None:
-        """
-        Lazy-load the embedder and pre-embed reference asm files.
-        On any failure (model download / no refs / etc.), disable the
-        similarity reward by leaving _reference_embeddings=None.
-        """
-        if not ref_dir or not os.path.isdir(ref_dir):
-            print(f"[SIM][SpecEnv] reference_dir '{ref_dir}' not found; similarity reward disabled")
-            return
-        ref_paths = sorted(
-            os.path.join(ref_dir, f)
-            for f in os.listdir(ref_dir)
-            if f.endswith(".asm")
-        )
-        if not ref_paths:
-            print(f"[SIM][SpecEnv] no .asm files in {ref_dir}; similarity reward disabled")
-            return
-        try:
-            tok, model = _get_text_embedder(self.similarity_model_name, self.similarity_device)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[SIM][SpecEnv] failed to load embedder {self.similarity_model_name}: {exc}; "
-                  "similarity reward disabled")
-            return
-
-        ref_texts = [_filter_reference_asm_text(p) for p in ref_paths]
-        empty = [p for p, t in zip(ref_paths, ref_texts) if not t.strip()]
-        if empty:
-            print(f"[SIM][SpecEnv] WARNING: empty after filtering: {empty}")
-
-        self._sim_tokenizer = tok
-        self._sim_model = model
-        self._reference_embeddings = self._embed_texts(ref_texts)
-        # Centroid (normalized) for optional baseline subtraction.
-        import torch
-        centroid = self._reference_embeddings.mean(dim=0, keepdim=True)
-        self._reference_centroid = torch.nn.functional.normalize(centroid, dim=-1).squeeze(0)
-
-        # Diagnostic: print pairwise cosines so the user can see how
-        # discriminative the references are (high baseline => weak signal).
-        sim = (self._reference_embeddings @ self._reference_embeddings.T).cpu().numpy()
-        off_diag = sim[~np.eye(sim.shape[0], dtype=bool)]
-        print(f"[SIM][SpecEnv] loaded {len(ref_paths)} refs from {ref_dir}; "
-              f"pairwise cosine: mean={off_diag.mean():.3f}, "
-              f"min={off_diag.min():.3f}, max={off_diag.max():.3f}")
-
-    def _embed_texts(self, texts: List[str]):
-        """Tokenize + forward + mean-pool + L2-normalize. Returns (B, hidden_dim)."""
-        import torch
-        with torch.no_grad():
-            enc = self._sim_tokenizer(
-                texts,
-                padding=True,
-                truncation=True,
-                max_length=self.similarity_max_length,
-                return_tensors="pt",
-            ).to(self.similarity_device)
-            out = self._sim_model(**enc).last_hidden_state  # (B, T, H)
-            mask = enc["attention_mask"].unsqueeze(-1).float()
-            pooled = (out * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1)
-            return torch.nn.functional.normalize(pooled, dim=-1)
+        # Push the campaign's SSBD setting to the kernel module. Must happen after
+        # factory.get_executor() so the module is loaded and the sysfs file exists.
+        self._apply_ssbd_sysfs()
 
     # SSB / SSBD helper methods. Originally added for Spectre v4 only; kept
     # always-on because Ray rollout workers re-import CONF and would otherwise
@@ -502,38 +375,37 @@ class SpecEnv(gym.Env):
             return "Speculation_Store_Bypass: unknown (read failed)"
         return "Speculation_Store_Bypass: unknown (missing)"
 
-    def _force_kernel_ssbd_on(self) -> None:
+    def _apply_ssbd_sysfs(self) -> None:
         """
-        SSBD-ON experiment (cond-only contract). Directly write "1" to
-        /sys/rvzr_executor/enable_ssbp_patch so that the kernel module SETS
-        MSR_IA32_SPEC_CTRL.SSBD when running test cases in ring 0 (store bypass
-        DISABLED in hardware). Also force CONF.x86_executor_enable_ssbp_patch =
-        True so subsequent Executor re-syncs keep SSBD on.
+        Write the campaign's SSBD setting to /sys/rvzr_executor/enable_ssbp_patch
+        so the kernel module sets (or clears) MSR_IA32_SPEC_CTRL.SSBD when it runs
+        test cases in ring 0.
 
-        To revert to the beyond-bpas setup: write "0" / set the CONF flag False
-        (i.e. the old _force_kernel_ssb_vulnerable behavior), use ["cond","bpas"]
-        as the contract, and set ssbp_patch:false in big_fuzz.yaml.
+            x86_executor_enable_ssbp_patch: true  -> write "1": store bypass is
+                mitigated in hardware. Use for Spectre-v1 campaigns, so a v4 leak
+                cannot be mistaken for a v1 violation under the seq contract.
+            x86_executor_enable_ssbp_patch: false -> write "0": store bypass is
+                left exploitable. REQUIRED for Spectre-v4 campaigns.
 
-        The sysfs file is write-only (EIO on read), so we can't verify after
-        the write; we log whether the write succeeded and trust the kernel
-        module's own error reporting.
+        The sysfs file is write-only (EIO on read), so we cannot verify after the
+        write; we log whether the write succeeded and trust the module's own error
+        reporting. CONF is NOT modified here -- the config is the single source of
+        truth, so a later Executor re-sync keeps the same setting.
         """
-        # Force CONF flag so any later _set_vendor_specific_features() call
-        # during re-init of the executor keeps SSBD set.
-        try:
-            setattr(CONF, "x86_executor_enable_ssbp_patch", True)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[SSBD][SpecEnv] could not set CONF flag: {exc}")
-
+        enabled = bool(CONF.x86_executor_enable_ssbp_patch)
+        value = "1" if enabled else "0"
+        meaning = "SSBD ON = store bypass mitigated" if enabled \
+            else "SSBD OFF = store bypass exploitable (v4 possible)"
         sysfs = "/sys/rvzr_executor/enable_ssbp_patch"
         try:
             with open(sysfs, "w", encoding="utf-8") as f:
-                f.write("1")
-            print(f"[SSBD][SpecEnv] wrote '1' to {sysfs} (SSBD ON = store bypass mitigated)")
+                f.write(value)
+            print(f"[SSBD][SpecEnv] wrote '{value}' to {sysfs} ({meaning})", flush=True)
         except OSError as exc:
             print(
                 f"[SSBD][SpecEnv] FAILED to write {sysfs}: {exc}. "
-                "Kernel module may not be loaded or permissions are wrong."
+                "Kernel module may not be loaded or permissions are wrong.",
+                flush=True,
             )
 
     def _ensure_ssb_vulnerable_for_process(self) -> None:
@@ -590,6 +462,22 @@ class SpecEnv(gym.Env):
         except OSError as exc:
             print(f"[SSB][SpecEnv] could not read {sysfs_path}: {exc}")
 
+    def _pick_insert_bb_index(self) -> int:
+        """
+        Pick the basic block that receives the agent's next instruction.
+
+        The block count comes from the LIVE program, so a single-BB campaign
+        degenerates to bb0 on its own and no cached config value can silently
+        pin a multi-BB campaign to bb0. Errors are deliberately NOT swallowed:
+        a silent `return 0` here is indistinguishable from the "first" policy.
+
+        Uses self._bb_rng, NOT the global random module -- see __init__.
+        """
+        if self.insert_bb_policy == "first":
+            return 0
+        n_bb = len(list(self.new_program[0][0]))
+        return self._bb_rng.randrange(n_bb) if n_bb > 1 else 0
+
     """
     step(action):
 
@@ -641,8 +529,7 @@ class SpecEnv(gym.Env):
             print(f"NUMBER OF STEPS: {self.step_counter}")
 
             target_desc = X86TargetDesc()
-            # self.generator._insert_bb_index = random.choice([0, 1])
-            self.generator._insert_bb_index = 0
+            self.generator._insert_bb_index = self._pick_insert_bb_index()
             passed_inst = X86CheckAll(self.generator, self.new_program, inst_action, target_desc)
             # Only run the (expensive, assembles+emulates) loop check on instructions
             # that already passed validation — assembling an invalid instruction would
@@ -661,7 +548,7 @@ class SpecEnv(gym.Env):
                 return step_obs, step_reward, end, truncate, {"program": self.new_program}
             else:
                 self.generator.insert_instruction_in_test_case_randomly(self.new_program, inst_action, self.generator._insert_bb_index)
-                print(f"adding step {inst_action}")
+                print(f"adding step {inst_action}  -> bb_{self.generator._insert_bb_index}")
                 # Diversity penalty, counted by OPCODE (not the exact tuple): the
                 # agent dodged an exact-tuple penalty by cycling ONE op across
                 # registers (cmp [rax], cmp [rbx], ...). Opcode-level escalation
@@ -694,8 +581,6 @@ class SpecEnv(gym.Env):
         return step_obs, step_reward, end, truncate, {
             "program": self.new_program,
             "end_game_count": self.end_game_counter,
-            "pattern_reward": self.pattern_stage_reward,
-            "pattern_matches": self.pattern_match_counts,
             "terminated_on_violation": terminated_on_violation,
         }
 
@@ -714,29 +599,22 @@ class SpecEnv(gym.Env):
         super().reset(seed=seed)
         self.counter += 1
         print(f"NUMBER OF TEST CASES: {self.counter}")
-        # Completed-episode snapshot for RLlib callbacks (works whether on_episode_end runs before or after reset).
-        self._last_completed_episode_pattern_match = dict(self.episode_pattern_match_max)
-        self.episode_pattern_match_max = {}
-        # Same snapshot strategy for micro-arch signal roll-ups.
+        # Completed-episode snapshot for RLlib callbacks (works whether
+        # on_episode_end runs before or after reset).
         self._last_episode_trace_div_max = float(self.episode_trace_div_max)
         self._last_episode_observable_any = bool(self.episode_observable_any)
         self._last_episode_leak_any = bool(self.episode_leak_any)
         self._last_episode_steps_observable = int(self.episode_steps_observable)
-        self._last_episode_similarity_max = float(self.episode_similarity_max)
         self.episode_trace_div_max = 0.0
         self.episode_observable_any = False
         self.episode_leak_any = False
         self.episode_steps_observable = 0
-        self.episode_similarity_max = 0.0
         self.num_steps = 0
         # reset the diversity tracker so counts don't carry across episodes
         self._action_counts = {}
         self._repeat_penalty_this_step = 0.0
         self.bad_case = False
-        self.pattern_stage_reward = 0.0
-        self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
-        self.similarity_score = 0.0
         self.new_program = self.generator.create_test_case_SpecRL(MY_TEST_CASE_ASM, disable_assembler=True, generate_empty_case=True)
 
         # Re-sample inputs every episode so the htrace side-channel signal
@@ -944,50 +822,6 @@ class SpecEnv(gym.Env):
             regs.append([1 if counts[v] > 1 else 0 for v in raw])
         return regs
 
-    def _extract_agent_asm_text(self, program: TestCaseProgram) -> str:
-        """
-        Render the agent-emitted instructions of `program` as plain asm text,
-        one instruction per line. Skips the same things _build_pattern_tokens
-        and _filter_reference_asm_text skip:
-            - instrumentation (sandbox-inserted ops)
-            - macros (.macro.measurement_*)
-        Used as the input text to the similarity embedder.
-        """
-        lines: List[str] = []
-        for bb in program.iter_basic_blocks():
-            for instr in bb:
-                if instr.is_instrumentation:
-                    continue
-                if instr.name == "macro":
-                    continue
-                lines.append(self.printer._instruction_to_str(instr))
-        return "\n".join(lines)
-
-    def _compute_similarity_score(self, program: TestCaseProgram) -> float:
-        """
-        Cosine similarity (top-K mean) between embedding of agent's asm text
-        and the cached reference embeddings. Returns 0.0 if similarity reward
-        is disabled or program has no agent-emitted instructions.
-        """
-        if self._reference_embeddings is None or self._sim_model is None:
-            return 0.0
-        text = self._extract_agent_asm_text(program)
-        if not text.strip():
-            return 0.0
-        agent_emb = self._embed_texts([text])  # (1, H), normalized
-        sims = (agent_emb @ self._reference_embeddings.T).squeeze(0)  # (N_ref,)
-
-        if self.similarity_baseline_subtract:
-            # Subtract similarity to the centroid: rewards being closer to
-            # the references than the references' average is to itself.
-            baseline = float((agent_emb @ self._reference_centroid).item())
-            sims = sims - baseline
-
-        k = min(self.similarity_top_k, sims.shape[0])
-        topk = sims.topk(k).values
-        return float(topk.mean().item())
-
-
     """
     reward():
     returns a reward for the agent
@@ -1005,31 +839,19 @@ class SpecEnv(gym.Env):
     def _reward(self):
         reward = 0
         self._full_obs_program(self.new_program, self.inputs) # this is where the analyzer, observation filter, etc... are called
-        # reward += self.pattern_stage_reward
         reward += self.trace_divergence_reward_scale * self.trace_divergence_score
-        # Code-similarity reward (UniXcoder cosine vs reference attacks).
-        # 0 when disabled (no refs / model failed to load) so it's a no-op.
-        # sim_reward = self.similarity_reward_scale * self.similarity_score
-        # reward += sim_reward
-        # for k, v in self.pattern_match_counts.items():
-        #     iv = int(v)
-        #     self.episode_pattern_match_max[k] = max(self.episode_pattern_match_max.get(k, 0), iv)
         # Per-episode micro-arch signal roll-ups (feed wandb via callbacks).
         # if self.trace_divergence_score > self.episode_trace_div_max:
         #     self.episode_trace_div_max = float(self.trace_divergence_score)
-        # if self.similarity_score > self.episode_similarity_max:
-        #     self.episode_similarity_max = float(self.similarity_score)
         if self.observable:
             self.episode_observable_any = True
             self.episode_steps_observable += 1
         if self.leak:
             self.episode_leak_any = True
-        # print(f"pattern shaping reward: {self.pattern_stage_reward}, matches: {self.pattern_match_counts}")
         print(
             f"trace divergence reward: {self.trace_divergence_reward_scale * self.trace_divergence_score} "
             f"(score={self.trace_divergence_score})"
         )
-        # print(f"similarity reward: {sim_reward} (score={self.similarity_score:.4f}, top_k={self.similarity_top_k})")
         if self.leak:
             print("\n!!! LEAK OCCURED !!!\n")
             reward += self.leak_reward
@@ -1041,7 +863,7 @@ class SpecEnv(gym.Env):
         # Observable filter: single-sided (P0.2). +observable_bonus when the
         # fenced-vs-unfenced htrace diverges (a real pre-leak signal), and
         # -observable_penalty (default 0) otherwise so non-observable steps
-        # don't accumulate a huge negative drag against pattern shaping.
+        # don't accumulate a huge negative drag against the divergence signal.
         if self.observable:
             reward += self.observable_bonus
         else:
@@ -1064,10 +886,7 @@ class SpecEnv(gym.Env):
         self.leak = False
         self.misspec = False
         self.observable = False
-        self.pattern_stage_reward = 0.0
-        self.pattern_match_counts = {}
         self.trace_divergence_score = 0.0
-        self.similarity_score = 0.0
 
         self.fuzzer = X86Fuzzer(BASE_JSON, os.getcwd(), existing_test_case=MY_TEST_CASE_ASM, input_paths=self.inputs)
         self.fuzzer.model = self.model
@@ -1094,16 +913,6 @@ class SpecEnv(gym.Env):
             total_instructions_num = len(all_instructions)
             print("total instructions in program: ", total_instructions_num)
             # print("all instructions: ", [self.printer._instruction_to_str(instr) for instr in all_instructions])
-            # pattern_tokens = self._build_pattern_tokens(all_instructions)
-            # pattern_result = self.pattern_matcher.score(pattern_tokens)
-            # self.pattern_stage_reward = self.pattern_reward_scale * pattern_result.score
-            # self.pattern_match_counts = pattern_result.matches
-
-            # Code-similarity (UniXcoder cosine vs reference attacks). Cheap
-            # to compute alongside pattern matching since `temp` already has
-            # the agent-emitted instructions in iteration order.
-            # self.similarity_score = self._compute_similarity_score(temp)
-
             temp.assign_obj(bin.name)
             assemble(temp)
             self.elf_parser.populate_elf_data(temp.get_obj(), temp)
@@ -1475,93 +1284,3 @@ class SpecEnv(gym.Env):
 
     def _get_reg_size(self):
         return len(self.reg_vocab)
-
-    def _build_pattern_tokens(self, instructions: List[Instruction]) -> List[PatternToken]:
-        tokens: List[PatternToken] = []
-        for instr in instructions:
-            if instr.is_instrumentation or instr.name == "macro":
-                continue
-
-            variant = self._get_instruction_variant_name(instr)
-            mem_reads, mem_writes = self._extract_memory_access_bases(instr)
-            dst_regs, src_regs = self._extract_gpr_side_effects(instr)
-            kinds = {variant, variant.split("_")[0]}
-            if mem_reads:
-                kinds.add("load")
-            if mem_writes:
-                kinds.add("store")
-            if mem_reads or mem_writes:
-                kinds.add("memory")
-
-            tokens.append(
-                PatternToken(
-                    index=len(tokens),
-                    kinds=frozenset(kinds),
-                    mem_reads=tuple(mem_reads),
-                    mem_writes=tuple(mem_writes),
-                    opcode_variant=variant,
-                    dst_regs=tuple(dst_regs),
-                    src_regs=tuple(src_regs),
-                )
-            )
-        return tokens
-
-    def _extract_gpr_side_effects(self, instr: Instruction) -> Tuple[List[str], List[str]]:
-        """
-        Return (dst_regs, src_regs) for the instruction, restricted to the env's reg_vocab.
-        These are GPR-level side effects (ALU dst / load dst / ALU src), NOT memory-base
-        registers used to compute addresses.  Memory bases are already handled by
-        _extract_memory_access_bases.
-
-        This powers dependency-chain reasoning in pattern_matching.py:
-          - "is the store's base overwritten between store and load?"  -> dst_regs
-          - "is there a slow-addr producer that WRITES the store's base?"  -> dst_regs
-          - "is the transmitter's base a register written by the bypass load?" -> dst_regs
-        """
-        dst_regs: List[str] = []
-        src_regs: List[str] = []
-        for reg_op in instr.get_reg_operands(include_implicit=True):
-            name = self._normalize_reg_name(str(reg_op.value).lower())
-            if name not in self.reg_vocab:
-                continue
-            if getattr(reg_op, "dest", False):
-                dst_regs.append(name)
-            if getattr(reg_op, "src", False):
-                src_regs.append(name)
-
-        # Annotate implicit register side effects that aren't surfaced as
-        # RegisterOps in our synthesized instructions. This matters for
-        # pattern_matching._has_slow_addr_producer to credit `mul` as a
-        # producer of the store's base register (rax or rdx).
-        name_lower = instr.name.lower()
-        if name_lower == "mul":
-            # mul writes rdx:rax implicitly, reads rax implicitly.
-            dst_regs.extend(["rax", "rdx"])
-            src_regs.append("rax")
-
-        return sorted(set(dst_regs)), sorted(set(src_regs))
-
-    def _extract_memory_access_bases(self, instr: Instruction) -> tuple[List[str], List[str]]:
-        reads: List[str] = []
-        writes: List[str] = []
-        for mem_op in instr.get_mem_operands(include_explicit=True):
-            expr = str(mem_op.value).lower()
-            parts = re.split(r"[^a-z0-9_]+", expr)
-            bases = []
-            for token in parts:
-                if not token:
-                    continue
-                normalized = self._normalize_reg_name(token)
-                if normalized in self.reg_vocab:
-                    bases.append(normalized)
-            if not bases:
-                continue
-
-            if getattr(mem_op, "src", False):
-                reads.extend(bases)
-            if getattr(mem_op, "dest", False):
-                writes.extend(bases)
-            if not getattr(mem_op, "src", False) and not getattr(mem_op, "dest", False):
-                reads.extend(bases)
-
-        return sorted(set(reads)), sorted(set(writes))

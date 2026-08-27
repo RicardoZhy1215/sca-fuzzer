@@ -1,0 +1,48 @@
+# Violation Report
+
+* Test Case ID: 3208
+* Detected: 27.08.26 at 03:28:20
+
+* Time to detection: 34.837069
+* Statistics:
+Test Cases: 3209
+Inputs per test case: 100.0
+Violations: 46
+Effectiveness: 
+  Total Cls: 50.0
+  Effective Cls: 50.0
+Discarded Test Cases:
+  Speculation Filter: 2757
+  Observation Filter: 141
+  Fast Path: 256
+  Max Nesting Check: 0
+  Tainting Check: 0
+  Early Priming Check: 0
+  Large Sample Check: 0
+  Priming Check: 0
+
+
+## Generation Properties
+* Program seed: 0
+* Input seed: 73890
+* Faulty page properties:
+  - Actor 0:
+    * PTE: 
+
+## Counterexample Inputs
+
+Input #7
+* Hardware trace:
+ ^.............^................................................. [626]
+^.............^..........................^...................... [1]
+
+* Contract trace (hash): 12168658829878311581
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xd, pc: 0x20]
+
+Input #57
+* Hardware trace:
+ ^...........................^................................... [626]
+^...........................^............^...................... [1]
+
+* Contract trace (hash): 12168658829878311581
+* Contract trace (detailed): [pc: 0x8, pc: 0xb, pc: 0xd, pc: 0x20]
