@@ -48,7 +48,7 @@ program_generator_seed: 20000000
 data_generator_seed: 1000000
 inputs_per_class: 2
 
-analyser_stat_threshold: 0.1
+analyser_stat_threshold: 0.5
 
 # enable_speculation_filter: true
 enable_observation_filter: true

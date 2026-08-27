@@ -1,0 +1,68 @@
+# config-shmem-poc.yaml — MANUAL shared-memory transient-leak prototype (no fuzzing of code).
+#
+# Same actor layout as demo/tsa-l1d (both guests KERNEL, observer's faulty page RO), so the fault
+# handling / DEH path is exactly the known-good one. The template is HAND-WRITTEN (no
+# random_instructions), so tfuzz here just runs the FIXED gadget across random INPUTS and lets the
+# ct-ni detector check whether the observer's htrace depends on the victim's secret.
+#
+# Sharing: both guests keep the default data_alias="main"; with hpa_gpa=true their data GPA aliases
+# main's HPA, so vmvictim and vm SHARE main's physical data page. The victim writes a secret to a
+# shared offset; the observer transiently reads it.
+
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"
+  - vmvictim:                      # guest kernel — writes the CONTROLLED secret to the shared buffer
+    - mode: "guest"
+    - privilege_level: "kernel"
+  - vm:                            # guest kernel — observer/attacker; RO faulty page -> #PF window
+    - mode: "guest"
+    - observer: true
+    - privilege_level: "kernel"
+    - data_properties:
+      - writable: false
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 1
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 15
+  - 40
+  - 160
+  - 320
+executor_filtering_repetitions: 5
+
+x86_enable_hpa_gpa_collisions: true   # aliases both guests' data -> main's HPA => SHARED buffer
+
+program_generator_seed: 20000000
+data_generator_seed: 1000000
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.2
+
+enable_observation_filter: true
+enable_fast_path_model: true
+
+logging_modes:
+  - info

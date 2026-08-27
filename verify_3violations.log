@@ -1,0 +1,49 @@
+==================================================================
+ SEQUENTIAL VERIFY — 4 minimized violation(s), reproduce x5 each, one at a time
+   module : 1CD139EF2BF9FE9618F4A95  (want clean 1CD139EF)
+   config : /home/mluo/sca-fuzzer/campaigns/vmscape-repro/config-refuzz-u2k.yaml
+==================================================================
+
+>>>>>>>>>>>>>>>> [1/4] violation-260817-090802  (07:39:44) >>>>>>>>>>>>>>>>
+   minimized 70 instrs (orig 236), 100 inputs
+   run 1: exit=1  VIOLATION
+   run 2: exit=1  VIOLATION
+   run 3: exit=1  VIOLATION
+   run 4: exit=1  VIOLATION
+   run 5: exit=0  clean
+   => violation-260817-090802 reproduced 4/5
+
+>>>>>>>>>>>>>>>> [2/4] violation-260817-111402  (07:40:26) >>>>>>>>>>>>>>>>
+   minimized 122 instrs (orig 227), 100 inputs
+   run 1: exit=1  VIOLATION
+   run 2: exit=1  VIOLATION
+   run 3: exit=1  VIOLATION
+   run 4: exit=1  VIOLATION
+   run 5: exit=1  VIOLATION
+   => violation-260817-111402 reproduced 5/5
+
+>>>>>>>>>>>>>>>> [3/4] violation-260817-121434  (07:41:24) >>>>>>>>>>>>>>>>
+   minimized 99 instrs (orig 238), 100 inputs
+   run 1: exit=1  VIOLATION
+   run 2: exit=1  VIOLATION
+   run 3: exit=1  VIOLATION
+   run 4: exit=1  VIOLATION
+   run 5: exit=1  VIOLATION
+   => violation-260817-121434 reproduced 5/5
+
+>>>>>>>>>>>>>>>> [4/4] violation-260817-125257  (07:42:22) >>>>>>>>>>>>>>>>
+   minimized 136 instrs (orig 222), 100 inputs
+   run 1: exit=0  clean
+   run 2: exit=0  clean
+   run 3: exit=0  clean
+   run 4: exit=1  VIOLATION
+   run 5: exit=1  VIOLATION
+   => violation-260817-125257 reproduced 2/5
+
+==================================================================
+ SUMMARY — minimized programs reproduce rate (x5 each):
+   violation-260817-090802 : 4/5  (70 instrs)
+   violation-260817-111402 : 5/5  (122 instrs)
+   violation-260817-121434 : 5/5  (99 instrs)
+   violation-260817-125257 : 2/5  (136 instrs)
+==================================================================

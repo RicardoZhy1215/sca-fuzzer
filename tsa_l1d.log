@@ -1,0 +1,235 @@
+==================================================================
+ MINIMIZE  violation-260825-040842  (both guests KERNEL, ct-ni)
+   violation : /home/mluo/sca-fuzzer/violation-260825-040842
+   config    : /home/mluo/sca-fuzzer/violation-260825-040842/reproduce.yaml   (0.5 thr)
+   module    : 1CD139EF2BF9FE9618F4A95   ucode: 0xa705206
+   inputs    : 100 (loaded)   attempts: 3   counterexample: #39 vs #89
+   passes    : instruction, simplification comment
+   instrs before: 230   ->  output: /home/mluo/sca-fuzzer/violation-260825-040842/program.min.asm
+==================================================================
+[run] minimize starting (04:32:28) — SLOW; live log:
+------------------------------------------------------------------
+[minimizer] loading 100 saved inputs from /home/mluo/sca-fuzzer/violation-260825-040842
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0000.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0001.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0002.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0003.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0004.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0005.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0006.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0007.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0008.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0009.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0010.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0011.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0012.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0013.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0014.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0015.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0016.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0017.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0018.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0019.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0020.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0021.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0022.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0023.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0024.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0025.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0026.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0027.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0028.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0029.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0030.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0031.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0032.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0033.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0034.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0035.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0036.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0037.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0038.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0039.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0040.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0041.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0042.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0043.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0044.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0045.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0046.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0047.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0048.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0049.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0050.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0051.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0052.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0053.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0054.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0055.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0056.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0057.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0058.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0059.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0060.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0061.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0062.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0063.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0064.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0065.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0066.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0067.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0068.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0069.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0070.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0071.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0072.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0073.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0074.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0075.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0076.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0077.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0078.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0079.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0080.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0081.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0082.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0083.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0084.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0085.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0086.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0087.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0088.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0089.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0090.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0091.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0092.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0093.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0094.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0095.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0096.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0097.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0098.bin'
+DEBUG: Attempting to load path: '/home/mluo/sca-fuzzer/violation-260825-040842/input_0099.bin'
+[PASS 1] Reproducing the violation
+  > Violation reproduced. Proceeding with minimization
+  > Violating input IDs: [39, 89]
+[INFO] Minimization attempt 1/3
+[PASS 2] Instruction Removal Pass
+
+.............----.-.----------------------------------.---------
+....-----------------------------------------------------------
+-.
+[PASS 3] Instruction Simplification Pass
+
+..........--.---....---..--.-..-..---.-.---..----..-.-.........-
+.....-.--..--.--.-.--.--..-.-..-.-.--.---.---.---.--
+[PASS 4] Label Removal Pass
+
+.....-------.......---------------------------------------------
+-------------------------------------------------------..-..---
+---------------------------------------------------------------
+-----------------------------------..-.
+[INFO] Minimization attempt 2/3
+[PASS 5] Instruction Removal Pass
+
+......----------.---------------------------------------.-------
+----------------------------------------------------
+[PASS 6] Instruction Simplification Pass
+
+.-..------.--.----.--.-..--.--.-------.----.--.-......-..-.--..-
+----.--.--.-.--.---.---..-.------.---..------.
+[PASS 7] Label Removal Pass
+
+------.---------------------------------------------------------
+---------------------------------------------------------------
+---------------------------------------------------------------
+------------
+[INFO] Minimization attempt 3/3
+[PASS 8] Instruction Removal Pass
+
+------------------------------------------------.---------------
+----------------------------------------------
+[PASS 9] Instruction Simplification Pass
+
+----------.-------.--.-.---.---------------------.-.--.--.--..--
+--------------.----------.----------.--------
+[PASS 10] Label Removal Pass
+
+----------------------------------------------------------------
+---------------------------------------------------------------
+---------------------------------------------------------------
+----------
+[PASS 11] Violation Comment Insertion
+[PASS 12] Label Removal Pass
+
+----------------------------------------------------------------
+---------------------------------------------------------------
+---------------------------------------------------------------
+---------------------------------------------------
+[PASS 13] Storing the results
+------------------------------------------------------------------
+ minimized: 200 instrs  (was 230)   -> /home/mluo/sca-fuzzer/violation-260825-040842/program.min.asm
+ === surviving guest gadgets ===
+   .section .data.vmvictim
+   .function_vmvictim_0:
+   .macro.landing_h2g.vmvictim_0: nop qword ptr [rax + 0xff]
+   and rbx, 0b1111111111000 # instrumentation
+   neg byte ptr [r14 + rbx]
+   lea di, qword ptr [rsi]
+   and rax, 0b1111111111111 # instrumentation
+   add qword ptr [r14 + rax], -15
+   lea si, qword ptr [rdx + rcx + 12555]
+   sbb bl, al
+   cmp rdx, rdi
+   and rcx, 0b1111111111111 # instrumentation
+   or dword ptr [r14 + rcx], 0b1000 # instrumentation
+   and byte ptr [r14 + rcx], 0b11111000 # instrumentation
+   and edx, 0b11 # instrumentation
+   div dword ptr [r14 + rcx]
+   and rdi, 0b1111111111000 # instrumentation
+   xor dword ptr [r14 + rdi], ecx
+   and rsi, 0b1111111111111 # instrumentation
+   mov qword ptr [r14 + rsi], 2
+   not bl
+   mov al, cl
+   and rdi, 0b1111111111111 # instrumentation
+   and word ptr [r14 + rdi], -16
+   and rax, 0b1111111111111 # instrumentation
+   mov ax, word ptr [r14 + rax]
+   setnle cl
+   and rbx, 0b1111111111111 # instrumentation
+   mov ecx, dword ptr [r14 + rbx]
+   lea rbx, qword ptr [rsi + rax + 28813]
+   and rdi, 0b1111111111111 # instrumentation
+   xor byte ptr [r14 + rdi], -76
+   and rsi, 0b1111111111111 # instrumentation
+   mov eax, dword ptr [r14 + rsi]
+   movsx rbx, bx
+   and rcx, 0b1111111111000 # instrumentation
+   mov byte ptr [r14 + rcx], bl
+   and rdi, 0b1111111111111 # instrumentation
+   movzx rcx, word ptr [r14 + rdi]
+   and rdi, 0b1111111111111 # instrumentation
+   mov dword ptr [r14 + rdi], 10
+   mov rbx, 71
+   lea rbx, qword ptr [rsi + rsi + 13240]
+   and rbx, 0b1111111111111 # instrumentation
+   mov di, word ptr [r14 + rbx]
+   mov al, bl
+   mov rax, rdx
+   and rcx, 0b1111111111111 # instrumentation
+   mov esi, dword ptr [r14 + rcx]
+   and rcx, 0b1111111111111 # instrumentation
+   mov byte ptr [r14 + rcx], al
+   seto al
+   mov rbx, rsi
+   and rdi, 0b1111111111111 # instrumentation
+   movsx cx, byte ptr [r14 + rdi]
+   xor eax, 1643943753
+   add al, al
+   movsx edi, cx
+   and rsi, 0b1111111111111 # instrumentation
+   mov byte ptr [r14 + rsi], 1
+
+ next: leaked values ->  bash /home/mluo/sca-fuzzer/campaigns/vmscape-repro/leaked_values_040842.sh
+==================================================================

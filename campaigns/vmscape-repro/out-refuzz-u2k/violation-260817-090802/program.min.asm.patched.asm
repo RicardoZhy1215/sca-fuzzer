@@ -98,7 +98,7 @@ mov qword ptr [r14 + rcx], rcx
 # mem access: [34] 0x909a cl 2:26 | [84] 0x909a cl 2:26
 mov rcx, 0b1111111111111 #
 and rdi, 0b1111111111111 # instrumentation
-mov byte ptr [r14 + rdi], al
+mov byte ptr [r14 + rdi], al #pf
 # mem access: [34] 0xab82-0x1ff8 cl 46:2 | [84] 0xab82-0x1ff8 cl 46:2
 and rsi, 0b1111111111111 # instrumentation
 mov ebx, dword ptr [r14 + rsi]

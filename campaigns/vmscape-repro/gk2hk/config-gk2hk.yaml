@@ -1,0 +1,63 @@
+# config-gk2hk.yaml — guest-KERNEL (observer/attacker) -> host-KERNEL (victim).
+#
+# Two actors: main = HOST victim (holds+injects the secret), vm = GUEST observer (fault-driven
+# retrieval + F+R). ct-ni violation = the guest transiently read the hypervisor's data.
+#
+# hpa_gpa=true is REQUIRED here: host<->guest do not share a linear address, so there is no microtag
+# path across this boundary; the guest reaches the host's L1D line only via the aliased shared
+# physical page. Seeds=0 -> random program/data each run (fuzzing). See template-gk2hk.asm header.
+
+instruction_set: x86-64
+instruction_categories:
+  - BASE-BINARY
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-COND_BR
+  - BASE-CONVERT
+  - BASE-DATAXFER
+  - BASE-FLAGOP
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-POP
+  - BASE-PUSH
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+  - BASE-WIDENOP
+
+actors:
+  - main:
+    - mode: "host"
+    - privilege_level: "kernel"          # HOST = VICTIM (holds the secret; runs the injection)
+  - vm:
+    - mode: "guest"
+    - observer: true                     # GUEST = OBSERVER / attacker
+    - privilege_level: "kernel"
+    - data_properties:
+      - writable: false                  # RO faulty page -> the observer's #PF opens the transient window
+
+contract_observation_clause: ct-ni
+
+max_bb_per_function: 1
+
+executor_mode: F+R
+executor_sample_sizes:
+  - 15
+  - 40
+  - 160
+  - 320
+executor_filtering_repetitions: 5
+
+x86_enable_hpa_gpa_collisions: true      # guest GPA aliases host HPA (see header) — REQUIRED here
+
+program_generator_seed: 0                # 0 -> random each run (fuzzing)
+data_generator_seed: 0
+inputs_per_class: 2
+
+analyser_stat_threshold: 0.5
+
+enable_observation_filter: true
+enable_fast_path_model: true
+
+logging_modes:
+  - info

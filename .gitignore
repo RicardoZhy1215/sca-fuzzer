@@ -22,3 +22,6 @@ dist/
 wandb/
 **/wandb/
 *.wandb
+
+# SpecRL training logs (run_train.sh)
+**/hierarchical_testing/logs/

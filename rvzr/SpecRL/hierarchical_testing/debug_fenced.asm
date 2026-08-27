@@ -4,205 +4,175 @@
 .bb_0.0:
 lfence
 .macro.measurement_start: nop qword ptr [rax + 0xff]
-and rcx, 0b1111111111111 # instrumentation
-lfence
-or rax, 1 # instrumentation
-lfence
-cmovnz rax, qword ptr [r14 + rcx]
+sbb rdi, rsi
 lfence
 and rsi, 0b1111111111111 # instrumentation
 lfence
-or rsi, 1 # instrumentation
+cmovnle rdi, qword ptr [r14 + rsi]
 lfence
-cmovnz rsi, qword ptr [r14 + rsi]
+sub rbx, rsi
 lfence
-and rcx, 0b1111111111000 # instrumentation
+sub rax, rdi
 lfence
-lock and qword ptr [r14 + rcx], rsi
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-mov rax, qword ptr [r14 + rbx]
-lfence
-setl dil
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-or rcx, 1 # instrumentation
-lfence
-cmovnz rcx, qword ptr [r14 + rdi]
-lfence
-and rsi, 0b1111111111111 # instrumentation
-lfence
-add rbx, qword ptr [r14 + rsi]
-lfence
-and rbx, 0b1111111111000 # instrumentation
-lfence
-lock cmpxchg qword ptr [r14 + rbx], rbx
-lfence
-and rdx, 0b1111111111000 # instrumentation
-lfence
-lock sub qword ptr [r14 + rdx], rsi
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmp rax, qword ptr [r14 + rcx]
-lfence
-and rax, 0b1111111111000 # instrumentation
-lfence
-lock add qword ptr [r14 + rax], rax
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-mov qword ptr [r14 + rbx], 6856
-lfence
-and rbx, 0b1111111111111 # instrumentation
-lfence
-stc  # instrumentation
-lfence
-cmovb rbx, qword ptr [r14 + rbx]
-lfence
-and rax, 0b1111111111111 # instrumentation
-lfence
-or rcx, 1 # instrumentation
-lfence
-cmovnz rcx, qword ptr [r14 + rax]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-cmovnle rdi, qword ptr [r14 + rdi]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-cmovnle rbx, qword ptr [r14 + rdi]
-lfence
-and rcx, 0b1111111111000 # instrumentation
-lfence
-lock xadd qword ptr [r14 + rcx], rcx
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmovs rdx, qword ptr [r14 + rcx]
-lfence
-and rdx, 0b1111111111111 # instrumentation
-lfence
-mov qword ptr [r14 + rdx], rcx
-lfence
-setz al
-lfence
-mov rax, rcx
-lfence
-and rdx, 0b1111111111111 # instrumentation
-lfence
-cmovbe rsi, qword ptr [r14 + rdx]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-add qword ptr [r14 + rdi], rsi
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-cmovns rsi, qword ptr [r14 + rdi]
-lfence
-and rdi, 0b1111111111000 # instrumentation
-lfence
-lock and qword ptr [r14 + rdi], rdi
-lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmp rcx, rcx # instrumentation
-lfence
-cmovz rcx, qword ptr [r14 + rcx]
-lfence
-and rax, 0b1111111111000 # instrumentation
-lfence
-lock inc qword ptr [r14 + rax]
+setnz cl
 lfence
 and rcx, 0b1111111111111 # instrumentation
 lfence
 cmovns rax, qword ptr [r14 + rcx]
 lfence
-and rdx, 0b1111111111000 # instrumentation
+and rsi, 0b1111111111111 # instrumentation
 lfence
-lock dec qword ptr [r14 + rdx]
+mov qword ptr [r14 + rsi], 4344
+lfence
+and rsi, 0b1111111111000 # instrumentation
+lfence
+lock dec qword ptr [r14 + rsi]
+lfence
+and rdi, 0b1111111111000 # instrumentation
+lfence
+lock sub qword ptr [r14 + rdi], rbx
+lfence
+setl bl
+lfence
+setz dil
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+add rcx, qword ptr [r14 + rdi]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+cmovle rbx, qword ptr [r14 + rdi]
+lfence
+adc rdx, rdi
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+cmp rdx, rdx # instrumentation
+lfence
+cmovz rdx, qword ptr [r14 + rdi]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+movzx rax, byte ptr [r14 + rdi]
 lfence
 and rsi, 0b1111111111111 # instrumentation
 lfence
-cmovnl rbx, qword ptr [r14 + rsi]
-lfence
-and rax, 0b1111111111000 # instrumentation
-lfence
-lock add qword ptr [r14 + rax], rcx
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-cmovs rsi, qword ptr [r14 + rdi]
-lfence
-and rdi, 0b1111111111111 # instrumentation
-lfence
-cmovs rsi, qword ptr [r14 + rdi]
+cmovnl rdx, qword ptr [r14 + rsi]
 lfence
 and rax, 0b1111111111111 # instrumentation
 lfence
-cmovnle rdx, qword ptr [r14 + rax]
+movzx rdx, byte ptr [r14 + rax]
+lfence
+adc rcx, rax
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+cmovl rsi, qword ptr [r14 + rsi]
+lfence
+and rdi, 0b1111111111000 # instrumentation
+lfence
+lock dec qword ptr [r14 + rdi]
+lfence
+test rax, rcx
+lfence
+and rax, 0b1111111111111 # instrumentation
+lfence
+cmovs rax, qword ptr [r14 + rax]
+lfence
+adc rbx, rax
+lfence
+mov rdx, rcx
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+mov qword ptr [r14 + rdi], rax
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+mul qword ptr [r14 + rbx]
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+cmovns rbx, qword ptr [r14 + rsi]
+lfence
+and rdi, 0b1111111111111 # instrumentation
+lfence
+cmovnle rbx, qword ptr [r14 + rdi]
+lfence
+and rsi, 0b1111111111111 # instrumentation
+lfence
+cmp rsi, qword ptr [r14 + rsi]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+cmovs rdx, qword ptr [r14 + rcx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+cmovbe rax, qword ptr [r14 + rbx]
+lfence
+and rax, 0b1111111111000 # instrumentation
+lfence
+lock sub qword ptr [r14 + rax], rax
 lfence
 and rbx, 0b1111111111000 # instrumentation
 lfence
-lock or qword ptr [r14 + rbx], rcx
+lock inc qword ptr [r14 + rbx]
 lfence
-and rdx, 0b1111111111111 # instrumentation
+mov rcx, rdi
 lfence
-add rax, qword ptr [r14 + rdx]
+and rax, 0b1111111111000 # instrumentation
 lfence
-setb bl
+lock add qword ptr [r14 + rax], rdi
 lfence
 and rcx, 0b1111111111111 # instrumentation
 lfence
-add qword ptr [r14 + rcx], rdi
+cmovs rdi, qword ptr [r14 + rcx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+or rbx, 1 # instrumentation
+lfence
+cmovnz rbx, qword ptr [r14 + rbx]
+lfence
+and rbx, 0b1111111111111 # instrumentation
+lfence
+cmovs rsi, qword ptr [r14 + rbx]
+lfence
+and rcx, 0b1111111111111 # instrumentation
+lfence
+cmovs rcx, qword ptr [r14 + rcx]
 lfence
 and rdi, 0b1111111111111 # instrumentation
 lfence
-cmp qword ptr [r14 + rdi], rbx
+cmovle rdi, qword ptr [r14 + rdi]
 lfence
-adc rbx, rbx
+and rax, 0b1111111111000 # instrumentation
 lfence
-imul rbx, rdx
+lock or qword ptr [r14 + rax], rcx
 lfence
-dec rdx
+adc rsi, rax
 lfence
-and rsi, 0b1111111111111 # instrumentation
+and rbx, 0b1111111111000 # instrumentation
 lfence
-cmovbe rsi, qword ptr [r14 + rsi]
-lfence
-and rdx, 0b1111111111000 # instrumentation
-lfence
-lock add qword ptr [r14 + rdx], rbx
-lfence
-and rsi, 0b1111111111111 # instrumentation
-lfence
-cmovnle rsi, qword ptr [r14 + rsi]
+lock inc qword ptr [r14 + rbx]
 lfence
 and rcx, 0b1111111111111 # instrumentation
 lfence
-or rax, 1 # instrumentation
+cmovns rbx, qword ptr [r14 + rcx]
 lfence
-cmovnz rax, qword ptr [r14 + rcx]
+and rsi, 0b1111111111111 # instrumentation
 lfence
-and rcx, 0b1111111111111 # instrumentation
-lfence
-cmovnle rsi, qword ptr [r14 + rcx]
+movzx rdx, byte ptr [r14 + rsi]
 lfence
 and rdi, 0b1111111111111 # instrumentation
 lfence
-cmp rax, qword ptr [r14 + rdi]
+movzx rcx, byte ptr [r14 + rdi]
 lfence
-not rax
+and rbx, rdi
 lfence
-and rsi, 0b1111111111111 # instrumentation
-lfence
-or rdx, 1 # instrumentation
-lfence
-cmovnz rdx, qword ptr [r14 + rsi]
+test rax, rdx
 lfence
 .exit_0:
 lfence
