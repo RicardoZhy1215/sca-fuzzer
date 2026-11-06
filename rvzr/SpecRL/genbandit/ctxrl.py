@@ -88,17 +88,59 @@ def prog_hash(prog):
 
 
 # ============================================================================ policy
-def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64):
+TF_MAX_T = 512        # tokens per program incl. the context token (edit worst case ~258)
+
+
+def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", tf_layers=2,
+                tf_heads=4, tf_ff=512):
+    """arch "gru": the context enters once, as the GRU's initial state; each token's input is the
+    sum of its embeddings (previous token value + query). arch "tf": a causal pre-LN Transformer
+    over [context token, token inputs], width `hidden` (embeddings are `hidden` wide too), so every
+    decision can attend to the context and to any earlier decision directly. Both expose
+    start(ctx) / step(x, state, rows) (incremental sampling) and seq(x, ctx) (teacher forcing)."""
     import torch
     import torch.nn as nn
+    import torch.nn.functional as F
     torch.manual_seed(seed)
     n_specs, P = len(table["names"]), table["program_size"]
     assert table["n_bb"] == 1, "ctxrl: single basic block only (for now)"
+    assert arch in ("gru", "tf")
+    if arch == "tf":
+        emb = hidden
     sizes = {K_SPEC: n_specs, K_REG: 6, K_MEM: 6, K_MODE: 3, K_COPY: 3}
+
+    class Block(nn.Module):
+        def __init__(self, d, nh, ff):
+            super().__init__()
+            self.nh = nh
+            self.ln1, self.ln2 = nn.LayerNorm(d), nn.LayerNorm(d)
+            self.qkv, self.proj = nn.Linear(d, 3 * d), nn.Linear(d, d)
+            self.mlp = nn.Sequential(nn.Linear(d, ff), nn.GELU(), nn.Linear(ff, d))
+
+        def _heads(self, t):                                   # (B, T, d) -> (B, nh, T, d/nh)
+            B, T, d = t.shape
+            return t.view(B, T, self.nh, d // self.nh).transpose(1, 2)
+
+        def forward(self, x):                                  # (B, T, d), causal
+            B, T, d = x.shape
+            q, k, v = (self._heads(t) for t in self.qkv(self.ln1(x)).chunk(3, -1))
+            a = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+            x = x + self.proj(a.transpose(1, 2).reshape(B, T, d))
+            return x + self.mlp(self.ln2(x))
+
+        def step(self, x, kv):                                 # x (B, d); kv: cached keys/values
+            B, d = x.shape
+            q, k, v = (self._heads(t[:, None]) for t in self.qkv(self.ln1(x)).chunk(3, -1))
+            if kv is not None:
+                k, v = torch.cat([kv[0], k], 2), torch.cat([kv[1], v], 2)
+            a = F.scaled_dot_product_attention(q, k, v)        # the new token sees all cached ones
+            x = x + self.proj(a.transpose(1, 2).reshape(B, d))
+            return x + self.mlp(self.ln2(x)), (k, v)
 
     class CtxPolicy(nn.Module):
         def __init__(self):
             super().__init__()
+            self.arch = arch
             o = 1
             self.off = {}
             for k in (K_SPEC, K_REG, K_MEM, K_MODE, K_COPY):
@@ -111,8 +153,14 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64):
             self.q_spec = nn.Embedding(n_specs + 1, emb)       # current instruction (n_specs: none)
             self.q_ipos = nn.Embedding(P + 1, emb)             # position (P: not per position)
             self.q_ref = nn.Embedding(n_specs + 1, emb)        # reference instruction at position
-            self.ctx = nn.Sequential(nn.Linear(N_CTX, hidden), nn.Tanh())
-            self.gru = nn.GRU(emb, hidden, batch_first=True)
+            if arch == "gru":
+                self.ctx = nn.Sequential(nn.Linear(N_CTX, hidden), nn.Tanh())
+                self.gru = nn.GRU(emb, hidden, batch_first=True)
+            else:
+                self.ctx_tok = nn.Linear(N_CTX, hidden)        # the context is token 0
+                self.tpos = nn.Embedding(TF_MAX_T, hidden)     # token index in the sequence
+                self.blocks = nn.ModuleList(Block(hidden, tf_heads, tf_ff) for _ in range(tf_layers))
+                self.ln_f = nn.LayerNorm(hidden)
             self.heads = nn.ModuleDict({str(k): nn.Sequential(
                 nn.Linear(hidden, hidden), nn.ReLU(), nn.Linear(hidden, n)) for k, n in sizes.items()})
             for h in self.heads.values():
@@ -152,6 +200,43 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64):
             n_ = torch.tanh(i_n + r * hn)
             return (1 - z) * n_ + z * h
 
+        # ---- incremental (sampling): rows = the batch rows still generating, in order
+        def start(self, c):
+            if self.arch == "gru":
+                return {"h": self.ctx(c)}
+            x = self.ctx_tok(c) + self.tpos.weight[0]
+            kv = []
+            for b in self.blocks:
+                x, c_ = b.step(x, None)
+                kv.append(c_)
+            return {"kv": kv, "rows": list(range(len(c))), "t": 1}
+
+        def step(self, x, state, rows):
+            if self.arch == "gru":
+                ha = self.cell(x, state["h"][rows])
+                state["h"][rows] = ha
+                return ha
+            if rows != state["rows"]:                          # finished rows leave the cache
+                idx = torch.tensor([state["rows"].index(r) for r in rows])
+                state["kv"] = [(k[idx], v[idx]) for k, v in state["kv"]]
+                state["rows"] = list(rows)
+            x = x + self.tpos.weight[state["t"]]
+            for i, b in enumerate(self.blocks):
+                x, state["kv"][i] = b.step(x, state["kv"][i])
+            state["t"] += 1
+            return self.ln_f(x)
+
+        # ---- whole sequences (teacher forcing): x (B, T, emb), c (B, N_CTX) -> (B, T, hidden)
+        def seq(self, x, c):
+            if self.arch == "gru":
+                h, _ = self.gru(x, self.ctx(c).unsqueeze(0).contiguous())
+                return h
+            X = torch.cat([self.ctx_tok(c)[:, None], x], 1)
+            X = X + self.tpos.weight[:X.shape[1]]
+            for b in self.blocks:
+                X = b(X)
+            return self.ln_f(X)[:, 1:]
+
     return CtxPolicy()
 
 
@@ -173,7 +258,7 @@ class CtxSampler:
         t, pol, P, NS = self.t, self.pol, self.P, self.n_specs
         B = len(refs)
         with torch.no_grad():
-            h = pol.ctx(torch.from_numpy(np.asarray(ctxs, np.float32)))
+            state = pol.start(torch.from_numpy(np.asarray(ctxs, np.float32)))
         st = []
         for b in range(B):
             st.append({"ph": "mode" if refs[b] is not None else "spec", "i": 0, "j": 0,
@@ -201,8 +286,7 @@ class CtxSampler:
             with torch.no_grad():
                 prev = T(np.array([st[b]["prev"] for b in act], np.int64))
                 x = pol.val(prev) + pol.query(*(T(q[:, c]) for c in (0, 1, 2, 3, 5, 6)))
-                ha = pol.cell(x, h[act])
-                h[act] = ha
+                ha = pol.step(x, state, act)
                 val = np.empty(len(act), np.int64)
                 lp = np.empty(len(act), np.float32)
                 for kd in np.unique(q[:, 0]):
@@ -288,8 +372,7 @@ def evaluate(pol, toks_batch, ctxs):
     a = torch.from_numpy(arr)
     kind, val, pos, sd, qs, sid, prev, ipos, ref = (a[..., c].long() for c in (0, 1, 2, 3, 4, 5, 7, 8, 9))
     x = pol.val(prev) + pol.query(kind, pos, sd, qs, ipos, ref)
-    h0 = pol.ctx(torch.from_numpy(np.asarray(ctxs, np.float32)))
-    h, _ = pol.gru(x, h0.unsqueeze(0).contiguous())
+    h = pol.seq(x, torch.from_numpy(np.asarray(ctxs, np.float32)))
     logp, kl, ent = torch.zeros(B, T), torch.zeros(B, T), torch.zeros(B, T)
     if W > 10:
         valid &= arr[..., 10] == 0                 # rule-forced mode tokens: input only
@@ -312,10 +395,10 @@ def evaluate(pol, toks_batch, ctxs):
 
 class CtxLearner:
     def __init__(self, table, seed=0, lr=3e-4, kl=0.1, sil=1.0, vf=0.5, clip=0.2, epochs=2,
-                 lam=0.9, sil_batch=64, buf_cap=5000):
+                 lam=0.9, sil_batch=64, buf_cap=5000, arch="gru", tf=None):
         import torch
         self.torch = torch
-        self.pol = make_policy(table, seed=seed)
+        self.pol = make_policy(table, seed=seed, arch=arch, **(tf or {}))
         self.opt = torch.optim.Adam(self.pol.parameters(), lr=lr)
         self.sampler = CtxSampler(table, self.pol, np.random.default_rng(seed + 1))
         self.kl, self.sil, self.vf, self.clip, self.epochs, self.lam = kl, sil, vf, clip, epochs, lam
@@ -438,11 +521,17 @@ def agent_main(table, out, prog_q, res_q, opts):
         pass
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
     import torch
-    torch.set_num_threads(4)
+    torch.set_num_threads(opts.get("threads", 4))
     E, N, pol_kind = opts.get("E", 16), opts.get("N", 8), opts.get("policy", "learn")
     rng = np.random.default_rng(opts.get("seed", 0))
     learner = CtxLearner(table, seed=opts.get("seed", 0), lr=opts.get("lr", 3e-4),
-                         kl=opts.get("kl", 0.1), sil=opts.get("sil", 1.0)) if pol_kind == "learn" else None
+                         kl=opts.get("kl", 0.1), sil=opts.get("sil", 1.0), arch=opts.get("arch", "gru"),
+                         tf=opts.get("tf")) if pol_kind == "learn" else None
+    if learner is not None:
+        n_par = sum(p.numel() for p in learner.pol.parameters())
+        json.dump({"arch": opts.get("arch", "gru"), "tf": opts.get("tf"), "params": n_par,
+                   "opts": {k: v for k, v in opts.items() if k != "tf"}},
+                  open(os.path.join(out, "agent_header.json"), "w"))
     mode_kind = opts.get("mode", "learn")             # learn: policy's mode head; rule2: rule2_mode
     if learner is not None and opts.get("init"):
         learner.pol.load_state_dict(torch.load(opts["init"]))    # warm start (same instruction set)
@@ -622,6 +711,41 @@ class CtxActor:
                 self.proc.terminate()
 
 
+class CtxABActor:
+    """Same-time A/B: several CtxActor arms (each its own agent process, out subdir, cores) take
+    turns test case by test case, so every arm sees the same machine state and time of day."""
+    needs_all_generators = False
+    wants_info = True
+
+    def __init__(self, out, action, arms):
+        self.action, self.arms, self.k = dict(action), [], -1
+        for name, opts in arms:
+            d = os.path.join(out, name)
+            os.makedirs(d, exist_ok=True)
+            self.arms.append((name, CtxActor(d, action, opts)))
+
+    def choose(self):
+        return dict(self.action), "ctx-ab"
+
+    def before_generate(self, gen):
+        self.k = (self.k + 1) % len(self.arms)
+        a = self.arms[self.k][1]
+        a.installed.pop(id(gen), None)       # point the generator's instruction filling at this arm
+        a.before_generate(gen)
+
+    def observe(self, stage, seconds, info=None):
+        self.arms[self.k][1].observe(stage, seconds, info)
+
+    def log_extra(self):
+        if self.k < 0:
+            return {}
+        return {**self.arms[self.k][1].log_extra(), "arm": self.arms[self.k][0]}
+
+    def close(self):
+        for _, a in self.arms:
+            a.close()
+
+
 # ============================================================================ synthetic test
 def cmd_synthetic(args):
     """Planted world, no hardware. A program's partial patterns q = #(store -> same-address-
@@ -674,7 +798,8 @@ def cmd_synthetic(args):
             info["fdiv"] = int(stage not in ("observ_filter",))
         return stage, info
 
-    L = CtxLearner(table, seed=args.seed, lr=args.lr, kl=args.kl, sil=args.sil)
+    L = CtxLearner(table, seed=args.seed, lr=args.lr, kl=args.kl, sil=args.sil, arch=args.arch,
+                   tf={"tf_layers": args.tf_layers} if args.arch == "tf" else None)
     if args.fresh_only:
         with torch.no_grad():
             L.pol.mode_prior.copy_(torch.tensor([0.0, NEG, NEG]))
@@ -746,6 +871,8 @@ def main():
     s.add_argument("--sil", type=float, default=1.0)
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--report", type=int, default=20)
+    s.add_argument("--arch", choices=["gru", "tf"], default="gru")
+    s.add_argument("--tf-layers", type=int, default=2)
     args = ap.parse_args()
     cmd_synthetic(args)
 

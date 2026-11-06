@@ -344,6 +344,13 @@ def main():
     ap.add_argument("--ctx-init", default="", help="ctx learn: warm-start policy.pt")
     ap.add_argument("--ctx-E", type=int, default=16, help="ctx: interleaved episodes")
     ap.add_argument("--ctx-N", type=int, default=8, help="ctx: programs per episode")
+    ap.add_argument("--ctx-arch", choices=["gru", "tf"], default="gru", help="ctx learn: policy network")
+    ap.add_argument("--ctx-ab", default="",
+                    help="ctx learn: same-time A/B of comma-separated archs (e.g. gru,tf), one agent "
+                         "and out subdir per arm, alternating test cases; learner cores are split")
+    ap.add_argument("--tf-layers", type=int, default=2)
+    ap.add_argument("--tf-heads", type=int, default=4)
+    ap.add_argument("--tf-ff", type=int, default=512)
     ap.add_argument("--rl-lr", type=float, default=3e-4, help="progrl: Adam learning rate")
     ap.add_argument("--rl-kl", type=float, default=0.1, help="progrl: KL-to-Revizor weight")
     ap.add_argument("--rl-sil", type=float, default=1.0, help="progrl: self-imitation weight")
@@ -370,14 +377,26 @@ def main():
             stdout=open(os.path.join(out, "learner.log"), "a"), stderr=subprocess.STDOUT,
             env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": "4"})
     if args.policy == "ctx":
-        from ctxrl import CtxActor
+        from ctxrl import CtxActor, CtxABActor
         a, b = (int(x) for x in args.learner_cores.split("-"))
-        actor = CtxActor(os.path.abspath(args.out), action,
-                         {"policy": args.ctx_policy, "mode": args.ctx_mode,
-                          "init": os.path.abspath(args.ctx_init) if args.ctx_init else "",
-                          "E": args.ctx_E, "N": args.ctx_N, "lr": args.rl_lr,
-                          "kl": args.rl_kl, "sil": args.rl_sil, "seed": args.seed,
-                          "cores": list(range(a, b + 1))})
+        cores = list(range(a, b + 1))
+        tf = {"tf_layers": args.tf_layers, "tf_heads": args.tf_heads, "tf_ff": args.tf_ff}
+
+        def ctx_opts(arch, seed, cores):
+            return {"policy": args.ctx_policy, "mode": args.ctx_mode,
+                    "init": os.path.abspath(args.ctx_init) if args.ctx_init else "",
+                    "E": args.ctx_E, "N": args.ctx_N, "lr": args.rl_lr,
+                    "kl": args.rl_kl, "sil": args.rl_sil, "seed": seed, "cores": cores,
+                    "threads": len(cores), "arch": arch, "tf": tf if arch == "tf" else None}
+        if args.ctx_ab:
+            arms = args.ctx_ab.split(",")
+            assert not args.ctx_init, "A/B arms start from the same (Revizor) prior"
+            k = len(cores) // len(arms)
+            actor = CtxABActor(os.path.abspath(args.out), action,
+                               [(arm, ctx_opts(arm, args.seed + 1000 * i, cores[i * k:(i + 1) * k]))
+                                for i, arm in enumerate(arms)])
+        else:
+            actor = CtxActor(os.path.abspath(args.out), action, ctx_opts(args.ctx_arch, args.seed, cores))
     if args.policy == "edit":
         from progrl import EditProbeActor
         actor = EditProbeActor(os.path.abspath(args.out), action, {"seed": args.seed})
