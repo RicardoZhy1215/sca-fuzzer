@@ -1,0 +1,7 @@
+__pycache__/
+*.pt
+*.out
+# run directories: keep only the write-ups
+runs/**
+!runs/**/
+!runs/*/RESULTS.md

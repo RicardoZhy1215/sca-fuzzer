@@ -1,0 +1,137 @@
+# program_size=8, mem_ratio=0.5, n_bb=3, successors=2, n_regs=2, entropy_bits=24, n_inputs=10, value_mix=default
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - no_speculation
+instruction_categories:
+  - BASE-COND_BR
+  - BASE-BINARY
+  - BASE-CMOV
+  - BASE-DATAXFER
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+inputs_per_class: 2
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+program_size: 8
+avg_mem_accesses: 4
+min_bb_per_function: 3
+max_bb_per_function: 3
+min_successors_per_bb: 2
+max_successors_per_bb: 2
+data_generator_entropy_bits: 24
+input_value_mix: default
+register_blocklist:
+  - r8
+  - r9
+  - r10
+  - r11
+  - r12
+  - r13
+  - r14
+  - r15
+  - rsp
+  - rbp
+  - r8d
+  - r9d
+  - r10d
+  - r11d
+  - r12d
+  - r13d
+  - r14d
+  - r15d
+  - esp
+  - ebp
+  - r8w
+  - r9w
+  - r10w
+  - r11w
+  - r12w
+  - r13w
+  - r14w
+  - r15w
+  - sp
+  - bp
+  - r8b
+  - r9b
+  - r10b
+  - r11b
+  - r12b
+  - r13b
+  - r14b
+  - r15b
+  - spl
+  - bpl
+  - es
+  - cs
+  - ss
+  - ds
+  - fs
+  - gs
+  - cr0
+  - cr2
+  - cr3
+  - cr4
+  - cr8
+  - dr0
+  - dr1
+  - dr2
+  - dr3
+  - dr4
+  - dr5
+  - dr6
+  - dr7
+  - xcr0
+  - gdtr
+  - ldtr
+  - idtr
+  - tr
+  - fsbase
+  - gsbase
+  - msrs
+  - x87control
+  - tsc
+  - tscaux
+  - mxcsr
+  - xmm8
+  - xmm9
+  - xmm10
+  - xmm11
+  - xmm12
+  - xmm13
+  - xmm14
+  - xmm15
+  - ymm8
+  - ymm9
+  - ymm10
+  - ymm11
+  - ymm12
+  - ymm13
+  - ymm14
+  - ymm15
+  - rcx
+  - ecx
+  - cx
+  - cl
+  - ch
+  - rdx
+  - edx
+  - dx
+  - dl
+  - dh
+  - rsi
+  - esi
+  - si
+  - sil
+  - rdi
+  - edi
+  - di
+  - dil

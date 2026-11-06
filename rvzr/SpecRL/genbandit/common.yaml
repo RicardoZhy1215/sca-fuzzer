@@ -1,0 +1,35 @@
+# Shared harness of every generator-bandit arm (arms/*.yaml include this file).
+# Same measurement setup as dr_fp/spec-dr-common.yaml (spec-ext's settings, DynamoRIO model);
+# the arms only change WHICH instructions are sampled and HOW input words are drawn.
+model_backend: dynamorio
+
+contract_observation_clause: ct
+contract_execution_clause: [seq]
+
+min_bb_per_function: 1
+max_bb_per_function: 1
+program_size: 64
+avg_mem_accesses: 24
+
+x86_executor_enable_ssbp_patch: true
+logging_modes: [info]
+
+enable_speculation_filter: false
+enable_observation_filter: false
+analyser_stat_threshold: 0.05
+analyser_outliers_threshold: 0.1
+
+# random input seed per slice (the fork's default, 10, would replay the same inputs every slice)
+data_generator_seed: 0
+
+# vldmxcsr/vstmxcsr: VEX forms of the already-blocked ldmxcsr/stmxcsr.
+# Masked moves: the DR model records a full-width access whatever the mask, while a zero-mask
+# masked store touches no line on Zen 4 -> guaranteed false positives
+# (memory: avx-masked-store-violations). Out until the DR backend handles masks.
+instruction_blocklist_append:
+  - vldmxcsr
+  - vstmxcsr
+  - vmaskmovps
+  - vmaskmovpd
+  - vpmaskmovd
+  - vpmaskmovq

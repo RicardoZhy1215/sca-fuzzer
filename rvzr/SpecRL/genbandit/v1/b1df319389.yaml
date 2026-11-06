@@ -1,0 +1,31 @@
+# program_size=24, mem_ratio=0.5, n_bb=2, successors=2, n_regs=6, entropy_bits=31, n_inputs=50, value_mix=default
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - no_speculation
+instruction_categories:
+  - BASE-COND_BR
+  - BASE-BINARY
+  - BASE-CMOV
+  - BASE-DATAXFER
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-SEMAPHORE
+  - BASE-SETCC
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+inputs_per_class: 2
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+program_size: 24
+avg_mem_accesses: 12
+min_bb_per_function: 2
+max_bb_per_function: 2
+min_successors_per_bb: 2
+max_successors_per_bb: 2
+data_generator_entropy_bits: 31
+input_value_mix: default
