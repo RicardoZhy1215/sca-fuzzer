@@ -10,6 +10,7 @@ extrapolated: a k not reached within the cap is reported as "not reached".
 Arms
   revizor_default  unmodified revizor.py fuzz, v4.yaml knobs, -i 50 (the bandit's control)
   revizor_tuned    unmodified revizor.py fuzz, the tuned config (coupled incumbent), -i 10
+  revizor_default64  unmodified revizor.py fuzz, v4.yaml knobs but program_size 64 (default 20)
   progrl_scratch   tcenv --policy progrl, fresh policy (= Revizor's distribution at start)
   ctx_scratch      tcenv --policy ctx, rule modes + lineage reward, fresh policy
   ctx_warm         same, policy warm-started from runs/ctx-rule2-v4-261106-0634/policy.pt
@@ -56,7 +57,8 @@ def run_arm(arm, out, minutes):
     os.makedirs(out, exist_ok=True)
     sec = int(minutes * 60)
     if arm.startswith("revizor"):
-        a = space.CONTROL if arm == "revizor_default" else TUNED
+        a = {"revizor_default": space.CONTROL,
+             "revizor_default64": {**space.CONTROL, "program_size": 64}}.get(arm, TUNED)
         cfg = space.write(a)
         t0 = time.time()
         res = run_config(cfg, space.V4_DIR, space.SPEC, out, sec, a["n_inputs"])
@@ -90,15 +92,19 @@ def summary(out):
         if r["arm"] not in arms:
             arms.append(r["arm"])
     print("minutes from process launch to the k-th violation (each round = one fresh run); "
-          "'-' = not reached within the cap")
-    print(f"{'arm':16s} {'round':>5s} {'cap':>5s} " + " ".join(f"{'k=' + str(k):>7s}" for k in KS) + "  violations")
+          "'-' = not reached within the cap; V/ktc = violations per 1000 test cases")
+    print(f"{'arm':17s} {'round':>5s} {'cap':>5s} " + " ".join(f"{'k=' + str(k):>7s}" for k in KS)
+          + "  violations  test_cases   V/ktc")
     for a in arms:
         rows = [r for r in R if r["arm"] == a]
         for i, r in enumerate(rows):
             t = violation_times(r["out"] if os.path.isabs(r["out"]) else os.path.join(ROOT, r["out"]),
                                 r["t0"])                 # recomputed from the artifacts
             cells = [f"{t[k - 1] / 60:7.2f}" if len(t) >= k else f"{'-':>7s}" for k in KS]
-            print(f"{a:16s} {i + 1:5d} {r['cap_min']:5.0f} " + " ".join(cells) + f"  {r['violations']}")
+            tc = r.get("test_cases") or 0
+            vk = f"{1000 * r['violations'] / tc:7.2f}" if tc else f"{'-':>7s}"
+            print(f"{a:17s} {i + 1:5d} {r['cap_min']:5.0f} " + " ".join(cells)
+                  + f"  {r['violations']:10d}  {tc:10d} {vk}")
 
 
 def main():
@@ -119,7 +125,7 @@ def main():
             if executor_busy():
                 print("[ttk] executor busy -- stopping", flush=True)
                 return
-            cap = args.cap_default if arm == "revizor_default" else args.cap
+            cap = args.cap_default if arm.startswith("revizor_default") else args.cap
             res = run_arm(arm, os.path.join(args.out, f"r{r}-{arm}"), cap)
             res["round"] = r
             with open(os.path.join(args.out, "ttk.jsonl"), "a") as f:
