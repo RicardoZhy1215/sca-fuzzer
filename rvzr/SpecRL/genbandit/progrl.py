@@ -621,13 +621,15 @@ def install(gen, source):
 
 
 # ============================================================================ offline tests
-def _offline_generator(action=None):
-    """A generator for the action's config without an executor (as space_v4.validate does)."""
+def _offline_generator(action=None, space=None):
+    """A generator for the action's config without an executor (as space_v4.validate does).
+    space: the config-space module (default space_v4; spectre_v1/space_v1ctx for v1)."""
     import warnings
     warnings.filterwarnings("ignore")
     sys.path.insert(0, ROOT)
     os.chdir(ROOT)
-    import space_v4 as space
+    if space is None:
+        import space_v4 as space
     from rvzr.config import CONF
     from rvzr.arch.x86.fuzzer import _update_instruction_list
     from rvzr.isa_spec import InstructionSet

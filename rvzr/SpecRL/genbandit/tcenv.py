@@ -328,6 +328,9 @@ class CoupledActor:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--space", choices=["v4", "v1"], default="v4",
+                    help="config space: v4 = store bypass (space_v4), v1 = bounds-check bypass with "
+                         "several basic blocks (spectre_v1/space_v1ctx)")
     ap.add_argument("--mode", choices=["plain", "bypass"], default="bypass")
     ap.add_argument("--minutes", type=float, default=10.0)
     ap.add_argument("--max-programs", type=int, default=0, help="also stop after this many programs (0: no cap)")
@@ -361,7 +364,13 @@ def main():
     ap.add_argument("--learner-cores", default="4-7")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
-    action = json.loads(args.action) if args.action else best_action()
+    global space
+    if args.space == "v1":
+        sys.path.insert(0, os.path.join(HERE, "spectre_v1"))
+        import space_v1ctx as space
+        action = {**space.CONTROL, **json.loads(args.action)} if args.action else dict(space.CONTROL)
+    else:
+        action = json.loads(args.action) if args.action else best_action()
     os.chdir(ROOT)
     actor, learner = None, None
     if args.policy == "coupled":

@@ -22,6 +22,12 @@ Learning: PPO-clip, token level, with GAE advantages (gamma 1, lambda 0.9) from 
 self-imitation on the rewarded programs, KL to the prior (Revizor for FRESH; mode prior
 0.9/0.05/0.05; copy prior 1-2/64, 1/64, 1/64).
 
+Several basic blocks (Spectre v1, tcenv.py --space v1): the policy still writes the P
+instructions in program order; a new program's block sizes are drawn as Revizor draws them
+(multinomial, fresh_layout) and each position's block is one more query embedding. Revizor
+draws the CFG and the jumps from the program's structure tag, so a RERUN / EDIT gets the
+reference's blocks, CFG and jumps exactly.
+
 Speed: E episodes are interleaved (round robin), so while the hardware runs one episode's
 program the agent (cores 4-7) already writes the next program of another episode.
 
@@ -102,8 +108,7 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
     import torch.nn as nn
     import torch.nn.functional as F
     torch.manual_seed(seed)
-    n_specs, P = len(table["names"]), table["program_size"]
-    assert table["n_bb"] == 1, "ctxrl: single basic block only (for now)"
+    n_specs, P, n_bb = len(table["names"]), table["program_size"], table["n_bb"]
     assert arch in ("gru", "tf")
     if arch == "tf":
         emb = hidden
@@ -153,6 +158,9 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
             self.q_spec = nn.Embedding(n_specs + 1, emb)       # current instruction (n_specs: none)
             self.q_ipos = nn.Embedding(P + 1, emb)             # position (P: not per position)
             self.q_ref = nn.Embedding(n_specs + 1, emb)        # reference instruction at position
+            # basic block of the position (n_bb: not per position); only with several blocks, so
+            # single-block policies keep their parameter set
+            self.q_bb = nn.Embedding(n_bb + 1, emb) if n_bb > 1 else None
             if arch == "gru":
                 self.ctx = nn.Sequential(nn.Linear(N_CTX, hidden), nn.Tanh())
                 self.gru = nn.GRU(emb, hidden, batch_first=True)
@@ -175,9 +183,10 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
             # row 0: NEW_OPS impossible (the reference instruction has no operand choices)
             self.register_buffer("copy_prior", torch.tensor([[cp[0], NEG, cp[2]], cp]))
 
-        def query(self, kind, pos, sd, spec, ipos, ref):
-            return (self.q_kind(kind) + self.q_pos(pos) + self.q_sd(sd) + self.q_spec(spec)
-                    + self.q_ipos(ipos) + self.q_ref(ref))
+        def query(self, kind, pos, sd, spec, ipos, ref, bb=None):
+            q = (self.q_kind(kind) + self.q_pos(pos) + self.q_sd(sd) + self.q_spec(spec)
+                 + self.q_ipos(ipos) + self.q_ref(ref))
+            return q + self.q_bb(bb) if self.q_bb is not None else q
 
         def prior(self, kind, sid):
             n = len(sid)
@@ -240,19 +249,30 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
     return CtxPolicy()
 
 
-# token = (kind, value, pos, sd, qspec, sid, logp, prev_id, ipos, ref)
+def fresh_layout(rng, P, n_bb):
+    """Basic block of every position of a new program, in program order: Revizor puts each
+    instruction into a uniformly chosen block, so the block sizes are multinomial(P, 1/n_bb);
+    the blocks are laid out one after the other."""
+    if n_bb <= 1:
+        return [0] * P
+    return [b for b, c in enumerate(rng.multinomial(P, [1.0 / n_bb] * n_bb)) for _ in range(c)]
+
+
+# token = (kind, value, pos, sd, qspec, sid, logp, prev_id, ipos, ref, forced, bb)
 class CtxSampler:
     def __init__(self, table, pol, rng):
         self.t, self.pol, self.rng = table, pol, rng
         self.n_specs = len(table["names"])
         self.P = table["program_size"]
+        self.n_bb = table["n_bb"]
 
     def sample(self, ctxs, refs, forced=None):
         """ctxs: (B, N_CTX); refs: list of reference programs or None; forced: per program None
         (the policy picks the mode) or a mode fixed by a rule -- it is still fed to the GRU as a
         token (same input structure as a learned mode) but flagged and excluded from the loss.
         Returns, per program, (mode, instruction list with tag None for new instructions, tokens,
-        copied fraction)."""
+        copied fraction). Instructions are [spec, register families, basic block, tag]: a new
+        program's blocks come from fresh_layout, RERUN / EDIT keep the reference's."""
         forced = forced if forced is not None else [None] * len(refs)
         import torch
         t, pol, P, NS = self.t, self.pol, self.P, self.n_specs
@@ -263,29 +283,31 @@ class CtxSampler:
         for b in range(B):
             st.append({"ph": "mode" if refs[b] is not None else "spec", "i": 0, "j": 0,
                        "spec": None, "mode": FRESH if refs[b] is None else None,
-                       "prog": [], "toks": [], "prev": 0, "done": False, "copied": 0})
+                       "prog": [], "toks": [], "prev": 0, "done": False, "copied": 0,
+                       "layout": fresh_layout(self.rng, P, self.n_bb) if refs[b] is None else None})
         while True:
             act = [b for b in range(B) if not st[b]["done"]]
             if not act:
                 break
-            q = np.zeros((len(act), 7), np.int64)        # kind pos sd qspec sid ipos ref
+            q = np.zeros((len(act), 8), np.int64)        # kind pos sd qspec sid ipos ref bb
             for k, b in enumerate(act):
                 s, ref = st[b], refs[b]
                 i = s["i"]
                 rs = ref[i][0] if ref is not None and i < P else NS
+                bb = s["layout"][i] if s["layout"] is not None and i < P else self.n_bb
                 if s["ph"] == "mode":
-                    q[k] = (K_MODE, 0, 0, NS, 0, P, NS)
+                    q[k] = (K_MODE, 0, 0, NS, 0, P, NS, self.n_bb)
                 elif s["ph"] == "copy":
-                    q[k] = (K_COPY, 0, 0, NS, 1 if t["slots"][rs] else 0, i, rs)
+                    q[k] = (K_COPY, 0, 0, NS, 1 if t["slots"][rs] else 0, i, rs, bb)
                 elif s["ph"] == "spec":
-                    q[k] = (K_SPEC, 0, 0, NS, 0, i, rs)
+                    q[k] = (K_SPEC, 0, 0, NS, 0, i, rs, bb)
                 else:
                     sl = t["slots"][s["spec"]][s["j"]]
-                    q[k] = (sl["kind"], sl["pos"], 2 * sl["src"] + sl["dest"], s["spec"], sl["sid"], i, rs)
+                    q[k] = (sl["kind"], sl["pos"], 2 * sl["src"] + sl["dest"], s["spec"], sl["sid"], i, rs, bb)
             T = torch.from_numpy
             with torch.no_grad():
                 prev = T(np.array([st[b]["prev"] for b in act], np.int64))
-                x = pol.val(prev) + pol.query(*(T(q[:, c]) for c in (0, 1, 2, 3, 5, 6)))
+                x = pol.val(prev) + pol.query(*(T(q[:, c]) for c in (0, 1, 2, 3, 5, 6, 7)))
                 ha = pol.step(x, state, act)
                 val = np.empty(len(act), np.int64)
                 lp = np.empty(len(act), np.float32)
@@ -307,7 +329,8 @@ class CtxSampler:
                 s, ref = st[b], refs[b]
                 kd, v = int(q[k, 0]), int(val[k])
                 s["toks"].append((kd, v, int(q[k, 1]), int(q[k, 2]), int(q[k, 3]), int(q[k, 4]),
-                                  float(lp[k]), int(s["prev"]), int(q[k, 5]), int(q[k, 6]), int(fl[k])))
+                                  float(lp[k]), int(s["prev"]), int(q[k, 5]), int(q[k, 6]), int(fl[k]),
+                                  int(q[k, 7])))
                 s["prev"] = pol.off[kd] + v
                 self._advance(s, ref, kd, v)
         return [(s["mode"], s["prog"], s["toks"], s["copied"] / P) for s in st]
@@ -330,6 +353,7 @@ class CtxSampler:
 
         if kd == K_MODE:
             s["mode"] = v
+            s["layout"] = fresh_layout(self.rng, P, self.n_bb) if v == FRESH else [x[2] for x in ref]
             if v == RERUN:
                 s["prog"] = [list(x) for x in ref]
                 s["copied"] = P
@@ -344,13 +368,13 @@ class CtxSampler:
                 next_instruction()
             elif v == NEW_OPS:
                 s["spec"] = r[0]
-                s["prog"].append([r[0], [], 0, None])
+                s["prog"].append([r[0], [], s["layout"][s["i"]], None])
                 start_slots()
             else:
                 s["ph"] = "spec"
         elif kd == K_SPEC:
             s["spec"] = v
-            s["prog"].append([v, [], 0, None])
+            s["prog"].append([v, [], s["layout"][s["i"]], None])
             start_slots()
         else:
             s["prog"][-1][1].append(v)
@@ -371,7 +395,8 @@ def evaluate(pol, toks_batch, ctxs):
         valid[i, :len(x)] = True
     a = torch.from_numpy(arr)
     kind, val, pos, sd, qs, sid, prev, ipos, ref = (a[..., c].long() for c in (0, 1, 2, 3, 4, 5, 7, 8, 9))
-    x = pol.val(prev) + pol.query(kind, pos, sd, qs, ipos, ref)
+    bb = a[..., 11].long() if W > 11 else None
+    x = pol.val(prev) + pol.query(kind, pos, sd, qs, ipos, ref, bb)
     h = pol.seq(x, torch.from_numpy(np.asarray(ctxs, np.float32)))
     logp, kl, ent = torch.zeros(B, T), torch.zeros(B, T), torch.zeros(B, T)
     if W > 10:
@@ -474,12 +499,12 @@ class PriorPrograms:
         self.p_spec = p / p.sum()
         self.p_slot = [np.exp(np.array(sp)) / np.exp(np.array(sp)).sum() for sp in table["slot_prior"]]
 
-    def inst(self, spec=None):
+    def inst(self, spec=None, bb=0):
         s = int(self.rng.choice(len(self.p_spec), p=self.p_spec)) if spec is None else spec
-        return [s, [int(self.rng.choice(6, p=self.p_slot[sl["sid"]])) for sl in self.t["slots"][s]], 0, None]
+        return [s, [int(self.rng.choice(6, p=self.p_slot[sl["sid"]])) for sl in self.t["slots"][s]], bb, None]
 
     def fresh(self):
-        return [self.inst() for _ in range(self.t["program_size"])]
+        return [self.inst(bb=b) for b in fresh_layout(self.rng, self.t["program_size"], self.t["n_bb"])]
 
     def edit(self, ref):
         prog = [list(x) for x in ref]
@@ -489,9 +514,9 @@ class PriorPrograms:
             new = old
             while new == old:
                 new = int(self.rng.choice(len(self.p_spec), p=self.p_spec))
-            prog[pos] = self.inst(new)
+            prog[pos] = self.inst(new, prog[pos][2])
         else:
-            prog[pos] = self.inst(prog[pos][0])
+            prog[pos] = self.inst(prog[pos][0], prog[pos][2])
         return prog
 
 
@@ -580,11 +605,13 @@ def agent_main(table, out, prog_q, res_q, opts):
         if mode == FRESH or sl.get("lineage") is None:
             lineage_ctr += 1
             lin = lineage_ctr
+            struct = tag                               # seeds Revizor's CFG and jumps
         else:
             lin = sl["lineage"]                        # rerun / edit inherit the reference's lineage
+            struct = sl["struct"]                      # ... and its CFG and jumps
         pending[pid] = {"slot": e, "ep": sl["ep"], "step": sl["step"], "mode": mode, "prog": prog,
-                        "toks": toks, "ctx": ctx, "copied": copied, "lineage": lin}
-        prog_q.put((pid, e, prog))
+                        "toks": toks, "ctx": ctx, "copied": copied, "lineage": lin, "struct": struct}
+        prog_q.put((pid, e, prog, struct))
         pid += 1
 
     for e in range(E):
@@ -624,6 +651,7 @@ def agent_main(table, out, prog_q, res_q, opts):
         sl["prev"] = {"stage": stage, "info": info, "new_v": new_v, "mode": st["mode"], "copied": st["copied"]}
         sl["ref"] = st["prog"]
         sl["lineage"] = st["lineage"]
+        sl["struct"] = st["struct"]
         sl["step"] += 1
         if sl["step"] >= N:
             if learner is not None:
@@ -670,6 +698,7 @@ class CtxActor:
         fg = gen._function_generator
         isa = fg._isa_spec
         td = fg._instruction_generator._operand_generator.target_desc
+        assert CONF.min_bb_per_function == CONF.max_bb_per_function, "random block count unsupported"
         self.table = build_table(isa, td.mem_index_registers, CONF.program_size,
                                  CONF.avg_mem_accesses, CONF.min_bb_per_function)
         self.specs = list(isa.non_memory_access_specs) + list(isa.store_instructions) + \
@@ -693,9 +722,13 @@ class CtxActor:
                 break
         if not self.ready:
             self.ready.append(self.prog_q.get(timeout=600))
-        pid, slot, prog = self.ready.popleft()
+        pid, slot, prog, struct = self.ready.popleft()
         self.cur = (pid, prog)
         self.slot = slot
+        # Revizor draws the CFG (block successors) and the jumps from `random` before it fills
+        # the blocks; seeding it here makes them a function of the program's structure tag, so a
+        # RERUN / EDIT gets the reference's CFG and jumps back exactly
+        random.seed(f"{struct}:cfg")
 
     def observe(self, stage, seconds, info=None):
         self.res_q.put((self.cur[0], stage, seconds, info))
