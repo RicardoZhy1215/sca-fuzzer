@@ -88,6 +88,7 @@ bool enable_psfd = PSFD_DEFAULT;
 bool enable_prefetchers = PREFETCHER_DEFAULT;
 char pre_run_flush = PRE_RUN_FLUSH_DEFAULT;
 bool enable_hpa_gpa_collisions = HPA_GPA_COLLISIONS_DEFAULT;
+uint64_t guest_va_delta[MAX_ACTORS] = {0};
 measurement_mode_e measurement_mode = MEASUREMENT_MODE_DEFAULT;
 bool dbg_gpr_mode = DBG_GPR_MODE_DEFAULT;
 
@@ -193,6 +194,14 @@ static ssize_t measurement_mode_store(struct kobject *kobj, struct kobj_attribut
 static struct kobj_attribute measurement_mode_attribute =
     __ATTR(measurement_mode, 0666, NULL, measurement_mode_store);
 
+/// Per-actor guest-VA offset of the DATA region (see actor.h)
+///
+static ssize_t guest_va_delta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf);
+static ssize_t guest_va_delta_store(struct kobject *kobj, struct kobj_attribute *attr,
+                                    const char *buf, size_t count);
+static struct kobj_attribute guest_va_delta_attribute =
+    __ATTR(guest_va_delta, 0666, guest_va_delta_show, guest_va_delta_store);
+
 /// Q&D mode selector
 ///
 static ssize_t enable_quick_and_dirty_mode(struct kobject *kobj, struct kobj_attribute *attr,
@@ -243,6 +252,7 @@ static struct attribute *sysfs_attributes[] = {
     &dbg_dump_attribute.attr,
     &dbg_guest_page_tables_attribute.attr,
     &enable_hpa_gpa_collisions_attribute.attr,
+    &guest_va_delta_attribute.attr,
     NULL, /* need to NULL terminate the list of attributes */
 };
 
@@ -451,6 +461,36 @@ static ssize_t enable_hpa_gpa_collisions_store(struct kobject *kobj, struct kobj
     return count;
 }
 
+/// @brief Show the per-actor guest data VA deltas, in pages
+static ssize_t guest_va_delta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+    ssize_t len = 0;
+    for (int i = 0; i < MAX_ACTORS; i++)
+        len += sprintf(buf + len, "%d %llu\n", i, (unsigned long long)(guest_va_delta[i] / 4096));
+    return len;
+}
+
+/// @brief Set one actor's guest data VA delta. Input: "<actor_id> <delta_in_pages>".
+///        Writing a negative actor id clears the whole table.
+static ssize_t guest_va_delta_store(struct kobject *kobj, struct kobj_attribute *attr,
+                                    const char *buf, size_t count)
+{
+    int id = 0;
+    unsigned long long pages = 0;
+    if (sscanf(buf, "%d %llu", &id, &pages) != 2)
+        return -EINVAL;
+    if (id < 0) {
+        for (int i = 0; i < MAX_ACTORS; i++)
+            guest_va_delta[i] = 0;
+        return count;
+    }
+    if (id >= MAX_ACTORS)
+        return -EINVAL;
+    guest_va_delta[id] = (uint64_t)pages * 4096;
+    return count;
+}
+
+
 static ssize_t measurement_mode_store(struct kobject *kobj, struct kobj_attribute *attr,
                                       const char *buf, size_t count)
 {
@@ -469,6 +509,10 @@ static ssize_t measurement_mode_store(struct kobject *kobj, struct kobj_attribut
         break;
     case 'T':
         measurement_mode = TSC;
+        break;
+    case 'I':
+        // [EXTENSION] L1 instruction-cache miss counting; htrace = PMC 0 delta
+        measurement_mode = L1I_PMC;
         break;
     default:
         PRINT_ERRS("measurement_mode_store", "Invalid measurement mode\n");

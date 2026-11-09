@@ -21,6 +21,28 @@ from .logs import inform
 POW32 = pow(2, 32)
 
 
+def _f32x2(bits: int) -> int:
+    return (bits << 32) | bits
+
+
+# Boundary patterns for input_value_mix='special': each as one f64, as two equal f32 halves,
+# or as an integer. Generic data-space corners, not tied to any particular instruction.
+_SPECIAL_WORDS: Final = np.array([
+    # f64: +-0, smallest/largest denormal, -denormal, min normal, +-1.0, max, +-Inf, qNaN, sNaN
+    0x0000000000000000, 0x8000000000000000, 0x0000000000000001, 0x000FFFFFFFFFFFFF,
+    0x800FFFFFFFFFFFFF, 0x0010000000000000, 0x3FF0000000000000, 0xBFF0000000000000,
+    0x7FEFFFFFFFFFFFFF, 0x7FF0000000000000, 0xFFF0000000000000, 0x7FF8000000000000,
+    0x7FF0000000000001,
+    # 2 x f32: -0, smallest/largest denormal, -denormal, min normal, +-1.0, +-Inf, qNaN
+    _f32x2(0x80000000), _f32x2(0x00000001), _f32x2(0x007FFFFF), _f32x2(0x807FFFFF),
+    _f32x2(0x00800000), _f32x2(0x3F800000), _f32x2(0xBF800000), _f32x2(0x7F800000),
+    _f32x2(0xFF800000), _f32x2(0x7FC00000),
+    # integers: -1, INT64_MAX, INT32_MIN / INT32_MAX in both halves, 1, 1 in both halves
+    0xFFFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF, _f32x2(0x7FFFFFFF), 0x0000000000000001,
+    _f32x2(0x00000001),
+], dtype=np.uint64)
+
+
 class DataGenerator:
     """ Class responsible for generating random inputs for test cases. """
 
@@ -154,12 +176,20 @@ class DataGenerator:
 
         rng = np.random.default_rng(seed=state)
         for i in range(n_actors):
-            # generate random data
-            data = rng.integers(
-                self.max_input_value, size=per_actor_data_size, dtype=np.uint64)  # type: ignore
+            if CONF.input_value_mix == "default":
+                # generate random data
+                data = rng.integers(
+                    self.max_input_value, size=per_actor_data_size, dtype=np.uint64)  # type: ignore
 
-            # copy lower 32-bits to upper 32-bits, for every 8-byte word
-            data = (data << np.uint64(32)) + data
+                # copy lower 32-bits to upper 32-bits, for every 8-byte word
+                data = (data << np.uint64(32)) + data
+            else:
+                data = rng.integers(np.iinfo(np.uint64).max, size=per_actor_data_size,
+                                    dtype=np.uint64, endpoint=True)
+                if CONF.input_value_mix == "special":
+                    hit = np.nonzero(
+                        rng.random(per_actor_data_size) < CONF.input_value_special_probability)[0]
+                    data[hit] = _SPECIAL_WORDS[rng.integers(len(_SPECIAL_WORDS), size=len(hit))]
 
             # for each of the registers and with a probability of 0.01
             # set the register to zero or to max value

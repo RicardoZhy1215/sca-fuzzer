@@ -20,6 +20,9 @@ typedef enum {
     FLUSH_RELOAD,
     EVICT_RELOAD,
     TSC,
+    // [EXTENSION] htrace = number of L1 instruction-cache misses between measurement_start and
+    // measurement_end. A scalar htrace, like TSC; see macros.c body_macro_l1i_{start,end}.
+    L1I_PMC,
 } measurement_mode_e;
 
 #define EXECUTOR_DEBUG 0

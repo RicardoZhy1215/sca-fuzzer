@@ -75,21 +75,16 @@ class Model(ABC):
         in the given file path.
         """
 
-    @abstractmethod
     def check_inf_loop(self, inputs: List[InputData], nesting: int, timeout: int) -> bool:
         """
-        Docstring for check_inf_loop
-        
-        :param self: Description
-        :param inputs: Description
-        :type inputs: List[InputData]
-        :param nesting: Description
-        :type nesting: int
-        :param timeout: Description
-        :type timeout: int
-        :return: Description
-        :rtype: bool
+        Run the loaded test case with the inputs and report whether it finishes within `timeout`
+        seconds (True) or looks like an infinite loop (False). Used only by SpecRL's per-step
+        loop check, and implemented only by the Unicorn backend.
+
+        Not abstract: as an abstract method it made every other backend (DynamoRIO, Dummy)
+        impossible to instantiate.
         """
+        raise NotImplementedError(f"{type(self).__name__} does not implement check_inf_loop")
 
 
 class DummyModel(Model):

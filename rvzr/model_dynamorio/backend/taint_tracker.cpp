@@ -400,13 +400,15 @@ void TaintTracker::finalize_instruction()
 
         tainted_labels.insert(tainted_values.begin(), tainted_values.end());
     }
-    dbg_print_taints();
+    // dbg_print_taints();
 
     // Clear dependencies of overwritten registers
     // NOTE: this must be done *after* the taint update, or the taints will be lost
     // dbg_print_dependencies();
     remove_overwritten_dependencies(current_instruction.get());
-    dbg_print_dependencies();
+    // dbg_print_dependencies();
+    // (both prints dump the whole taint/dependency state to stdout after EVERY instruction,
+    // which model.py's check_output buffers: 0.3 s -> 90-210 s per 50-input taint run)
 
     // Reset the instruction
     current_instruction.reset();

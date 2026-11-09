@@ -297,11 +297,16 @@ class UnicornTaintTracker:
                 continue
 
             # SIMD register
+            # Each register owns a YMM-sized slot of the SIMD area: the executor loads ymm<i>
+            # from offset 32*i (executor_km/data_loader.c), and the model initializes xmm<i>
+            # from the first 16 bytes of that slot (X86UnicornModel._load_input). Taint both
+            # 8-byte halves of xmm<i>; the upper 16 bytes are never read by the model.
             simd_registers = self._uc_target_desc.usable_simd128_registers
             if reg in simd_registers:
-                sandbox_address = simd_start + simd_registers.index(reg) * 16
+                slot_size = SandboxLayout.data_area_size(DataArea.SIMD) // len(simd_registers)
+                sandbox_address = simd_start + simd_registers.index(reg) * slot_size
                 tainted_sandbox_addresses.append(sandbox_address)
-                tainted_sandbox_addresses.append(sandbox_address + 1)
+                tainted_sandbox_addresses.append(sandbox_address + 8)
             # else:
             # print(f"Register {label} is not tracked")
 

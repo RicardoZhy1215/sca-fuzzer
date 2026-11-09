@@ -39,4 +39,12 @@ typedef struct {
 extern size_t n_actors;
 extern actor_metadata_t *actors;
 
+// [EXTENSION] Per-actor guest-virtual offset applied to the actor's DATA region only (bytes,
+// page-aligned). 0 = stock behaviour: every guest maps its data at the same GVA, which is what
+// makes two guests' data lines share a linear address. A non-zero delta breaks that sharing for
+// one actor, which is how we test whether the linear-address match is a necessary condition for
+// the cross-guest forwarding seen in violation-260817-090802.
+// Set through /sys/rvzr_executor/guest_va_delta ("<actor_id> <delta_in_pages>").
+extern uint64_t guest_va_delta[MAX_ACTORS];
+
 #endif // _ACTOR_H_

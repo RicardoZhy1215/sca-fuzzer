@@ -16,8 +16,29 @@
 #include "svm.h"
 #include "vmx.h"
 
+#include <linux/moduleparam.h>
+
 extern uint64_t is_nested_fault; // defined in fault_handlers.S
 void nested_fault_handler(void); // defined in fault_handlers.S
+
+#if VENDOR_ID == VENDOR_AMD_
+/*
+ * Controls the instruction emitted immediately before each VMRUN:
+ *  -1: original executor path (no added instructions)
+ *   0: four-byte NOP (layout control)
+ *   1: VERW word ptr [rsp] (TSA CPU-buffer clear on fixed microcode)
+ *   2: MOVZX ecx, word ptr [rsp] (same ordinary memory read)
+ *
+ * All modes use identical push/pop scaffolding and emit the same number of
+ * bytes.  The selector operand is __KERNEL_DS (0x18); RCX and RFLAGS are
+ * restored before VMRUN.  Test cases are expanded after the parameter is set,
+ * so one loaded module can run all three variants without layout drift.
+ */
+static int tsa_switch_clear_mode = -1;
+module_param(tsa_switch_clear_mode, int, 0644);
+MODULE_PARM_DESC(tsa_switch_clear_mode,
+                 "pre-VMRUN TSA test: -1=original, 0=NOP4, 1=VERW [rsp], 2=MOVZX [rsp]");
+#endif
 
 // =================================================================================================
 // Convenience shortcuts for writing constants to memory
@@ -112,7 +133,8 @@ static uint64_t update_r14(uint64_t section_id, uint8_t *dest, uint64_t cursor)
         new_r14 = (uint64_t)sandbox->data[section_id].main_area;
     } else if (actors[section_id].mode == MODE_GUEST) {
         guest_memory_t *guest_memory = (guest_memory_t *)GUEST_V_MEMORY_START;
-        new_r14 = (uint64_t)guest_memory->data.main_area;
+        // [EXTENSION] follow guest_va_delta; r14 must match where the data is actually mapped
+        new_r14 = (uint64_t)guest_memory->data.main_area + guest_va_delta[section_id];
     }
 
     // ASM: movabs r14, new_r14
@@ -138,7 +160,8 @@ static uint64_t update_mem_base_and_sp(uint64_t section_id, uint8_t *dest, uint6
         new_rsp = (uint64_t)sandbox->data[section_id].main_area + LOCAL_RSP_OFFSET;
     } else if (actors[section_id].mode == MODE_GUEST) {
         guest_memory_t *guest_memory = (guest_memory_t *)GUEST_V_MEMORY_START;
-        new_rsp = (uint64_t)guest_memory->data.main_area + LOCAL_RSP_OFFSET;
+        // [EXTENSION] the macro stack lives inside actor_data_t, so RSP shifts with it
+        new_rsp = (uint64_t)guest_memory->data.main_area + LOCAL_RSP_OFFSET + guest_va_delta[section_id];
     }
 
     // ASM: movabs rsp, new_rsp
@@ -323,6 +346,57 @@ static void __attribute__((noipa)) body_macro_tsc_start(void)
                        MACRO_EPILOGUE()                                 //
                        "lfence\n"                                       //
     );
+    asm volatile(".quad " xstr(MACRO_END));
+}
+
+// L1I miss counting (measurement_mode = L1I_PMC) ------------------------------------------------
+// Structurally identical to the TSC macros, but the scalar htrace is the PMC 0 reading instead of
+// the timestamp counter. PMC 0 is programmed with the instruction-cache miss event in
+// pfc_configure() when this mode is selected.
+//
+// Why a counter and not a timing probe: an L1I hit-vs-L2-refill gap is on the order of ten cycles,
+// against ~30-60 cycles of rdtscp+lfence overhead, so timing has no usable SNR here. A miss count
+// is exact and needs no eviction set -- which the sandbox has no room for anyway (there is a 32 KB
+// *data* priming area but only 12 KB of code space per actor, and no executable priming region).
+static void __attribute__((noipa)) body_macro_l1i_start(void)
+{
+    asm volatile(".quad " xstr(MACRO_START));
+    asm_volatile_intel(""                                               //
+                       MACRO_PROLOGUE()                                 //
+                       "mov rcx, 0\n"                                   // PMC 0 = L1I misses
+                       "lfence; rdpmc; lfence\n"                        //
+                       "shl rdx, 32\n"                                  //
+                       "or rdx, rax\n"                                  //
+                       "xor " HTRACE_REGISTER ", " HTRACE_REGISTER "\n" //
+                       "sub " HTRACE_REGISTER ", rdx\n"                 //
+                       "lfence\n"                                       //
+                       READ_PFC_START()                                 //
+                       SET_SR_STARTED()                                 //
+                       MACRO_EPILOGUE()                                 //
+                       "lfence\n"                                       //
+    );
+    asm volatile(".quad " xstr(MACRO_END));
+}
+
+static void __attribute__((noipa)) body_macro_l1i_end(void)
+{
+    asm volatile(".quad " xstr(MACRO_START));
+    // clang-format off
+    asm_volatile_intel(""
+                       "cmp " STATUS_REGISTER_8 ", "xstr(STATUS_STARTED)"\n"
+                       "jne 96f\n"
+                       MACRO_PROLOGUE()
+                       READ_PFC_END()
+                       "mov rcx, 0\n"
+                       "lfence; rdpmc; lfence\n"
+                       "shl rdx, 32\n"
+                       "or rdx, rax\n"
+                       "add " HTRACE_REGISTER ", rdx\n"
+                       SET_SR_ENDED()
+                       MACRO_EPILOGUE()
+                       "96:\n"
+    );
+    // clang-format on
     asm volatile(".quad " xstr(MACRO_END));
 }
 
@@ -572,6 +646,33 @@ static inline size_t start_macro_switch_h2g(macro_args_t args, uint8_t *dest)
         // ASM: movabs rax, &vmcb_hpa
         APPEND_BYTES_TO_DEST(0x48, 0xb8);
         APPEND_U64_TO_DEST((uint64_t)&vmcb_hpas[args.arg1]);
+
+        /*
+         * Preserve flags and RCX, then place the valid kernel data selector
+         * on the host stack.  VERW and MOVZX use the exact same [rsp]
+         * operand and are both four bytes long.  The NOP control is also four
+         * bytes, so every mode keeps the generated host code layout stable.
+         */
+        if (tsa_switch_clear_mode >= 0) {
+            APPEND_BYTES_TO_DEST(0x9c,       // pushfq
+                                 0x51,       // push rcx
+                                 0x6a, 0x18  // push __KERNEL_DS
+            );
+            if (tsa_switch_clear_mode == 1) {
+                // verw word ptr [rsp]
+                APPEND_BYTES_TO_DEST(0x0f, 0x00, 0x2c, 0x24);
+            } else if (tsa_switch_clear_mode == 2) {
+                // movzx ecx, word ptr [rsp]
+                APPEND_BYTES_TO_DEST(0x0f, 0xb7, 0x0c, 0x24);
+            } else {
+                // Four-byte NOP: operand/layout control
+                APPEND_BYTES_TO_DEST(0x66, 0x66, 0x66, 0x90);
+            }
+            APPEND_BYTES_TO_DEST(0x48, 0x83, 0xc4, 0x08, // add rsp, 8
+                                 0x59,                   // pop rcx
+                                 0x9d                    // popfq
+            );
+        }
     }
     return cursor;
 }
@@ -770,11 +871,15 @@ macro_descr_t macro_descriptors[] = {
     [TYPE_RELOAD] = {.start = NULL, .body = body_macro_reload},
     [TYPE_TSC_START] = {.start = NULL, .body = body_macro_tsc_start},
     [TYPE_TSC_END] = {.start = NULL, .body = body_macro_tsc_end},
+    [TYPE_L1I_START] = {.start = NULL, .body = body_macro_l1i_start},
+    [TYPE_L1I_END] = {.start = NULL, .body = body_macro_l1i_end},
     [TYPE_FAULT_HANDLER] = {.start = start_macro_fault_handler, .body = NULL},
     [TYPE_FAULT_AND_PROBE] = {.start = start_macro_fault_handler_with_measurement,
                               .body = body_macro_probe},
     [TYPE_FAULT_AND_RELOAD] = {.start = start_macro_fault_handler_with_measurement,
                                .body = body_macro_reload},
+    [TYPE_FAULT_AND_L1I_END] = {.start = start_macro_fault_handler_with_measurement,
+                                .body = body_macro_l1i_end},
     [TYPE_FAULT_AND_TSC_END] = {.start = start_macro_fault_handler_with_measurement,
                                 .body = body_macro_tsc_end},
     [TYPE_SWITCH] = {.start = start_macro_switch, .body = NULL},

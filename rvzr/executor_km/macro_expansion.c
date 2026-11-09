@@ -66,6 +66,9 @@ static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id, uint64_t owne
         case TSC:
             macro_subtype = TYPE_TSC_START;
             break;
+        case L1I_PMC:
+            macro_subtype = TYPE_L1I_START;
+            break;
         default:
             PRINT_ERRS("get_macro_subtype_from_id", "misconfigured measurement_mode\n");
             return NULL;
@@ -86,6 +89,9 @@ static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id, uint64_t owne
         case TSC:
             macro_subtype = TYPE_FAULT_AND_TSC_END;
             break;
+        case L1I_PMC:
+            macro_subtype = TYPE_FAULT_AND_L1I_END;
+            break;
         default:
             PRINT_ERRS("get_macro_subtype_from_id", "misconfigured measurement_mode\n");
             return NULL;
@@ -105,6 +111,9 @@ static macro_descr_t *get_macro_subtype_from_id(uint64_t macro_id, uint64_t owne
             break;
         case TSC:
             macro_subtype = TYPE_TSC_END;
+            break;
+        case L1I_PMC:
+            macro_subtype = TYPE_L1I_END;
             break;
         default:
             PRINT_ERRS("get_macro_subtype_from_id", "misconfigured measurement_mode\n");

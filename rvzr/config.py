@@ -233,6 +233,17 @@ class Conf:
     """ input_gen_probability_of_special_value: probability of generating a special value
     (zero or maximum value) when setting a register value in the input generator. This is used
     to test fast paths in the microarchitecture """
+    input_value_mix: str = 'default'
+    """ input_value_mix: [EXTENSION] how the random input words are drawn.
+    'default': (r << 32) | r with r < 2^data_generator_entropy_bits, so at entropy <= 31 the sign
+    bit of every 32-bit half is 0 (no negative ints/floats, no FP sign masks);
+    'full64': independent uniform 64-bit words;
+    'special': 'full64', and each word is replaced with probability
+    input_value_special_probability by an FP / integer boundary pattern (+-0, denormals, +-Inf,
+    NaNs, +-1.0, min normals, integer MIN/MAX/-1, as f64 or as two f32) """
+    input_value_special_probability: float = 0.1
+    """ input_value_special_probability: [EXTENSION] per-word replacement probability for
+    input_value_mix='special' """
 
     # ==============================================================================================
     # Contract Model
@@ -320,6 +331,7 @@ class Conf:
         "generator": ["random"],
         "instruction_set": ["x86-64", "arm64"],
         "data_generator": ["random"],
+        "input_value_mix": ["default", "full64", "special"],
         "model_backend": ["dummy", "unicorn", "dynamorio"],
         "contract_execution_clause": [
             "seq", "no_speculation", "seq-assist", "cond", "conditional_br_misprediction", "bpas",
@@ -340,6 +352,7 @@ class Conf:
             'E+R',
             'PP+P',
             'TSC',
+            'I-PMC',  # [EXTENSION] L1I miss counting; AMD family 19h/1Ah only
             # 'GPR' is intentionally left out
         ],
         'faults_allowlist': [

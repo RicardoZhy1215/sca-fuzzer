@@ -27,6 +27,8 @@ from .tc_components.test_case_data import InputData
 from .isa_spec import InstructionSet
 from .analyser import Analyser
 from .config import CONF
+from .sandbox import SandboxLayout, PAGE_SIZE
+from .sandbox import SandboxLayout, PAGE_SIZE
 from .stats import FuzzingStats
 from .logs import FuzzLogger, warning, update_logging_after_config_change
 
@@ -369,6 +371,45 @@ class _RoundManager:
             self.violations = []
             return
 
+
+    # ----------------------------------------------------------------------------------------
+    # Guest/host code-base artifacts in the architectural mismatch check
+    # ----------------------------------------------------------------------------------------
+    # An instruction that materializes a CODE address into architectural state -- `lea reg,
+    # [rip + label]`, `call` (pushes a return address), `ret` -- produces a legitimately different
+    # value in the model and on the hardware whenever the owning actor is a guest:
+    #
+    #   hardware (guest actor): GUEST_V_MEMORY_START + offsetof(guest_memory_t, code) + off
+    #   model:                  <host vmalloc code base> + actor_id * code_size_per_actor + off
+    #
+    # Both denote the same instruction -- the offset within the actor's code section is identical --
+    # but the bases differ because guests execute from their own address space while the model lays
+    # every actor's code out in the host's. Measured on a template with two hand-written indirect
+    # jumps, this accounts for ~80% of all reported architectural mismatches.
+    #
+    # The suppression below is deliberately narrow: values are never rewritten, and a mismatch is
+    # only ignored when EVERY differing register is explained by this exact pattern. Anything else
+    # -- including a single unexplained register in an otherwise explainable report -- is still
+    # reported.
+    @staticmethod
+    def _guest_code_base() -> int:
+        """ Guest VA of the code region: GUEST_V_MEMORY_START + sizeof(util_t) + sizeof(actor_data_t).
+        Must mirror guest_memory_t in executor_km/include/page_tables_guest.h. """
+        l1d_priming = 32 * 1024  # L1D_PRIMING_AREA_SIZE
+        util_vars = PAGE_SIZE  # UTIL_VARS_MAX
+        return l1d_priming + util_vars + SandboxLayout.data_size_per_actor()
+
+    def _is_code_base_artifact(self, hw_val: int, model_val: int) -> bool:
+        """ True if the two values denote the same instruction, differing only in the code base
+        used by the guest address space versus the model's host-based layout. """
+        mask = (1 << 32) - 1
+        stride = SandboxLayout.code_size_per_actor()
+        hw_off = (hw_val - self._guest_code_base()) & mask
+        if not 0 <= hw_off < stride:
+            return False
+        model_off = ((model_val - self._hw_code_base) & mask) % stride
+        return hw_off == model_off
+
     def _check_for_architectural_mismatch(self) -> None:
         """
         Check if the given test cases causes an architectural mismatch between the model
@@ -410,8 +451,16 @@ class _RoundManager:
 
         # Check for violations
         # Note: since we simply check the equality of traces, we don't need to invoke the analyser
+        self._hw_code_base = self.fuzzer.arch_executor.read_base_addresses()[1]
         for i, input_ in enumerate(self.boosted_inputs):
             if model_regs[i] == hardware_regs[i]:
+                continue
+            # Ignore the mismatch only if *every* differing register is a guest/host code-base
+            # artifact (see the note above the helpers).
+            differing = [(h, m) for h, m in zip(hardware_regs[i], model_regs[i]) if h != m]
+            # RVZR_NO_CODEBASE_FIX=1 disables the suppression, for A/B validation of its effect.
+            if os.environ.get("RVZR_NO_CODEBASE_FIX") != "1" \
+                    and differing and all(self._is_code_base_artifact(h, m) for h, m in differing):
                 continue
             measurement = TraceBundle(i, input_, ctraces[i], htraces[i])
             violation = Violation([measurement], self.boosted_inputs, self.test_case)
@@ -795,8 +844,18 @@ class Fuzzer:
     @staticmethod
     def _create_timestamped_dir(path: str) -> str:
         timestamp = datetime.today().strftime('%y%m%d-%H%M%S')
-        violation_dir = f"{path}/violation-{timestamp}"
         Path(path).mkdir(exist_ok=True)
+        # The timestamp has second resolution, so two artifacts reported within the same second
+        # would collide. Previously this raised FileExistsError and aborted the whole campaign,
+        # which is easy to hit with `fuzzer: architectural` (a mis-emulated instruction category
+        # can produce several mismatches per second). Disambiguate with a suffix instead.
+        violation_dir = f"{path}/violation-{timestamp}"
+        if Path(violation_dir).exists():
+            for i in range(1, 1000):
+                candidate = f"{path}/violation-{timestamp}-{i}"
+                if not Path(candidate).exists():
+                    violation_dir = candidate
+                    break
         Path(violation_dir).mkdir()
         return violation_dir
 

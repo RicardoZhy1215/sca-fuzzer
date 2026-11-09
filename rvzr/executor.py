@@ -330,7 +330,11 @@ class Executor(ABC):
         """ Identify the type of the traces based on the configuration """
         if self._enable_mismatch_check_mode:
             return "reg"
-        if CONF.executor_mode == 'TSC':
+        if CONF.executor_mode in ('TSC', 'I-PMC'):
+            # "tsc" here means "scalar trace, compared numerically" as opposed to the cache-line
+            # bitmap. I-PMC's htrace is an L1I miss count, so it needs the same treatment.
+            # NOTE: the low-bit masking below stays TSC-only -- it exists to absorb timing jitter
+            # and would destroy a small counter value.
             return "tsc"
         return "cache"
 

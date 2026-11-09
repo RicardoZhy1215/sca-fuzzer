@@ -114,6 +114,16 @@ static inline bool gpa_is_valid(hgpa_t *translations, uint64_t gpa)
     return false;
 }
 
+/// @brief Pick the last-level table that covers `vaddr`. With N_GUEST_L1_TABLES > 1 the guest VA
+/// window spans several 2 MB regions, so PT_INDEX alone is no longer sufficient -- using the wrong
+/// table would silently alias two different VAs onto one PTE.
+static inline pte_t_ *guest_l1_for(actor_page_table_t *pt, uint64_t vaddr)
+{
+    size_t k = PDT_INDEX(vaddr) - PDT_INDEX(GUEST_V_MEMORY_START);
+    ASSERT_ENULL(k < N_GUEST_L1_TABLES, "guest_l1_for");
+    return pt->l1[k];
+}
+
 static inline int set_last_pt_level(pte_t_ *pt, hgpa_t *translation, uint64_t paddr, uint64_t vaddr)
 {
     size_t pt_index = PT_INDEX(vaddr);
@@ -140,13 +150,15 @@ static inline void set_guest_user_pages(int actor_id)
     // fits into one last-level page table (see GUEST_MEMORY_SIZE)
     page_table->l4[PML4_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
     page_table->l3[PDPT_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
-    page_table->l2[PDT_INDEX(GUEST_V_MEMORY_START)].user_supervisor = 1;
+    for (int k = 0; k < N_GUEST_L1_TABLES; k++)
+        page_table->l2[PDT_INDEX(GUEST_V_MEMORY_START) + k].user_supervisor = 1;
 
     // last level; all pages mapped into the guest belong to this actor
-    for (int i = 0; i < ENTRIES_PER_PAGE; i++) {
-        if (page_table->l1[i].present)
-            page_table->l1[i].user_supervisor = 1;
-    }
+    for (int k = 0; k < N_GUEST_L1_TABLES; k++)
+        for (int i = 0; i < ENTRIES_PER_PAGE; i++) {
+            if (page_table->l1[k][i].present)
+                page_table->l1[k][i].user_supervisor = 1;
+        }
 }
 
 static inline int set_ept_entry(actor_ept_t *actor_ept_base, hgpa_t *translation, uint64_t l3_hpa,
@@ -224,28 +236,31 @@ static int set_guest_page_tables(void)
         // for all addresses within the actor memory
         actor_page_table_t *page_table = &allocated_page_tables[actor_id];
         actor_page_table_t *page_table_gpa = &guest_p_memory->guest_page_tables;
-        translations->guest_page_tables[3].gpa = (uint64_t)&page_table_gpa->l4;
+        translations->guest_page_tables[N_GUEST_L1_TABLES + 2].gpa =
+            (uint64_t)&page_table_gpa->l4;
 
         size_t l4_index = PML4_INDEX(GUEST_V_MEMORY_START);
         uint64_t l3_gpa = (uint64_t)&page_table_gpa->l3;
         INIT_PTE_DEFAULT(page_table->l4[l4_index], l3_gpa);
-        translations->guest_page_tables[2].gpa = l3_gpa;
+        translations->guest_page_tables[N_GUEST_L1_TABLES + 1].gpa = l3_gpa;
 
         size_t l3_index = PDPT_INDEX(GUEST_V_MEMORY_START);
         uint64_t l2_gpa = (uint64_t)&page_table_gpa->l2;
         INIT_PTE_DEFAULT(page_table->l3[l3_index], l2_gpa);
-        translations->guest_page_tables[1].gpa = l2_gpa;
+        translations->guest_page_tables[N_GUEST_L1_TABLES].gpa = l2_gpa;
 
         size_t l2_index = PDT_INDEX(GUEST_V_MEMORY_START);
-        uint64_t l1_gpa = (uint64_t)&page_table_gpa->l1;
-        INIT_PTE_DEFAULT(page_table->l2[l2_index], l1_gpa);
-        translations->guest_page_tables[0].gpa = l1_gpa;
+        for (int k = 0; k < N_GUEST_L1_TABLES; k++) {
+            uint64_t l1_gpa = (uint64_t)&page_table_gpa->l1[k];
+            INIT_PTE_DEFAULT(page_table->l2[l2_index + k], l1_gpa);
+            translations->guest_page_tables[k].gpa = l1_gpa;
+        }
 
         // set the last level of the page table for each area of the actor sandbox
         for (int i = 0; i < sizeof(util_t); i += 4096) {
             vaddr = ((uint64_t)&guest_v_memory->util) + i;
             paddr = ((uint64_t)&guest_p_memory->util) + i;
-            err = set_last_pt_level(page_table->l1, &translations->util[i / 4096], paddr, vaddr);
+            err = set_last_pt_level(guest_l1_for(page_table, vaddr), &translations->util[i / 4096], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
         // [EXTENSION] target host actor whose sandbox this guest aliases to (default 0 = main).
@@ -254,15 +269,27 @@ static int set_guest_page_tables(void)
         uint64_t alias_id = actor->alias_target;
         if (alias_id >= n_actors)
             alias_id = 0;
+        // [EXTENSION] guest_va_delta: shift THIS actor's data region in guest-virtual space.
+        // 0 (default) reproduces the stock layout exactly. A non-zero delta must land the whole
+        // data region clear of the rest of guest_memory_t and inside the single last-level PT.
+        uint64_t va_delta = guest_va_delta[actor_id];
+        if (va_delta != 0) {
+            uint64_t data_off = (uint64_t)&guest_v_memory->data - GUEST_V_MEMORY_START;
+            if (data_off + va_delta < sizeof(guest_memory_t) ||
+                data_off + va_delta + sizeof(actor_data_t) > GUEST_MEMORY_SIZE) {
+                PRINT_ERR("set_guest_page_tables: guest_va_delta out of range for actor\n");
+                return -EINVAL;
+            }
+        }
         for (int i = 0; i < sizeof(actor_data_t); i += 4096) {
-            uint64_t vaddr = ((uint64_t)&guest_v_memory->data) + i;
+            uint64_t vaddr = ((uint64_t)&guest_v_memory->data) + i + va_delta;
             if (enable_hpa_gpa_collisions) {
                 uint64_t aliased_vaddr = ((uint64_t)&sandbox->data[alias_id]) + i;
                 paddr = vmalloc_to_phys((void *)aliased_vaddr);
             } else {
                 paddr = ((uint64_t)&guest_p_memory->data) + i;
             }
-            err = set_last_pt_level(page_table->l1, &translations->data[i / 4096], paddr, vaddr);
+            err = set_last_pt_level(guest_l1_for(page_table, vaddr), &translations->data[i / 4096], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
         for (int i = 0; i < sizeof(actor_code_t); i += 4096) {
@@ -273,19 +300,19 @@ static int set_guest_page_tables(void)
             } else {
                 paddr = ((uint64_t)&guest_p_memory->code) + i;
             }
-            err = set_last_pt_level(page_table->l1, &translations->code[i / 4096], paddr, vaddr);
+            err = set_last_pt_level(guest_l1_for(page_table, vaddr), &translations->code[i / 4096], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
         { // GDT (indentation is for readability)
             vaddr = (uint64_t)&guest_v_memory->gdt;
             paddr = (uint64_t)&guest_p_memory->gdt;
-            err = set_last_pt_level(page_table->l1, &translations->gdt[0], paddr, vaddr);
+            err = set_last_pt_level(guest_l1_for(page_table, vaddr), &translations->gdt[0], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
         { // VMLAUNCH page (indentation is for readability)
             vaddr = (uint64_t)&guest_v_memory->vmlaunch_page[0];
             paddr = (uint64_t)&guest_p_memory->vmlaunch_page[0];
-            err = set_last_pt_level(page_table->l1, &translations->vmlaunch_page[0], paddr, vaddr);
+            err = set_last_pt_level(guest_l1_for(page_table, vaddr), &translations->vmlaunch_page[0], paddr, vaddr);
             CHECK_ERR("set_guest_page_tables");
         }
 
@@ -413,19 +440,25 @@ int map_sandbox_to_guest_memory(void)
 void set_faulty_page_guest_permissions(void)
 {
     guest_memory_t *guest_v_memory = (guest_memory_t *)(GUEST_V_MEMORY_START);
-    uint64_t vaddr = ((uint64_t)&guest_v_memory->data.faulty_area[0]);
-    size_t index = PT_INDEX(vaddr);
+    uint64_t base_vaddr = ((uint64_t)&guest_v_memory->data.faulty_area[0]);
 
     for (int actor_id = 0; actor_id < n_actors; actor_id++) {
         actor_metadata_t *actor = &actors[actor_id];
         if (actor->mode != MODE_GUEST)
             continue;
 
+        // [EXTENSION] the index is per-actor: guest_va_delta may have moved this actor's data.
+        // Computing it once outside the loop would apply the permission to the wrong page and
+        // silently disable the faulty-page #PF for any shifted actor.
+        uint64_t faulty_vaddr = base_vaddr + guest_va_delta[actor_id];
+        size_t index = PT_INDEX(faulty_vaddr);
+        pte_t_ *l1 = guest_l1_for(&allocated_page_tables[actor_id], faulty_vaddr);
+
         uint64_t pte_mask = actor->data_permissions;
         uint64_t mask_set = pte_mask & MODIFIABLE_PTE_BITS;
         uint64_t mask_clear = pte_mask | ~MODIFIABLE_PTE_BITS;
 
-        pte_t_ *ptep = &allocated_page_tables[actor_id].l1[index];
+        pte_t_ *ptep = &l1[index];
         faulty_ptes[actor_id] = *ptep;
 
         uint64_t org_pte = *(uint64_t *)ptep;
@@ -440,15 +473,16 @@ void set_faulty_page_guest_permissions(void)
 void restore_faulty_page_guest_permissions(void)
 {
     guest_memory_t *guest_v_memory = (guest_memory_t *)(GUEST_V_MEMORY_START);
-    uint64_t vaddr = ((uint64_t)&guest_v_memory->data.faulty_area[0]);
-    size_t index = PT_INDEX(vaddr);
+    uint64_t base_vaddr = ((uint64_t)&guest_v_memory->data.faulty_area[0]);
 
     for (int actor_id = 0; actor_id < n_actors; actor_id++) {
         actor_metadata_t *actor = &actors[actor_id];
         if (actor->mode != MODE_GUEST)
             continue;
 
-        allocated_page_tables[actor_id].l1[index] = faulty_ptes[actor_id];
+        uint64_t faulty_vaddr = base_vaddr + guest_va_delta[actor_id];
+        pte_t_ *l1 = guest_l1_for(&allocated_page_tables[actor_id], faulty_vaddr);
+        l1[PT_INDEX(faulty_vaddr)] = faulty_ptes[actor_id];
     }
 }
 

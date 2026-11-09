@@ -17,7 +17,13 @@
 // start of guest's physical memory; this is an arbitrary large aligned number
 #define GUEST_P_MEMORY_START 0
 #define GUEST_V_MEMORY_START 0x0ULL
-#define GUEST_MEMORY_SIZE    (512 * 4096) // max size that could be mapped by a single last-level PT
+// [EXTENSION] Number of last-level (l1) page tables per guest actor. Stock Revizor used exactly one
+// (a 2 MB guest VA window). The microtag experiments need to place two actors' data at VAs whose XOR
+// distance reaches the hash's higher bit pairings: v15^v20 needs 0x108000 (fits in 2 MB), but
+// v16^v21 needs 0x210000 and v17^v22 needs 0x420000, both of which require a larger window.
+// 4 tables = 8 MB, which reaches v15^v20, v16^v21 and v17^v22.
+#define N_GUEST_L1_TABLES    4
+#define GUEST_MEMORY_SIZE    (N_GUEST_L1_TABLES * 512 * 4096)
 
 // =================================================================================================
 // Extended page tables
@@ -31,7 +37,7 @@
 
 // Memory layout within the guest memory
 typedef struct {
-    pte_t_ l1[ENTRIES_PER_PAGE];  // PT
+    pte_t_ l1[N_GUEST_L1_TABLES][ENTRIES_PER_PAGE]; // PTs, one per 2 MB of guest VA
     pdte_t l2[ENTRIES_PER_PAGE];  // PDT
     pdpte_t l3[ENTRIES_PER_PAGE]; // PDPT
     pml4e_t l4[ENTRIES_PER_PAGE]; // PML4
@@ -73,7 +79,7 @@ typedef struct {
     hgpa_t code[sizeof(actor_code_t) / PAGE_SIZE];
     hgpa_t vmlaunch_page[1];
     hgpa_t gdt[1];
-    hgpa_t guest_page_tables[4];
+    hgpa_t guest_page_tables[N_GUEST_L1_TABLES + 3];
 } __attribute__((packed)) guest_memory_translations_t;
 
 extern eptp_t *ept_ptr;

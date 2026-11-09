@@ -75,6 +75,10 @@ REG_SIZE.update({f"ymm{i}": 256 for i in range(16)})
 # not be considered as control-flow instructions by the generator
 NON_CONTROL_FLOW_INST = ["int", "int1", "int3", "into"]
 
+# Instructions whose imm8 (the compare predicate) uops.info leaves signed although GNU as
+# only accepts 0..255 for it; a generated negative immediate fails to assemble
+UNSIGNED_IMM_INST = ["cmpps", "cmppd", "cmpss", "cmpsd", "vcmpps", "vcmppd", "vcmpss", "vcmpsd"]
+
 # ==================================================================================================
 # Lists of x86 extensions
 # ==================================================================================================
@@ -315,6 +319,8 @@ class XMLSpecParser:
                     parsed_op = self._parse_agen_operand(op_node)
                 elif op_type == 'imm':
                     parsed_op = self._parse_imm_operand(op_node)
+                    if instruction.name in UNSIGNED_IMM_INST:
+                        parsed_op.is_signed = False
                 elif op_type == 'relbr':
                     parsed_op = self._parse_label_operand(op_node)
                 elif op_type == 'flags':

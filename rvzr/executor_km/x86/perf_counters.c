@@ -28,7 +28,11 @@ typedef enum {
     MISPREDICTION_RECOVERY_CYCLES = 3,
     HW_INTERRUPTS_RECEIVED = 4,
     SMI_INTERRUPTS_RECEIVED = 5,
-    DECODE_REDIRECTS = 6
+    DECODE_REDIRECTS = 6,
+    // [EXTENSION] L1 instruction-cache misses, used as the htrace source by the L1I_PMC
+    // measurement mode. Encodings taken from the kernel's own event tables on the test machine
+    // (`perf list --details`), not from memory.
+    L1I_MISSES = 7
 } pfc_name_e;
 
 static int get_pfc_config_by_name(pfc_name_e pfc_name, struct pfc_config *config)
@@ -45,6 +49,12 @@ static int get_pfc_config_by_name(pfc_name_e pfc_name, struct pfc_config *config
     // Intel PMU
     if (cpuinfo->x86_vendor == X86_VENDOR_INTEL) {
         switch (pfc_name) {
+        case L1I_MISSES:
+            // Deliberately unimplemented. We have no Intel machine to verify an encoding on, and a
+            // silently wrong PMU event would produce a plausible-looking but meaningless htrace.
+            PRINT_ERRS("get_pfc_config_by_name",
+                       "L1I_MISSES is not implemented for Intel (no verified encoding)\n");
+            return -1;
         case L1_HITS:
             //   MEM_LOAD_RETIRED.L1_HIT: Counts retired load instructions with at least one uop
             //   that hit in the L1 data cache. This event includes all SW prefetches and lock
@@ -105,6 +115,22 @@ static int get_pfc_config_by_name(pfc_name_e pfc_name, struct pfc_config *config
             default:
                 config->evt_num = 0x43;
                 config->umask = 0xff;
+            }
+            break;
+        case L1I_MISSES:
+            // ic_tag_hit_miss.instruction_cache_miss -- event 0x18E, umask 0x18.
+            // Verified against `perf list --details` on family 0x19 (Zen 4). The 12-bit event
+            // number is fine: pfc_write splits evt_num into MSR bits 7:0 and 35:32.
+            switch (family) {
+            case 0x1a:
+            case 0x19:
+                config->evt_num = 0x18e;
+                config->umask = 0x18;
+                break;
+            default:
+                PRINT_ERRS("get_pfc_config_by_name",
+                           "L1I_MISSES encoding is only verified for AMD family 19h/1Ah\n");
+                return -1;
             }
             break;
         case UOPS_ISSUED_ANY:
@@ -200,8 +226,10 @@ int pfc_configure(void)
     struct pfc_config config = {0};
 
     // Configure PMU
-    // #0:  Htrace collection
-    err |= get_pfc_config_by_name(L1_HITS, &config);
+    // #0:  Htrace collection.
+    // [EXTENSION] In L1I_PMC mode this counter is the htrace itself (the measurement macros read
+    // it with `rdpmc 0`), so it must hold the instruction-cache miss event instead of L1_HITS.
+    err |= get_pfc_config_by_name(measurement_mode == L1I_PMC ? L1I_MISSES : L1_HITS, &config);
     CHECK_ERR("pfc_configure");
     err |= pfc_write(0, &config, 1, 1);
     CHECK_ERR("pfc_configure");
