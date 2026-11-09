@@ -46,3 +46,36 @@ Running it:
   revizor/tcenv/ttk_bench process already running.
 - When a run ends, `curve.txt` gets the violation total and the cumulative violations every
   1000 programs (from `revizor_curve.py`).
+
+## Deploying on another machine
+
+Everything needed is on the `spectre-v1` branch: the Revizor core changes these experiments
+use, `base.json` (the instruction spec), and `configs/v1.yaml`.
+
+1. Code
+   ```bash
+   git clone -b spectre-v1 git@github.com:RicardoZhy1215/sca-fuzzer.git && cd sca-fuzzer
+   ```
+2. Python. This machine uses Python 3.10, torch 2.11, scipy 1.15, numpy 2.2 and unicorn 1.0.3.
+   ```bash
+   pip install -e .          # Revizor's own deps from pyproject.toml (unicorn==1.0.3, ...)
+   pip install torch scipy   # ctxrl only; CPU is enough
+   ```
+   Don't install `revizor-fuzzer` from PyPI and rely on it. Everything is started from the
+   checkout root (`python revizor.py ...`), so the checkout's `rvzr/` is what gets imported.
+   It must stay that way, because the PyPI package lacks the core changes (e.g. `input_value_mix`).
+3. Executor kernel module (needs `linux-headers-$(uname -r)`):
+   ```bash
+   cd rvzr/executor_km && make uninstall; make clean && make && make install && cd -
+   ```
+4. Check, then run:
+   ```bash
+   rvzr/SpecRL/genbandit/spectre_v1/queue_revizor.sh rvzr/SpecRL/genbandit/spectre_v1/configs/v1.yaml 100
+   python rvzr/SpecRL/genbandit/spectre_v1/summarize.py
+   ```
+   The scripts use the `python` on PATH, or `$PY` if set.
+
+Results depend on the CPU, so record it with every run set. The machine the first results came
+from is an AMD Ryzen 7 8700F (Zen 4), 8 cores online (CPUs 8-15 offline), SMT off, microcode
+0xa705208. ctxrl (`tcenv.py`) pins the fuzzer to cores 1-3 and the learner to 4-7, so it needs
+at least 8 cores, or `--learner-cores` must be changed.
