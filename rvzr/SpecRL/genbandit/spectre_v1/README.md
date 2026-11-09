@@ -35,3 +35,14 @@ Running it:
         --policy ctx --ctx-policy learn --ctx-mode rule2
 
 `--action` only needs the knobs that differ from `space_v1ctx.CONTROL`.
+
+## Revizor runs of a config
+
+    rvzr/SpecRL/genbandit/spectre_v1/queue_revizor.sh <config.yaml> <n programs> [-i, default 50] [name]
+    python rvzr/SpecRL/genbandit/spectre_v1/summarize.py      # one row per run, config diff vs configs/v1.yaml
+
+- Each call copies the yaml into `runs/revizor-<name>-n<N>-i<I>-<date>/config.yaml` and queues the
+  run detached. Queued runs take the executor one at a time (`.executor.lock`), and wait for any
+  revizor/tcenv/ttk_bench process already running.
+- When a run ends, `curve.txt` gets the violation total and the cumulative violations every
+  1000 programs (from `revizor_curve.py`).
