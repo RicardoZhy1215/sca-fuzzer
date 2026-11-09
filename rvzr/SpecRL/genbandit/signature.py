@@ -14,6 +14,7 @@ avx-masked-store-violations).
 """
 import json
 import os
+import sys
 import re
 import subprocess
 import time
@@ -22,7 +23,7 @@ from typing import Dict, FrozenSet, List, Optional, Tuple
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "../../.."))
 SPEC = os.path.join(ROOT, "base-avx.json")
-PY = "/home/mluo/miniconda3/envs/specrl/bin/python"
+PY = sys.executable
 FP_XTYPES = {"f16", "f32", "f64", "f80", "bf16"}
 
 _GROUP_OF: Dict[str, str] = {}

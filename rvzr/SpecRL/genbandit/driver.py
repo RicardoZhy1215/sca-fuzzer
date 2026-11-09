@@ -38,7 +38,9 @@ sys.path.insert(0, HERE)
 import arms  # noqa: E402
 from signature import signature, CheckError, PY, SPEC  # noqa: E402
 
-BUSY_PATTERN = r"^/home/mluo/miniconda3/envs/specrl/bin/python (revizor\.py|train\.py|dr_fp/)"
+# any python process running Revizor / SpecRL training on the executor (not tied to one machine's
+# interpreter path)
+BUSY_PATTERN = r"^[^ ]*python[^ ]* ([^ ]*/)?(revizor\.py|train\.py|dr_fp/)"
 
 
 def executor_busy() -> bool:
