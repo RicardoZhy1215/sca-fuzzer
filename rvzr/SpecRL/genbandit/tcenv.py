@@ -194,7 +194,7 @@ class TCEnv:
                                   for a, b in zip(fen, org)))
         return out
 
-    def run(self, seconds: float) -> dict:
+    def run(self, seconds: float, max_programs: int = 0) -> dict:
         f, CONF, STAT = self.fuzzer, self.CONF, self.STAT
         bypass = self.mode == "bypass"
         log = open(os.path.join(self.out, "tc.jsonl"), "w", buffering=1 << 16) if bypass else None
@@ -277,7 +277,7 @@ class TCEnv:
             it_s[stage][0] += it
             it_s[stage][1] += it * it
             n += 1
-            if t_end - t_start > seconds:
+            if t_end - t_start > seconds or (max_programs and n >= max_programs):
                 f.log.timeout()
                 break
         f.log.finish()
@@ -330,6 +330,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=["plain", "bypass"], default="bypass")
     ap.add_argument("--minutes", type=float, default=10.0)
+    ap.add_argument("--max-programs", type=int, default=0, help="also stop after this many programs (0: no cap)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--action", help="JSON action dict; default: argmax of the v4 RL run")
     ap.add_argument("--perturb", type=float, default=0.0,
@@ -407,7 +408,7 @@ def main():
                           {"lr": args.rl_lr, "kl": args.rl_kl, "sil": args.rl_sil,
                            "frozen": args.rl_frozen, "seed": args.seed, "cores": list(range(a, b + 1))})
     try:
-        res = TCEnv(action, args.mode, args.out, args.seed, args.perturb, actor).run(args.minutes * 60)
+        res = TCEnv(action, args.mode, args.out, args.seed, args.perturb, actor).run(args.minutes * 60, args.max_programs)
     except BaseException:
         if learner:
             learner.terminate()
