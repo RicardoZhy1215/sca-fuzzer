@@ -5,3 +5,6 @@ __pycache__/
 runs/**
 !runs/**/
 !runs/*/RESULTS.md
+spectre_v1/runs/**
+!spectre_v1/runs/*/
+!spectre_v1/runs/*/RESULTS.md
