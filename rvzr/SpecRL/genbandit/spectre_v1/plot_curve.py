@@ -9,6 +9,7 @@ read from fuzz.log (V after every test case); ctxrl runs (tcenv) from steps.json
 writes <out>.png, <out>.pdf and <out>.csv (programs, then one cumulative-violation column per series)
 """
 import argparse
+import glob
 import json
 import os
 import re
@@ -39,6 +40,14 @@ def run_curve(run):
     for i in range(1, max(last) + 1):
         v = last.get(i, v)
         out.append(v)
+    # Revizor prints no progress line for the last test case of a `-n N` run: when the run
+    # finished normally and the log stops at N - 1, count that program too (its violation, if
+    # any, is already in V: the final V must equal the number of violation artifacts)
+    launch = os.path.join(run, "launch.sh")
+    m = re.search(r" -n (\d+) ", open(launch).read()) if os.path.exists(launch) else None
+    if m and "Finished at" in text and int(m.group(1)) == len(out) + 1:
+        assert out[-1] == len(glob.glob(os.path.join(run, "violation-*"))), run
+        out.append(out[-1])
     return out
 
 
@@ -59,6 +68,9 @@ ap.add_argument("--series", action="append", required=True, help="label=run[+run
 ap.add_argument("--out", required=True)
 ap.add_argument("--title", default="Spectre v1: cumulative violations vs programs")
 ap.add_argument("--subtitle", default="")
+ap.add_argument("--max-programs", type=int, default=0, help="cut every series at this many programs")
+ap.add_argument("--no-joins", action="store_true", help="don't mark where runs were joined")
+ap.add_argument("--no-grid", action="store_true", help="plain background: no gridlines")
 args = ap.parse_args()
 out = args.out if os.path.isabs(args.out) else os.path.join(HERE, args.out)
 os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -67,6 +79,8 @@ S = []
 for sp in args.series:
     label, runs = sp.split("=", 1)
     c, joins = series_curve(runs)
+    if args.max_programs:
+        c, joins = c[:args.max_programs], [j for j in joins if j < args.max_programs]
     S.append((label, c, joins))
 
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10})
@@ -86,6 +100,8 @@ for i, (label, c, joins) in enumerate(S):
                     xytext=(-8, 10), textcoords="offset points", ha="right", va="bottom",
                     color=TEXT, fontsize=9)
 joins = sorted({j for _, _, js in S for j in js})
+if args.no_joins:
+    joins = []
 for j in joins:          # where one run was continued by another (restart or extension)
     ax.axvline(j, color=TEXT2, lw=0.8, ls=(0, (2, 2)), zorder=1)
 if joins:
@@ -95,13 +111,19 @@ ax.set_xlabel("Programs generated", color=TEXT)
 ax.set_ylabel("Cumulative violations", color=TEXT)
 ax.set_xlim(0, max(len(c) for _, c, _ in S) * 1.02)
 ax.set_ylim(0, max(c[-1] for _, c, _ in S) * 1.15)
-ax.grid(True, color=GRID, lw=0.8)
-ax.set_axisbelow(True)
 for s in ("top", "right"):
     ax.spines[s].set_visible(False)
-for s in ("left", "bottom"):
-    ax.spines[s].set_color(GRID)
-ax.tick_params(colors=TEXT2, length=0)
+if args.no_grid:         # no gridlines: the axes carry the scale, so draw them and their ticks
+    for s in ("left", "bottom"):
+        ax.spines[s].set_color(TEXT2)
+        ax.spines[s].set_linewidth(0.8)
+    ax.tick_params(colors=TEXT2, length=3, width=0.8)
+else:
+    ax.grid(True, color=GRID, lw=0.8)
+    ax.set_axisbelow(True)
+    for s in ("left", "bottom"):
+        ax.spines[s].set_color(GRID)
+    ax.tick_params(colors=TEXT2, length=0)
 ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
 fig.suptitle(args.title, x=0.02, ha="left", color=TEXT, fontsize=11, fontweight="bold")
 if args.subtitle:
