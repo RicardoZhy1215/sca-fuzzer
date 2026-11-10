@@ -47,6 +47,12 @@ ALIASES = {"rax": ["rax", "eax", "ax", "al", "ah"], "rbx": ["rbx", "ebx", "bx", 
            "rcx": ["rcx", "ecx", "cx", "cl", "ch"], "rdx": ["rdx", "edx", "dx", "dl", "dh"],
            "rsi": ["rsi", "esi", "si", "sil"], "rdi": ["rdi", "edi", "di", "dil"]}
 FAMILY = {n: FAMS.index(f) for f, ns in ALIASES.items() for n in ns}
+# SIMD registers Revizor uses (xmm8-15 are on x86's default register blocklist): one family each,
+# numbered after the GPR families. A table only has these extra families (n_fam = 14) when some
+# instruction has an xmm operand, so GPR-only configs keep n_fam = 6 and their old checkpoints.
+XMMS = [f"xmm{i}" for i in range(8)]
+FAMILY.update({x: len(FAMS) + i for i, x in enumerate(XMMS)})
+N_FAM_ALL = len(FAMS) + len(XMMS)
 K_SPEC, K_REG, K_MEM, K_BB = 0, 1, 2, 3
 NEG = -1e9
 
@@ -87,7 +93,7 @@ def build_table(isa, mem_index_registers, program_size: int, avg_mem_accesses: i
                 continue
             if not names or any(n not in FAMILY for n in names):
                 continue
-            counts = [0] * len(FAMS)
+            counts = [0] * N_FAM_ALL
             for n in names:
                 counts[FAMILY[n]] += 1
             if sum(c > 0 for c in counts) < 2:
@@ -98,9 +104,14 @@ def build_table(isa, mem_index_registers, program_size: int, avg_mem_accesses: i
                        "pos": min(len(sl), 3)})
             slot_prior.append([math.log(c / tot) if c else NEG for c in counts])
         slots.append(sl)
+    # family space: the 6 GPR families, plus the 8 xmm ones only if some slot can pick one
+    n_fam = N_FAM_ALL if any(p[f] > NEG / 2 for p in slot_prior for f in range(len(FAMS), N_FAM_ALL)) \
+        else len(FAMS)
+    slot_prior = [p[:n_fam] for p in slot_prior]
     names = [f"{s.name} " + ",".join(o.type.name for o in s.operands) for s in specs]
     return {"names": names, "spec_logprior": [math.log(p) for p in prior], "slots": slots,
-            "slot_prior": slot_prior, "program_size": int(program_size), "n_bb": int(n_bb),
+            "slot_prior": slot_prior, "n_fam": n_fam,
+            "program_size": int(program_size), "n_bb": int(n_bb),
             "n_store": len(st), "n_load": len(ld), "n_nonmem": len(nm),
             "sig": hashlib.sha1("|".join(names).encode()).hexdigest()[:12]}
 
@@ -111,6 +122,7 @@ def make_policy(table: dict, hidden: int = 128, emb: int = 64, seed: int = 0):
     import torch.nn as nn
     torch.manual_seed(seed)
     n_specs, n_bb = len(table["names"]), table["n_bb"]
+    assert table.get("n_fam", 6) == 6, "progrl policy: GPR families only (use ctxrl for xmm)"
 
     class Policy(nn.Module):
         """GRU over the decisions made so far. Input at step t = embedding of the previous

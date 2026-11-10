@@ -112,7 +112,8 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
     assert arch in ("gru", "tf")
     if arch == "tf":
         emb = hidden
-    sizes = {K_SPEC: n_specs, K_REG: 6, K_MEM: 6, K_MODE: 3, K_COPY: 3}
+    n_fam = table.get("n_fam", 6)        # 6 GPR families, + 8 xmm ones when the ISA has xmm operands
+    sizes = {K_SPEC: n_specs, K_REG: n_fam, K_MEM: n_fam, K_MODE: 3, K_COPY: 3}
 
     class Block(nn.Module):
         def __init__(self, d, nh, ff):
@@ -176,7 +177,7 @@ def make_policy(table, hidden=128, emb=64, seed=0, copy_new=2 / 64, arch="gru", 
                 nn.init.zeros_(h[-1].bias)
             self.critic = nn.Sequential(nn.Linear(N_CTX, 64), nn.Tanh(), nn.Linear(64, 1))
             self.register_buffer("spec_prior", torch.tensor(table["spec_logprior"]))
-            self.register_buffer("slot_prior", torch.tensor(table["slot_prior"] or [[0.0] * 6],
+            self.register_buffer("slot_prior", torch.tensor(table["slot_prior"] or [[0.0] * n_fam],
                                                             dtype=torch.float32))
             self.register_buffer("mode_prior", torch.log(torch.tensor(MODE_PRIOR)))
             cp = [math.log(1 - copy_new), math.log(copy_new / 2), math.log(copy_new / 2)]
@@ -501,7 +502,7 @@ class PriorPrograms:
 
     def inst(self, spec=None, bb=0):
         s = int(self.rng.choice(len(self.p_spec), p=self.p_spec)) if spec is None else spec
-        return [s, [int(self.rng.choice(6, p=self.p_slot[sl["sid"]])) for sl in self.t["slots"][s]], bb, None]
+        return [s, [int(self.rng.choice(len(self.p_slot[sl["sid"]]), p=self.p_slot[sl["sid"]])) for sl in self.t["slots"][s]], bb, None]
 
     def fresh(self):
         return [self.inst(bb=b) for b in fresh_layout(self.rng, self.t["program_size"], self.t["n_bb"])]
