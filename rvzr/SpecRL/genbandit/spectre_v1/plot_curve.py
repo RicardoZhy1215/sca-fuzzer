@@ -73,20 +73,24 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10})
 fig, ax = plt.subplots(figsize=(6.4, 4.0), dpi=200)
 fig.patch.set_facecolor("white")
 ax.set_facecolor("white")
+handles = []
 for i, (label, c, joins) in enumerate(S):
     col = SERIES_COLORS[i]
     xs = range(1, len(c) + 1)
-    ax.plot(xs, c, color=col, lw=2, solid_joinstyle="round", solid_capstyle="round", zorder=3)
+    h, = ax.plot(xs, c, color=col, lw=2, solid_joinstyle="round", solid_capstyle="round", zorder=3,
+                 label=f"{label}: {c[-1]} violations in {len(c):,} programs")
+    handles.append(h)
     ax.plot([len(c)], [c[-1]], "o", ms=6, color=col, mec="white", mew=2, zorder=4)
-    # direct label at the line end: series name (if several) + final count, in text ink
-    name = f"{label}: " if len(S) > 1 else ""
-    ax.annotate(f"{name}{c[-1]} violations\nin {len(c):,} programs", (len(c), c[-1]),
-                xytext=(-8, 10), textcoords="offset points", ha="right", va="bottom",
-                color=TEXT, fontsize=9)
-    for j in joins:
-        ax.axvline(j, color=TEXT2, lw=0.8, ls=(0, (2, 2)), zorder=1)
-        ax.annotate(f"continued in\na new run ({j:,})", (j, 0), xytext=(4, 4),
-                    textcoords="offset points", color=TEXT2, fontsize=8, va="bottom")
+    if len(S) == 1:      # one series: the final count as a direct label (several: in the legend)
+        ax.annotate(f"{c[-1]} violations\nin {len(c):,} programs", (len(c), c[-1]),
+                    xytext=(-8, 10), textcoords="offset points", ha="right", va="bottom",
+                    color=TEXT, fontsize=9)
+joins = sorted({j for _, _, js in S for j in js})
+for j in joins:          # where one run was continued by another (restart or extension)
+    ax.axvline(j, color=TEXT2, lw=0.8, ls=(0, (2, 2)), zorder=1)
+if joins:
+    ax.annotate("dotted: run continued in a new run", (0.99, 0.02), xycoords="axes fraction",
+                ha="right", va="bottom", color=TEXT2, fontsize=8)
 ax.set_xlabel("Programs generated", color=TEXT)
 ax.set_ylabel("Cumulative violations", color=TEXT)
 ax.set_xlim(0, max(len(c) for _, c, _ in S) * 1.02)
@@ -103,7 +107,7 @@ fig.suptitle(args.title, x=0.02, ha="left", color=TEXT, fontsize=11, fontweight=
 if args.subtitle:
     ax.set_title(args.subtitle, loc="left", color=TEXT2, fontsize=9)
 if len(S) > 1:
-    ax.legend([lab for lab, _, _ in S], frameon=False, loc="upper left", labelcolor=TEXT)
+    ax.legend(handles=handles, frameon=False, loc="upper left", labelcolor=TEXT, fontsize=9)
 fig.tight_layout()
 fig.savefig(out + ".png")
 fig.savefig(out + ".pdf")
