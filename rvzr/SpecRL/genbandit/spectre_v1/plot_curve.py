@@ -85,7 +85,7 @@ for i, (label, c, joins) in enumerate(S):
                 color=TEXT, fontsize=9)
     for j in joins:
         ax.axvline(j, color=TEXT2, lw=0.8, ls=(0, (2, 2)), zorder=1)
-        ax.annotate(f"run resumed after a\nmachine restart ({j:,})", (j, 0), xytext=(4, 4),
+        ax.annotate(f"continued in\na new run ({j:,})", (j, 0), xytext=(4, 4),
                     textcoords="offset points", color=TEXT2, fontsize=8, va="bottom")
 ax.set_xlabel("Programs generated", color=TEXT)
 ax.set_ylabel("Cumulative violations", color=TEXT)
