@@ -22,7 +22,7 @@ No violation is a model/hardware architectural mismatch.
 | direct VVI (the secret is the probe's own operand) | 1 | 8 | 8x |
 | unresolved (flaky: original not reproducible / secret search did not converge) | 0 | 2 | |
 For comparison, side-channel-fuzzer's spec-ext normal arm (10 violations, 3 h) was 6 gated / 3 two-level / 1 direct.
-8 RL violations were classified by hand as gated (230949, 231028, 231357, 232030, 232155, 232938,
+8 RL violations were classified by hand as gated (all 8 keep the difference with 128 and 512 nops after the gate, 3/3 each: the long-lived state, not a window effect) (230949, 231028, 231357, 232030, 232155, 232938,
 233107, 235805). In each, the secret enters a non-probe FP op whose result is read later but never
 reaches an address. gate_scan's "dead" test misses these. 232938 is a two-op chain: divpd xmm4 feeds
 divpd xmm3, xmm4, and that result is dead.
@@ -51,3 +51,11 @@ violations about half are gated (the suppression state), the class most specific
 platform. No mechanism outside the FPVI family / suppression state appeared. The new things are
 instances: new gate ops (mulsd, divsd, divss), live-but-untransmitted gates, chained gates, and
 flag-based second levels.
+
+## Counting: 178, not 187
+The paper counts a violation once per lineage, like the RL-performance figure (steps.jsonl
+new_v = 178). Revizor's log has 187 violations: the other 9 are reruns (6) or edits (3) of a
+program that had already violated: 223736, 231028, 232435, 232639 (a rerun of 232608), 235717,
+000344, 000425, 002614, 003101. Over the 178 new ones: gated 89, two-level 81, direct 6,
+unresolved 2. Gate ops: mulpd 54, divpd 26, mulsd 6, divps 2, divsd 1. Secret lanes: lo 63,
+hi 35. Live-but-untransmitted gates: 7 (231028 is a rerun).
