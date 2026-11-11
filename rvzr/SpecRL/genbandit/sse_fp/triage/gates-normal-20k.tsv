@@ -1,0 +1,29 @@
+run	violation	min.asm on rebuilt pair	gated	gate ops	probe ops
+revizor-ssefp-normal-20k-261110-2112	violation-261110-211533	differs	GATE	divss xmm1, dword ptr [r14 + rbx]	cvttpd2dq xmm0, xmmword ptr [r14 + rdi] | divsd xmm0, xmm3 | cvtsd2si edx, xmm0
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212545	differs	GATE	mulss xmm1, dword ptr [r14 + rsi]	sqrtps xmm3, xmm2
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212835	differs	-		mulpd xmm2, xmm3 | mulpd xmm2, xmm1
+revizor-ssefp-normal-20k-261110-2112	violation-261110-213435	differs	-		divss xmm2, xmm7
+revizor-ssefp-normal-20k-261110-2112	violation-261110-214334	differs	-		divsd xmm3, xmm1 | sqrtsd xmm1, xmm3
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215209	differs	GATE	divpd xmm3, xmmword ptr [r14 + rdi]	mulsd xmm7, qword ptr [r14 + rdx]
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215258	differs	GATE	mulsd xmm2, xmm3	divsd xmm4, qword ptr [r14 + rdx]
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215406	differs	-		mulpd xmm0, xmmword ptr [r14 + rdx] | divps xmm2, xmm1 | divpd xmm0, xmmword ptr [r14 + rdx]
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222321	differs	-		cvtdq2ps xmm7, xmmword ptr [r14 + rbx] | addpd xmm3, xmmword ptr [r14 + rcx] | divpd xmm4, xmm3 | mulsd xmm4, xmm4 | cvtsd2si edx, qword ptr [r14 + rbx]
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223736	differs	GATE	divps xmm4, xmm2	mulpd xmm5, xmm7
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224014	differs	-		mulpd xmm7, xmm5
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224459	differs	GATE	mulpd xmm4, xmm5	mulpd xmm3, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225432	differs	-		divpd xmm3, xmm2
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230021	differs	GATE	divpd xmm0, xmm1	mulpd xmm4, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230806	differs	-		cvttsd2si ebx, xmm7 | divpd xmm7, xmm6 | mulpd xmm5, xmm6 | cvtss2si ecx, xmm1 | cvtsd2si rsi, xmm1 | mulpd xmm4, xmm7 | mulsd xmm5, xmm4 | addss xmm0, xmm6
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232608	differs	-		mulpd xmm1, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232639	differs	-		mulpd xmm1, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232717	differs	-		mulpd xmm0, xmm1
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232801	differs	-		divpd xmm3, xmm7
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233740	differs	GATE	divpd xmm0, xmm7	divpd xmm1, xmm3 | divpd xmm3, xmm4
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234304	differs	-		mulpd xmm6, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235333	differs	-		mulpd xmm0, xmm4 | mulsd xmm4, xmm0 | subpd xmm3, xmm4
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001115	differs	-		mulpd xmm1, xmm5 | addss xmm1, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001651	differs	GATE	mulpd xmm2, xmm5	divpd xmm3, xmm0
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001830	differs	-		mulpd xmm4, xmm2
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002414	differs	GATE	mulpd xmm4, xmm3	divpd xmm6, xmm3
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002741	differs	-		mulpd xmm7, xmm7
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003022	differs	GATE	divps xmm4, xmm3	mulpd xmm6, xmm7

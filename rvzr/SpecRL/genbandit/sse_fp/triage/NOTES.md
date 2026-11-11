@@ -43,3 +43,20 @@ All 28 minimize (5-17 instructions; one RL gadget keeps 44).
 Reading: RL found 22x as many violations per program, and they are not one gadget repeated.
 But they come from a narrower family than Revizor's (mulpd/divpd probe, extractps/movq
 transmitter), with about the same mix of one- and two-level structure.
+
+## 3. The suppression (205811 / gated) shape? (`gates-normal-20k.tsv`, `../gate_scan.py`)
+Port of side-channel-fuzzer's gate_scan.py, on min.asm with the pair rebuilt against it. GATE = an
+FP op whose operation is needed (replacing it with a plain move of the same operands removes the
+difference), whose result is dead, and whose effect survives 512 nops after it.
+
+| | gated | gate ops |
+|---|---|---|
+| Revizor | 4/8 (211533, 212545, 215209, 215258) | divss, mulss, divpd, mulsd |
+| RL | 7/20 (223736, 224459, 230021, 233740, 001651, 002414, 003022) | divps x2, mulpd x3, divpd x2 |
+
+Every gated one has the presence/absence shape in its original hardware traces: the extra cache
+set appears in one input only, as in 205811. The earlier 21-violation study listed gates from
+mulss/mulpd/mulps/divps/divpd (plus 205811's denormal input). divss and mulsd as gates (both in
+Revizor's sample here) were not in that list.
+Extrapolated, RL produced about 0.35 x 178 = 60 gated violations in 20000 programs and Revizor
+about 4. Still to check: whether the secret is in the gate's operands (input-diff pass).
