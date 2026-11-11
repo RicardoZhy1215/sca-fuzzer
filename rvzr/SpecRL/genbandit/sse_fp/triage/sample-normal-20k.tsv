@@ -1,0 +1,29 @@
+run	violation	pair	verdict	flags(orig,fence-fp,fence-all,ftzdaz,ftzdaz+fence-fp,ftzdaz+fence-all)	orig sets	FP ops
+revizor-ssefp-normal-20k-261110-2112	violation-261110-211533	#42/#92	FPVI-family	D-----	A-only [] B-only [16]	blendpd blendps cvtsd2si cvttpd2dq divpd divsd divss hsubps subpd subss
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212545	#18/#68	FPVI-family	D-----	A-only [] B-only [59]	blendpd blendvpd cvtps2pd cvtsi2sd cvttpd2dq cvttss2si mulss sqrtps subpd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212835	#13/#63	FPVI-family	D-----	A-only [17] B-only []	addpd addsubps cvtsi2sd cvtsi2ss cvttps2dq mulpd mulps mulsd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-213435	#40/#90	FPVI-family	D-----	A-only [28] B-only []	addsubps blendvpd cvtsd2si cvttps2dq cvttsd2si divss sqrtpd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-214334	#13/#63	ftz-architectural	D--DDD	A-only [37] B-only [20]	blendvps divps divsd sqrtsd subps
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215209	#9/#59	FPVI-family	D-----	A-only [] B-only [48]	addsd cvtsi2ss divpd insertps mulsd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215258	#30/#80	FPVI-family	D-----	A-only [] B-only [57]	addss cvtsd2si divsd extractps mulsd roundps
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215406	#11/#61	FPVI-family	D-----	A-only [10] B-only []	cvtss2si divpd divps extractps hsubpd mulpd roundpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222321	#26/#76	FPVI-family	D-----	A-only [22] B-only [53]	addpd cvtdq2ps cvtsd2si cvttps2dq divpd extractps haddpd mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223736	#44/#94	FPVI-family	D-----	A-only [37] B-only []	cvtpd2dq divps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224014	#4/#54	FPVI-family	D-----	A-only [] B-only [36]	addss cvtsd2si cvttsd2si divpd extractps haddpd hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224459	#23/#73	FPVI-family	D-----	A-only [] B-only [40]	addpd addsd addss cvtsi2sd divpd extractps hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225432	#34/#84	ftz-architectural	D--DDD	A-only [63] B-only [61]	blendvps cvtsd2si cvttps2dq divpd extractps haddpd mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230021	#46/#96	FPVI-family	D-----	A-only [49] B-only []	addpd addss cvttsd2si divpd extractps haddpd haddps hsubps mulpd mulsd sqrtpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230806	#11/#61	FPVI-family	D-----	A-only [] B-only [15]	addpd addss cvtsd2si cvtss2si cvttsd2si divpd extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232608	#27/#77	FPVI-family	D-----	A-only [49] B-only [8]	cvtpd2dq extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232639	#32/#82	FPVI-family	D-----	A-only [23] B-only [36]	cvtpd2dq extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232717	#21/#71	FPVI-family	D-----	A-only [1, 7, 25] B-only [6, 30]	addss blendvps cvttsd2si extractps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232801	#30/#80	ftz-architectural	D--DDD	A-only [24, 62] B-only [54]	addpd addss divpd extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233740	#15/#65	FPVI-family	D-----	A-only [25] B-only []	addss cvttps2dq divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234304	#34/#84	FPVI-family	D-----	A-only [34, 57] B-only []	addss divpd extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235333	#31/#81	FPVI-family	D-----	A-only [28] B-only [47, 48]	addpd addss cvtdq2pd cvtsd2si cvttps2dq hsubpd hsubps mulpd mulsd sqrtss subpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001115	#49/#99	FPVI-family	D-----	A-only [] B-only [59]	addss cvtsd2si cvtsi2ss cvtss2si cvttsd2si extractps haddpd mulpd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001651	#22/#72	FPVI-family	D-----	A-only [9] B-only []	addpd addss blendvps cvttps2dq divpd haddpd mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001830	#1/#51	ftz-architectural	D--DDD	A-only [29] B-only []	addss blendvps extractps haddpd mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002414	#28/#78	FPVI-family	D-----	A-only [59] B-only []	addpd addss cvtsd2si cvttsd2si divpd extractps haddpd mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002741	#28/#78	FPVI-family	D-----	A-only [16] B-only []	addpd addss cvttsd2si divpd haddpd haddps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003022	#29/#79	FPVI-family	D-----	A-only [30] B-only []	addss cvttsd2si divps extractps mulpd sqrtpd subpd subss
