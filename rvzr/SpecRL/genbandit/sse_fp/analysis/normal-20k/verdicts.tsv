@@ -1,0 +1,195 @@
+revizor-ssefp-normal-20k-261110-2112	violation-261110-211533	#42/#92	FPVI-family	D-----	A-only [] B-only [16]	blendpd blendps cvtsd2si cvttpd2dq divpd divsd divss hsubps subpd subss
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212545	#18/#68	FPVI-family	D-----	A-only [] B-only [59]	blendpd blendvpd cvtps2pd cvtsi2sd cvttpd2dq cvttss2si mulss sqrtps subpd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-212835	#13/#63	FPVI-family	D-----	A-only [17] B-only []	addpd addsubps cvtsi2sd cvtsi2ss cvttps2dq mulpd mulps mulsd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-213435	#40/#90	FPVI-family	D-----	A-only [28] B-only []	addsubps blendvpd cvtsd2si cvttps2dq cvttsd2si divss sqrtpd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-214334	#13/#63	ftz-architectural	D--DDD	A-only [37] B-only [20]	blendvps divps divsd sqrtsd subps
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215209	#9/#59	FPVI-family	D-----	A-only [] B-only [48]	addsd cvtsi2ss divpd insertps mulsd
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215258	#30/#80	FPVI-family	D-----	A-only [] B-only [57]	addss cvtsd2si divsd extractps mulsd roundps
+revizor-ssefp-normal-20k-261110-2112	violation-261110-215406	#11/#61	FPVI-family	D-----	A-only [10] B-only []	cvtss2si divpd divps extractps hsubpd mulpd roundpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-220002	#16/#66	FPVI-family	D-----	A-only [30] B-only [44]	addpd blendvps cvtpd2dq cvttpd2dq cvttsd2si extractps haddps hsubps mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-220319	#44/#94	not-reproduced	------	A-only [] B-only []	addss addsubps cvttps2dq cvttsd2si divpd haddpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-220723	#6/#56	FPVI-family	D-----	A-only [60, 62] B-only []	addss blendvps cvtsd2si cvtss2si divpd mulsd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221035	#20/#70	FPVI-family	D-----	A-only [16] B-only [28]	addpd addss blendvps cvttsd2si extractps haddpd hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221334	#1/#51	FPVI-family	D-----	A-only [] B-only [16, 18]	addpd addss blendvps cvtsd2si divpd extractps haddps hsubps mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221455	#19/#69	FPVI-family	D-----	A-only [] B-only [17]	addpd addss divpd extractps haddpd hsubps mulpd sqrtpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221533	#41/#91	ftz-architectural	D--DDD	A-only [21] B-only [54]	addpd addss addsubps cvtpd2dq cvttsd2si divpd extractps haddpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221621	#45/#95	FPVI-family	D-----	A-only [3, 31] B-only []	addpd addss blendvps cvtss2si extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221707	#31/#81	FPVI-family	D-----	A-only [24] B-only [30]	addss cvttps2dq extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-221825	#47/#97	FPVI-family	D-----	A-only [] B-only [2, 47]	addpd addss blendvps cvtsd2si cvttsd2si divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222036	#46/#96	FPVI-family	D-----	A-only [3] B-only []	addpd divpd extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222128	#26/#76	FPVI-family	D-----	A-only [8] B-only [16]	addss addsubps cvttps2dq cvttsd2si extractps hsubps mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222222	#12/#62	FPVI-family	D-----	A-only [] B-only [18]	addpd cvtpd2dq cvttpd2dq extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222321	#26/#76	FPVI-family	D-----	A-only [22] B-only [53]	addpd cvtdq2ps cvtsd2si cvttps2dq divpd extractps haddpd mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222408	#40/#90	FPVI-family	D-----	A-only [] B-only [1, 38]	addss blendvps cvtsd2si divpd extractps haddpd hsubps subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222456	#14/#64	not-reproduced	---DDD	A-only [] B-only []	addsd addss blendvps cvtpd2dq cvtss2si cvttps2dq cvttsd2si extractps haddpd hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222534	#32/#82	FPVI-family	D-----	A-only [] B-only [58]	addpd addss cvtsd2si divpd extractps haddpd mulpd mulsd roundss sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222611	#12/#62	FPVI-family	D-----	A-only [22] B-only []	addpd addss addsubps blendvps cvttpd2dq extractps haddpd mulpd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222733	#27/#77	FPVI-family	D-----	A-only [] B-only [10]	addss blendvps cvtpd2dq cvtsd2si extractps haddpd mulpd sqrtsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222847	#32/#82	FPVI-family	D-----	A-only [] B-only [13]	addss cvtpd2dq divpd mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-222947	#32/#82	FPVI-family	D-----	A-only [2] B-only []	addss cvtsd2si cvtss2si cvttsd2si extractps mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223148	#7/#57	FPVI-family	D-----	A-only [41] B-only []	addpd addss blendvps divpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223231	#46/#96	FPVI-family	D-----	A-only [] B-only [10]	addpd cvtss2si cvttsd2si divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223320	#15/#65	FPVI-family	D-----	A-only [] B-only [38, 53]	addpd addss cvtss2si hsubps mulpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223409	#7/#57	FPVI-family	D-----	A-only [8, 51, 54] B-only [13, 16, 33]	addpd addss cvtsd2si cvtsi2sd cvttsd2si divpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223452	#22/#72	FPVI-family	D-----	A-only [32] B-only []	addpd addss blendvps cvttsd2si divpd extractps haddpd hsubps sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223540	#15/#65	FPVI-family	D-----	A-only [] B-only [41]	addss addsubps cvtss2si haddpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223618	#2/#52	FPVI-family	D-----	A-only [] B-only [47]	cvtpd2dq divps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223658	#46/#96	FPVI-family	D-----	A-only [26] B-only []	addpd addss divpd extractps haddps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223736	#44/#94	FPVI-family	D-----	A-only [37] B-only []	cvtpd2dq divps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223830	#25/#75	FPVI-family	D-----	A-only [2] B-only []	addpd cvtpd2dq extractps hsubps mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-223915	#45/#95	FPVI-family	D-----	A-only [10] B-only [43]	addss cvtpd2dq extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224014	#4/#54	FPVI-family	D-----	A-only [] B-only [36]	addss cvtsd2si cvttsd2si divpd extractps haddpd hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224059	#15/#65	FPVI-family	D-----	A-only [32, 43] B-only [4]	addpd addss blendvps cvtsd2si extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224200	#9/#59	FPVI-family	D-----	A-only [20] B-only [40]	addpd addss blendvps cvtdq2ps divpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224241	#22/#72	FPVI-family	D-----	A-only [] B-only [51]	addpd addss blendvps cvtdq2ps cvtsd2si haddps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224310	#37/#87	FPVI-family	D-----	A-only [54] B-only [15]	addpd addps addss blendvps extractps haddps mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224342	#14/#64	FPVI-family	D-----	A-only [] B-only [31]	addss blendvps cvtsd2si divpd extractps haddpd hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224421	#18/#68	FPVI-family	D-----	A-only [63] B-only []	addpd addss haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224459	#23/#73	FPVI-family	D-----	A-only [] B-only [40]	addpd addsd addss cvtsi2sd divpd extractps hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224537	#39/#89	FPVI-family	D-----	A-only [27] B-only []	addss blendvps cvttpd2dq cvttsd2si divpd divsd extractps hsubps mulpd mulps
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224620	#7/#57	FPVI-family	D-----	A-only [49] B-only [1]	addss addsubps cvtpd2dq cvtss2si cvttps2dq divpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224702	#31/#81	FPVI-family	D-----	A-only [17] B-only [32, 35]	addpd addss blendvps divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224741	#20/#70	FPVI-family	D-----	A-only [19] B-only []	addpd addsubps cvtpd2dq divpd haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224843	#40/#90	FPVI-family	D-----	A-only [] B-only [47]	addss divpd extractps haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-224920	#32/#82	ftz-architectural	D--DDD	A-only [62] B-only []	cvtpd2dq cvtsd2si cvtss2si divpd extractps mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225019	#4/#54	FPVI-family	D-----	A-only [59] B-only []	addpd addss addsubps cvtsd2si divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225116	#30/#80	FPVI-family	D-----	A-only [4] B-only []	addss cvtsd2si cvttsd2si divpd extractps haddps hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225157	#9/#59	FPVI-family	D-----	A-only [] B-only [14]	addpd addss addsubps cvttps2dq divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225308	#3/#53	FPVI-family	D-----	A-only [11] B-only []	addss addsubps cvtsd2si cvttps2dq divpd haddpd hsubps mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225353	#43/#93	FPVI-family	D-----	A-only [3] B-only [7]	addpd blendvps cvtpd2dq cvtss2si cvttsd2si extractps haddpd mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225432	#34/#84	ftz-architectural	D--DDD	A-only [63] B-only [61]	blendvps cvtsd2si cvttps2dq divpd extractps haddpd mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225510	#41/#91	FPVI-family	D-----	A-only [51] B-only []	addpd cvtsd2si cvtss2si cvttpd2dq cvttsd2si divpd extractps hsubps mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225620	#14/#64	FPVI-family	D-----	A-only [] B-only [44]	addpd addss divpd extractps hsubps mulpd mulps sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225715	#29/#79	FPVI-family	D-----	A-only [] B-only [50]	addpd addss cvtsd2si cvtss2si extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225805	#13/#63	FPVI-family	D-----	A-only [1] B-only []	addss cvtsi2ss cvtss2si cvttsd2si divpd extractps hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225847	#1/#51	FPVI-family	D-----	A-only [11] B-only [51]	addpd blendvps cvtss2si cvttpd2dq cvttss2si mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-225929	#37/#87	FPVI-family	D-----	A-only [14, 20] B-only [21, 23]	addss cvtsd2si cvttpd2dq extractps mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230021	#46/#96	FPVI-family	D-----	A-only [49] B-only []	addpd addss cvttsd2si divpd extractps haddpd haddps hsubps mulpd mulsd sqrtpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230108	#28/#78	FPVI-family	D-----	A-only [26] B-only []	addpd blendvps cvttsd2si divpd extractps mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230210	#33/#83	FPVI-family	D-----	A-only [] B-only [20]	addss blendps extractps haddpd hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230259	#38/#88	FPVI-family	D-----	A-only [] B-only [1]	addpd addss cvtpd2dq divpd extractps haddpd mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230347	#48/#98	FPVI-family	D-----	A-only [16] B-only []	addss cvtsd2si cvtss2si divpd extractps haddpd mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230425	#16/#66	FPVI-family	D-----	A-only [] B-only [10]	addss divpd extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230510	#45/#95	FPVI-family	D-----	A-only [] B-only [1]	addpd addsubps cvtsd2si divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230552	#12/#62	FPVI-family	D-----	A-only [50] B-only []	addss cvtsd2si divpd extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230645	#23/#73	FPVI-family	D-----	A-only [] B-only [10]	addss divpd extractps haddpd hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230727	#27/#77	ftz-architectural	D--DDD	A-only [] B-only [44]	addpd addss cvtsd2si cvttsd2si divpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230806	#11/#61	FPVI-family	D-----	A-only [] B-only [15]	addpd addss cvtsd2si cvtss2si cvttsd2si divpd extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230855	#36/#86	FPVI-family	D-----	A-only [41] B-only [9]	addpd addss blendvps cvtpd2dq cvtss2si cvttsd2si divpd extractps mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-230949	#46/#96	FPVI-family	D-----	A-only [] B-only [42]	addss addsubps blendvps cvtsd2si cvtsi2sd cvttpd2dq cvttsd2si divpd haddpd hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231028	#25/#75	FPVI-family	D-----	A-only [54] B-only []	addss addsubps blendvps cvtsd2si cvtsi2sd cvttpd2dq cvttsd2si divpd haddpd hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231106	#10/#60	FPVI-family	D-----	A-only [] B-only [16]	cvtdq2ps cvtsd2si mulpd mulsd roundpd roundps sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231153	#44/#94	FPVI-family	D-----	A-only [28] B-only [5]	addss blendvps cvtpd2dq cvttps2dq divpd extractps hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231231	#49/#99	FPVI-family	D-----	A-only [5] B-only []	blendvps divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231318	#3/#53	FPVI-family	D-----	A-only [1] B-only []	addpd cvttpd2dq cvttps2dq cvttsd2si divpd extractps hsubps mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231357	#49/#99	FPVI-family	D-----	A-only [49] B-only []	addsubps cvttsd2si divpd mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231438	#24/#74	FPVI-family	D-----	A-only [25] B-only []	addpd cvtps2dq divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231539	#35/#85	FPVI-family	D-----	A-only [] B-only [51, 52]	addpd addss cvtdq2ps cvttsd2si hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231618	#43/#93	FPVI-family	D-----	A-only [20] B-only [4]	addpd addss addsubps cvtsd2si haddpd haddps hsubps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231656	#15/#65	FPVI-family	D-----	A-only [51] B-only [47]	cvttsd2si divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231749	#45/#95	FPVI-family	D-----	A-only [20] B-only []	addpd cvtsi2sd extractps haddpd hsubps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231833	#8/#58	FPVI-family	D-----	A-only [] B-only [47, 48]	addpd addss divpd extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231911	#41/#91	FPVI-family	D-----	A-only [50] B-only []	addpd addss cvttps2dq cvttsd2si extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-231951	#14/#64	FPVI-family	D-----	A-only [47] B-only [46]	addss cvtss2sd divpd extractps hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232030	#20/#70	FPVI-family	D-----	A-only [13] B-only []	addpd addss blendvps cvtsd2si cvtss2si divpd extractps haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232112	#15/#65	FPVI-family	D-----	A-only [] B-only [6]	divpd extractps mulpd mulsd sqrtsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232155	#17/#67	FPVI-family	D-----	A-only [33] B-only []	addpd divpd divsd mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232234	#34/#84	FPVI-family	D-----	A-only [17] B-only []	addpd addss divpd extractps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232316	#36/#86	FPVI-family	D-----	A-only [52] B-only [10]	addpd addsd addss cvtsd2si divpd extractps haddpd mulpd roundss sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232355	#17/#67	FPVI-family	D-----	A-only [] B-only [26]	addpd blendvps cvtpd2dq cvtsd2si cvtss2si divpd haddpd hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232435	#13/#63	FPVI-family	D-----	A-only [33] B-only []	addpd blendvps cvtpd2dq cvtsd2si cvtss2si divpd haddpd hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232515	#14/#64	FPVI-family	D-----	A-only [32] B-only []	addpd addss cvttsd2si divpd extractps hsubps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232608	#27/#77	FPVI-family	D-----	A-only [49] B-only [8]	cvtpd2dq extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232639	#32/#82	FPVI-family	D-----	A-only [23] B-only [36]	cvtpd2dq extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232717	#21/#71	FPVI-family	D-----	A-only [1, 7, 25] B-only [6, 30]	addss blendvps cvttsd2si extractps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232801	#30/#80	ftz-architectural	D--DDD	A-only [24, 62] B-only [54]	addpd addss divpd extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232854	#12/#62	FPVI-family	D-----	A-only [] B-only [17, 20, 62]	addpd cvtss2si cvttpd2dq extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-232938	#36/#86	FPVI-family	D-----	A-only [] B-only [37]	addpd addss blendvps cvttps2dq divpd hsubps mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233017	#19/#69	FPVI-family	D-----	A-only [31] B-only []	addpd addss divpd extractps haddpd mulpd mulsd roundss sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233107	#43/#93	FPVI-family	D-----	A-only [] B-only [42]	addss addsubps cvtpd2dq cvtsd2si mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233200	#20/#70	FPVI-family	D-----	A-only [38] B-only [24]	addpd addss blendvps cvtss2si divpd extractps hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233243	#25/#75	FPVI-family	D-----	A-only [23] B-only [14]	addpd cvtpd2dq divpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233326	#22/#72	FPVI-family	D-----	A-only [1, 57] B-only [55]	addpd addss blendpd cvtpd2dq divpd mulpd mulsd roundss sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233406	#39/#89	FPVI-family	D-----	A-only [] B-only [45]	addpd addss cvtss2si divpd divps hsubps mulpd mulsd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233451	#25/#75	ftz-architectural	D--DDD	A-only [] B-only [62]	addpd addss blendvps cvttps2dq divpd extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233539	#43/#93	FPVI-family	D-----	A-only [19] B-only [4]	addsd addss cvtpd2ps cvtsd2si cvttps2dq cvttsd2si divpd extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233625	#33/#83	FPVI-family	D-----	A-only [] B-only [56, 57]	addpd addss blendvps cvtpd2dq cvtsd2si cvttps2dq divpd haddpd mulpd mulsd roundpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233702	#42/#92	FPVI-family	D-----	A-only [14] B-only []	addpd addss divpd haddpd hsubps mulpd roundsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233740	#15/#65	FPVI-family	D-----	A-only [25] B-only []	addss cvttps2dq divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233818	#42/#92	FPVI-family	D-----	A-only [] B-only [1]	addpd addss cvtsi2sd divpd extractps hsubps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233857	#35/#85	FPVI-family	D-----	A-only [31] B-only []	addpd blendvps cvtsi2sd divpd haddpd mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-233937	#48/#98	FPVI-family	D-----	A-only [21, 55] B-only []	addss cvtss2si divpd extractps hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234025	#9/#59	FPVI-family	D-----	A-only [26] B-only [20]	addps addss divpd extractps hsubps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234106	#10/#60	FPVI-family	D-----	A-only [] B-only [46, 47]	addpd addss cvtsd2ss cvttsd2si divpd extractps mulpd mulsd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234144	#46/#96	FPVI-family	D-----	A-only [] B-only [35]	divpd extractps haddpd haddps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234221	#46/#96	FPVI-family	D-----	A-only [41] B-only []	cvtsi2sd cvttps2dq cvttsd2si divpd extractps haddps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234304	#34/#84	FPVI-family	D-----	A-only [34, 57] B-only []	addss divpd extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234348	#34/#84	FPVI-family	D-----	A-only [] B-only [57]	addpd addsubps blendvps cvtdq2ps cvttps2dq cvttsd2si divpd divsd extractps haddps
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234438	#37/#87	FPVI-family	D-----	A-only [23] B-only []	addpd addss addsubps divpd extractps haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234522	#30/#80	FPVI-family	D-----	A-only [] B-only [21]	addsd addss blendvps cvtsd2si divpd extractps haddpd mulpd sqrtpd sqrtsd sqrtss subss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234600	#49/#99	FPVI-family	D-----	A-only [18] B-only []	addpd addss cvtpd2dq cvtsd2si cvttps2dq extractps hsubps mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234642	#18/#68	FPVI-family	D-----	A-only [8] B-only [35]	addpd addss cvttps2dq haddps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234721	#39/#89	FPVI-family	D-----	A-only [7] B-only [18]	cvtsd2si cvttps2dq divpd extractps haddps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234804	#30/#80	FPVI-family	D-----	A-only [] B-only [9]	addpd cvtsd2si cvttsd2si extractps hsubps mulpd mulsd sqrtpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234854	#36/#86	FPVI-family	D-----	A-only [] B-only [21]	addpd addss blendvps cvttsd2si divpd extractps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-234934	#24/#74	FPVI-family	D-----	A-only [] B-only [61]	addpd blendvps cvtsi2sd cvttsd2si extractps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235014	#43/#93	FPVI-family	D-----	A-only [7] B-only [40]	addpd addss divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235054	#24/#74	FPVI-family	D-----	A-only [1, 33] B-only [6, 15]	addpd addss divpd extractps haddpd hsubps mulpd sqrtsd subpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235135	#1/#51	FPVI-family	D-----	A-only [27] B-only []	cvtsd2si divpd extractps haddpd haddps hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235221	#5/#55	FPVI-family	D-----	A-only [] B-only [32]	addpd addss cvtsd2si divpd extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235333	#31/#81	FPVI-family	D-----	A-only [28] B-only [47, 48]	addpd addss cvtdq2pd cvtsd2si cvttps2dq hsubpd hsubps mulpd mulsd sqrtss subpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235417	#2/#52	FPVI-family	D-----	A-only [] B-only [45]	cvtpd2dq divpd extractps mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235509	#17/#67	FPVI-family	D-----	A-only [56] B-only []	cvttsd2si divpd extractps hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235540	#0/#50	FPVI-family	D-----	A-only [8] B-only []	addpd cvtpd2dq cvtsd2si divpd extractps haddpd mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235638	#12/#62	ftz-architectural	D--DDD	A-only [46] B-only [15]	addpd cvtpd2dq cvtsi2sd divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235717	#27/#77	FPVI-family	D-----	A-only [59] B-only [55]	addpd cvtpd2dq cvtsi2sd divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235805	#19/#69	FPVI-family	D-----	A-only [4] B-only []	addpd addss blendvps extractps haddpd mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235844	#43/#93	FPVI-family	D-----	A-only [] B-only [3]	addpd cvttps2dq divpd extractps hsubps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261110-235929	#9/#59	FPVI-family	D-----	A-only [] B-only [57]	addpd addss divpd extractps haddpd mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000018	#37/#87	FPVI-family	D-----	A-only [] B-only [49]	addpd blendvps cvttsd2si divpd extractps mulpd roundss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000057	#37/#87	FPVI-family	D-----	A-only [8, 13] B-only [33]	addpd addss cvttsd2si divpd extractps haddps mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000139	#1/#51	FPVI-family	D-----	A-only [] B-only [16]	addpd addps blendvps cvtsd2si divpd extractps hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000226	#4/#54	FPVI-family	D-----	A-only [61, 62] B-only []	addpd blendvps cvtsd2si cvttps2dq divpd haddpd hsubps mulsd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000305	#19/#69	FPVI-family	D-----	A-only [] B-only [42]	addss blendvps cvttps2dq cvttsd2si divpd extractps haddpd hsubps insertps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000344	#26/#76	FPVI-family	D-----	A-only [37] B-only []	addpd blendvps cvtsd2si cvttps2dq divpd haddpd hsubps mulsd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000425	#3/#53	FPVI-family	D-----	A-only [] B-only [29]	addpd blendvps cvtsd2si cvttps2dq divpd haddpd hsubps mulsd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000525	#2/#52	FPVI-family	D-----	A-only [33] B-only []	addpd addsubps cvtdq2pd cvtsi2sd divpd extractps haddpd mulpd mulsd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000634	#47/#97	FPVI-family	D-----	A-only [60] B-only [56]	addpd addss cvttpd2dq cvttss2si divpd divsd extractps haddpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000708	#23/#73	FPVI-family	D-----	A-only [31] B-only [49]	addpd addss blendvps cvttsd2si divpd haddpd mulpd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000747	#32/#82	FPVI-family	D-----	A-only [29] B-only [54]	addpd blendvps cvtsd2si divpd haddpd hsubps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000825	#31/#81	FPVI-family	D-----	A-only [42] B-only []	addss cvtsi2sd cvttsd2si divpd extractps haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000910	#6/#56	FPVI-family	D-----	A-only [] B-only [48]	addpd addps addsubps blendvps cvtsd2si cvttps2dq extractps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-000948	#34/#84	FPVI-family	D-----	A-only [37] B-only []	addpd divpd extractps haddpd mulpd mulsd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001030	#17/#67	FPVI-family	D-----	A-only [48] B-only []	addpd addss cvtsd2si cvtss2si cvttsd2si divpd extractps haddpd hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001115	#49/#99	FPVI-family	D-----	A-only [] B-only [59]	addss cvtsd2si cvtsi2ss cvtss2si cvttsd2si extractps haddpd mulpd sqrtpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001237	#17/#67	FPVI-family	D-----	A-only [26] B-only []	cvtsi2sd divsd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001317	#48/#98	FPVI-family	D-----	A-only [40] B-only [21]	addpd addsubps blendvpd blendvps cvtpd2dq cvtsd2si cvttsd2si divpd extractps hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001357	#23/#73	FPVI-family	D-----	A-only [] B-only [8]	blendvps extractps hsubps mulpd mulps sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001437	#5/#55	ftz-architectural	D--DDD	A-only [20] B-only [40]	addpd addss cvtss2si divpd extractps haddpd hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001516	#18/#68	FPVI-family	D-----	A-only [13] B-only []	addpd cvtpd2dq extractps haddpd mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001554	#38/#88	FPVI-family	D-----	A-only [] B-only [37]	addss cvtpd2dq divpd extractps haddpd mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001651	#22/#72	FPVI-family	D-----	A-only [9] B-only []	addpd addss blendvps cvttps2dq divpd haddpd mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001738	#8/#58	FPVI-family	D-----	A-only [] B-only [56]	blendvps cvtsi2sd divpd hsubps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001830	#1/#51	ftz-architectural	D--DDD	A-only [29] B-only []	addss blendvps extractps haddpd mulpd mulsd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001911	#32/#82	FPVI-family	D-----	A-only [11] B-only []	addpd addss divpd extractps haddpd mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-001957	#43/#93	FPVI-family	D-----	A-only [] B-only [26]	addpd addss blendvps divpd extractps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002036	#13/#63	FPVI-family	D-----	A-only [22] B-only []	addpd addss blendvps cvtss2si cvttps2dq cvttsd2si divpd divsd extractps mulpd sqrtsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002125	#7/#57	FPVI-family	D-----	A-only [7] B-only []	addss blendvps cvtsi2sd divpd extractps haddpd hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002207	#10/#60	FPVI-family	D-----	A-only [] B-only [21]	addpd addss addsubps blendps cvtps2dq cvttpd2dq divpd extractps mulpd sqrtpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002255	#30/#80	FPVI-family	D-----	A-only [] B-only [10]	addpd addss divpd extractps mulpd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002333	#22/#72	FPVI-family	D-----	A-only [21] B-only []	cvtsi2sd divpd extractps hsubps mulpd mulsd sqrtpd sqrtsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002414	#28/#78	FPVI-family	D-----	A-only [59] B-only []	addpd addss cvtsd2si cvttsd2si divpd extractps haddpd mulpd mulsd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002456	#15/#65	FPVI-family	D-----	A-only [] B-only [43]	addpd addss addsubps blendvps cvttpd2dq divpd extractps hsubps mulpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002533	#16/#66	FPVI-family	D-----	A-only [51] B-only [6, 50]	cvtpd2dq cvtsd2si divpd extractps haddpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002614	#1/#51	FPVI-family	D-----	A-only [] B-only [27]	cvtpd2dq cvtsd2si divpd extractps haddpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002652	#43/#93	FPVI-family	D-----	A-only [] B-only [21, 22]	addss cvttsd2si divpd hsubps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002741	#28/#78	FPVI-family	D-----	A-only [16] B-only []	addpd addss cvttsd2si divpd haddpd haddps mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002823	#16/#66	FPVI-family	D-----	A-only [] B-only [11]	cvtpd2dq divpd haddpd haddps mulpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002902	#28/#78	FPVI-family	D-----	A-only [45] B-only [42]	addpd cvttsd2si extractps mulpd mulsd sqrtss subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-002944	#30/#80	FPVI-family	D-----	A-only [54] B-only [59]	addsd addsubps cvtpd2dq cvttps2dq extractps mulpd sqrtpd sqrtss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003022	#29/#79	FPVI-family	D-----	A-only [30] B-only []	addss cvttsd2si divps extractps mulpd sqrtpd subpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003101	#25/#75	FPVI-family	D-----	A-only [8] B-only []	addss cvttsd2si divps extractps mulpd sqrtpd subpd subss
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003141	#0/#50	FPVI-family	D-----	A-only [] B-only [25]	addpd blendvps cvtpd2dq cvttsd2si divpd extractps haddpd hsubps mulpd sqrtpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003223	#20/#70	FPVI-family	D-----	A-only [49] B-only [7]	addss blendps cvtsd2si cvttsd2si extractps haddpd mulpd mulsd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003308	#31/#81	FPVI-family	D-----	A-only [] B-only [20]	addpd addss blendvps cvttsd2si divpd extractps haddps mulpd subpd
+ctx-ssefp-normal-20k-261110-2112	violation-261111-003348	#31/#81	FPVI-family	D-----	A-only [3] B-only []	addpd addss blendvps cvttpd2dq divpd extractps haddpd mulpd mulsd sqrtpd sqrtss
