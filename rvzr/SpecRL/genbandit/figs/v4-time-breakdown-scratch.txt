@@ -1,0 +1,43 @@
+Revizor: 3000 programs, 26 violations (8.7/1000), wall 1400.7 s (466.9 ms/program, 66.8 V/h); confirmation 970.6 s = 69.3% = 37.3 s per violation; timer overhead 0.14 s (0.01%)
+    Program generation              9.72 ms/program    2.1%
+    Input generation                1.41 ms/program    0.3%
+    Filters: hardware              62.68 ms/program   13.4%
+    Filters: other                 19.11 ms/program    4.1%
+    Fast path: model               20.68 ms/program    4.4%
+    Fast path: hardware            29.09 ms/program    6.2%
+    Fast path: other                0.39 ms/program    0.1%
+    Confirmation                  323.52 ms/program   69.3%
+    Reporting                       0.03 ms/program    0.0%
+    Other                           0.26 ms/program    0.1%
+RL (GRU): 10000 programs, 138 violations (13.8/1000), wall 7351.4 s (735.1 ms/program, 67.6 V/h); confirmation 5515.8 s = 75.0% = 40.0 s per violation; timer overhead 0.90 s (0.01%)
+    fuzzer blocked on the agent: 1 times, 1.49 s
+    learner (gru, 416277 params): 39 PPO updates, 1.10 s each (max 1.15), 43 s total = 0.6% of wall (cores 4-7, off the critical path)
+    Program generation             11.10 ms/program    1.5%
+    Policy: waiting for agent       0.15 ms/program    0.0%
+    Policy (RL)                     0.15 ms/program    0.0%
+    Input generation                1.42 ms/program    0.2%
+    Filters: hardware              67.54 ms/program    9.2%
+    Filters: other                 20.01 ms/program    2.7%
+    Fast path: model               32.02 ms/program    4.4%
+    Fast path: hardware            46.42 ms/program    6.3%
+    Fast path: other                0.60 ms/program    0.1%
+    Confirmation                  551.58 ms/program   75.0%
+    Reporting                       0.06 ms/program    0.0%
+    RL harness                      3.32 ms/program    0.5%
+    Other                           0.77 ms/program    0.1%
+RL (Transformer): 10000 programs, 179 violations (17.9/1000), wall 8626.1 s (862.6 ms/program, 74.7 V/h); confirmation 6707.4 s = 77.8% = 37.5 s per violation; timer overhead 0.91 s (0.01%)
+    fuzzer blocked on the agent: 17 times, 6.20 s
+    learner (tf, 958357 params): 39 PPO updates, 2.27 s each (max 2.37), 88 s total = 1.0% of wall (cores 4-7, off the critical path)
+    Program generation             11.14 ms/program    1.3%
+    Policy: waiting for agent       0.62 ms/program    0.1%
+    Policy (RL)                     0.16 ms/program    0.0%
+    Input generation                1.46 ms/program    0.2%
+    Filters: hardware              65.37 ms/program    7.6%
+    Filters: other                 20.06 ms/program    2.3%
+    Fast path: model               37.16 ms/program    4.3%
+    Fast path: hardware            50.94 ms/program    5.9%
+    Fast path: other                0.70 ms/program    0.1%
+    Confirmation                  670.74 ms/program   77.8%
+    Reporting                       0.07 ms/program    0.0%
+    RL harness                      3.36 ms/program    0.4%
+    Other                           0.83 ms/program    0.1%
