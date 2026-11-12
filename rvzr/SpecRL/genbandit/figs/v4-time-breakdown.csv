@@ -1,0 +1,13 @@
+component,Revizor ms/program,Revizor share,RL (GRU) ms/program,RL (GRU) share
+Program generation,9.718,0.0208,10.942,0.0094
+Policy (RL),0.000,0.0000,0.656,0.0006
+Input generation,1.413,0.0030,1.393,0.0012
+Filters: hardware,62.676,0.1342,65.862,0.0566
+Filters: other,19.112,0.0409,20.722,0.0178
+Fast path: model,20.675,0.0443,41.127,0.0353
+Fast path: hardware,29.091,0.0623,55.606,0.0478
+Fast path: other,0.393,0.0008,0.741,0.0006
+Confirmation,323.523,0.6929,963.049,0.8271
+Reporting,0.034,0.0001,0.101,0.0001
+RL harness,0.000,0.0000,3.406,0.0029
+Other,0.259,0.0006,0.811,0.0007

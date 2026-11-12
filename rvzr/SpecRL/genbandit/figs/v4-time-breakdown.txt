@@ -1,0 +1,24 @@
+Revizor: 3000 programs, 26 violations, wall 1400.7 s (466.9 ms/program, 66.8 V/h); confirmation 970.6 s = 37.3 s per violation; timer overhead 0.14 s (0.01%)
+    Program generation          9.72 ms/program    2.1%
+    Input generation            1.41 ms/program    0.3%
+    Filters: hardware          62.68 ms/program   13.4%
+    Filters: other             19.11 ms/program    4.1%
+    Fast path: model           20.68 ms/program    4.4%
+    Fast path: hardware        29.09 ms/program    6.2%
+    Fast path: other            0.39 ms/program    0.1%
+    Confirmation              323.52 ms/program   69.3%
+    Reporting                   0.03 ms/program    0.0%
+    Other                       0.26 ms/program    0.1%
+RL (GRU): 3000 programs, 76 violations, wall 3493.3 s (1164.4 ms/program, 78.3 V/h); confirmation 2889.1 s = 38.0 s per violation; timer overhead 0.29 s (0.01%)
+    Program generation         10.94 ms/program    0.9%
+    Policy (RL)                 0.66 ms/program    0.1%
+    Input generation            1.39 ms/program    0.1%
+    Filters: hardware          65.86 ms/program    5.7%
+    Filters: other             20.72 ms/program    1.8%
+    Fast path: model           41.13 ms/program    3.5%
+    Fast path: hardware        55.61 ms/program    4.8%
+    Fast path: other            0.74 ms/program    0.1%
+    Confirmation              963.05 ms/program   82.7%
+    Reporting                   0.10 ms/program    0.0%
+    RL harness                  3.41 ms/program    0.3%
+    Other                       0.81 ms/program    0.1%
