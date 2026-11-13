@@ -1,0 +1,64 @@
+(1) Where each program leaves the pipeline (count, % of the arm's programs)
+                                                                 Revizor                RL (GRU)        RL (Transformer)
+  programs                                                          3000                   10000                   10000
+  discarded by the speculation filter                        572 (19.1%)            1622 (16.2%)            1694 (16.9%)
+  discarded by the observation filter                       2120 (70.7%)            6835 (68.3%)            6521 (65.2%)
+  discarded by the fast path (no candidate)                   275 (9.2%)            1376 (13.8%)            1562 (15.6%)
+  candidate, rejected: nesting check                            0 (0.0%)                0 (0.0%)                0 (0.0%)
+  candidate, rejected: taint check                              1 (0.0%)                4 (0.0%)                4 (0.0%)
+  candidate, rejected: priming                                  4 (0.1%)               20 (0.2%)               35 (0.3%)
+  candidate, rejected: noise (larger samples)                   2 (0.1%)                5 (0.1%)                5 (0.1%)
+  candidate, confirmed violation                               26 (0.9%)              138 (1.4%)              179 (1.8%)
+  -> passed the filters (reached the fast path)                      308                    1543                    1785
+  -> entered confirmation (candidates)                                33                     167                     223
+     of which confirmed                                         26 (79%)               138 (83%)               179 (80%)
+     of which rejected                                           7 (21%)                29 (17%)                44 (20%)
+  RL (GRU): confirmed violations new 138, duplicate 0; by mode fresh 98, edit 23, rerun 17
+  RL (Transformer): confirmed violations new 179, duplicate 0; by mode fresh 129, edit 27, rerun 23
+
+(2) Time spent on the programs of each outcome (total minutes, share of the run's wall time; per program: median [10th-90th percentile])
+  RL (GRU) (wall 122.5 min, 10000 programs)
+    discarded by the speculation filter            n= 1622  total     1.4 min (  1.2%)   per program 0.05 s [0.05-0.07]
+    discarded by the observation filter            n= 6835  total    13.0 min ( 10.6%)   per program 0.11 s [0.11-0.15]
+    discarded by the fast path (no candidate)      n= 1376  total    14.4 min ( 11.7%)   per program 0.60 s [0.59-0.66]
+    candidate, rejected: taint check               n=    4  total     0.1 min (  0.1%)   per program 1.45 s [1.38-1.79]
+    candidate, rejected: priming                   n=   20  total     0.7 min (  0.6%)   per program 1.96 s [1.88-2.76]
+    candidate, rejected: noise (larger samples)    n=    5  total     0.3 min (  0.2%)   per program 2.90 s [2.86-4.70]
+    candidate, confirmed violation                 n=  138  total    92.6 min ( 75.6%)   per program 37.39 s [37.27-54.87]
+    confirmation time alone, per candidate: violation: 36.78 s [36.66-54.26]; fp_priming: 1.35 s [1.28-1.90]; fp_taint_mistakes: 0.82 s [0.77-0.96]; fp_large_sample: 2.30 s [2.27-4.09]
+    confirmation time on rejected candidates 0.8 min vs on confirmed violations 91.2 min (0.8% wasted on false candidates)
+  RL (Transformer) (wall 143.8 min, 10000 programs)
+    discarded by the speculation filter            n= 1694  total     1.5 min (  1.0%)   per program 0.05 s [0.05-0.05]
+    discarded by the observation filter            n= 6521  total    12.3 min (  8.6%)   per program 0.11 s [0.11-0.11]
+    discarded by the fast path (no candidate)      n= 1562  total    15.9 min ( 11.1%)   per program 0.60 s [0.59-0.65]
+    candidate, rejected: taint check               n=    4  total     0.1 min (  0.1%)   per program 1.37 s [1.35-1.40]
+    candidate, rejected: priming                   n=   35  total     1.1 min (  0.8%)   per program 1.94 s [1.90-1.98]
+    candidate, rejected: noise (larger samples)    n=    5  total     0.3 min (  0.2%)   per program 3.15 s [2.90-5.62]
+    candidate, confirmed violation                 n=  179  total   112.5 min ( 78.3%)   per program 37.38 s [37.25-37.50]
+    confirmation time alone, per candidate: violation: 36.76 s [36.64-36.87]; fp_priming: 1.33 s [1.28-1.35]; fp_large_sample: 2.56 s [2.30-4.99]; fp_taint_mistakes: 0.77 s [0.75-0.78]
+    confirmation time on rejected candidates 1.1 min vs on confirmed violations 110.7 min (1.0% wasted on false candidates)
+
+(3) Total time per stage of the pipeline (minutes, share of wall)
+                                                     Revizor                RL (GRU)        RL (Transformer)
+  program generation                              0.5 (2.1%)              1.9 (1.5%)              1.9 (1.3%)
+  input generation                                0.1 (0.3%)              0.2 (0.2%)              0.2 (0.2%)
+  policy (RL)                                              -              0.1 (0.0%)              0.1 (0.1%)
+  filters                                        4.1 (17.5%)            14.6 (11.9%)             14.2 (9.9%)
+  fast path                                      2.5 (10.7%)            13.2 (10.8%)            14.8 (10.3%)
+  confirmation                                  16.2 (69.3%)            91.9 (75.0%)           111.8 (77.8%)
+    nesting                                       0.0 (0.0%)              0.0 (0.0%)              0.0 (0.0%)
+    taint_mistake                                 0.4 (1.8%)              2.1 (1.7%)              2.8 (1.9%)
+    priming                                       0.2 (0.7%)              0.9 (0.8%)              1.2 (0.8%)
+    noise                                        7.9 (33.7%)            43.1 (35.2%)            53.2 (37.0%)
+    priming_large                                7.6 (32.6%)            45.1 (36.8%)            53.8 (37.4%)
+    arch_mismatch                                 0.1 (0.5%)              0.6 (0.5%)              0.8 (0.6%)
+  reporting                                       0.0 (0.0%)              0.0 (0.0%)              0.0 (0.0%)
+  RL harness                                               -              0.6 (0.5%)              0.6 (0.4%)
+  other                                           0.0 (0.0%)              0.0 (0.0%)              0.0 (0.0%)
+  wall                                               23.3 min                122.5 min                143.8 min
+
+(4) Candidates reaching each confirmation sub-stage, and its time per candidate that reached it
+  Revizor           nesting 33 (0.0 s)  taint_mistake 33 (0.7 s)  priming 32 (0.3 s)  noise 28 (16.9 s)  priming_large 26 (17.5 s)  arch_mismatch 26 (0.3 s)
+  RL (GRU)          nesting 167 (0.0 s)  taint_mistake 167 (0.8 s)  priming 163 (0.3 s)  noise 143 (18.1 s)  priming_large 138 (19.6 s)  arch_mismatch 138 (0.3 s)
+  RL (Transformer)  nesting 223 (0.0 s)  taint_mistake 223 (0.8 s)  priming 219 (0.3 s)  noise 184 (17.3 s)  priming_large 179 (18.0 s)  arch_mismatch 179 (0.3 s)
+  (Revizor's fp_priming lumps rejections at priming and at priming_large; here all are counted at priming. In the RL runs every fp_priming took 1.3-1.9 s, i.e. was rejected at priming.)
