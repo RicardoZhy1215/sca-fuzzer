@@ -1,0 +1,31 @@
+# SCO, String Comparison Overrun (Hide and Seek with Spectres, S&P'23, Sec. II-A).
+# REPE/REPNE CMPS/SCAS keeps comparing past the bound while rcx is not resolved yet; one instruction
+# both starts the speculation and makes the leaking access. Paper: Intel + AMD Zen 3, the rarest leak
+# (4 per 500k programs on a Xeon, ~4 h to the first one with all optimizations); never with random inputs.
+# Based on Revizor's demo/detect-sco.yaml (straight line, SSBD on so no v4), random seeds.
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - seq
+min_bb_per_function: 1
+max_bb_per_function: 1
+min_successors_per_bb: 1
+max_successors_per_bb: 1
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+inputs_per_class: 2
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+program_size: 20
+avg_mem_accesses: 10
+data_generator_entropy_bits: 16
+instruction_categories:
+  - BASE-BITBYTE
+  - BASE-CMOV
+  - BASE-LOGICAL
+  - BASE-STRINGOP
+  - BASE-FLAGOP

@@ -1,0 +1,38 @@
+# V1-Var (Hide and Seek with Spectres, S&P'23, Sec. V; Revizor demo/detect-v1-var.yaml).
+# Same as SpecRL's spectre_v1/configs/v1.yaml (2 basic blocks, 2 successors, SSBD on), but tested
+# against CT-COND: plain Spectre v1 (branch misprediction) is now ALLOWED, so only leaks the
+# misprediction model does not explain remain. Paper (Intel Xeon): 3 per 100k programs, ~75 min with
+# all optimizations; depends on a microarchitectural race. AMD not reported.
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - cond
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+inputs_per_class: 2
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+min_bb_per_function: 2
+max_bb_per_function: 2
+min_successors_per_bb: 2
+max_successors_per_bb: 2
+program_size: 32
+avg_mem_accesses: 16
+data_generator_entropy_bits: 24
+enable_speculation_filter: true
+instruction_categories:
+  - BASE-DATAXFER
+  - BASE-LOGICAL
+  - BASE-MISC
+  - BASE-COND_BR
+  - BASE-NOP
+  - BASE-BITBYTE
+  - BASE-CONVERT
+  - BASE-FLAGOP
+  - BASE-BINARY
+  - BASE-CMOV
+  - BASE-SETCC
+  - BASE-SEMAPHORE

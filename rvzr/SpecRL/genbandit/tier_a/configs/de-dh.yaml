@@ -1,0 +1,38 @@
+# Divide-by-zero (#DE) against CT-DH, delayed exception handling (Speculation at Fault, USENIX Sec'23,
+# Sec. 8 / Table 3). CT-DH lets independent instructions run transiently after the fault but skips the
+# ones that depend on the faulting division. On AMD (Zen+, Zen 3) the transient quotient is NOT zero and
+# its dependents run: CT-DH violated after 312-785 test cases (rare, known answer). Zen 4 not reported.
+# Paper setup: straight-line code, 32 instructions, 8 memory accesses, no CMOV, SSBD on, one exception
+# type per run, divisions not instrumented against zero divisors (faults_allowlist).
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - delayed-exception-handling
+faults_allowlist:
+  - div-by-zero
+min_bb_per_function: 1
+max_bb_per_function: 1
+min_successors_per_bb: 1
+max_successors_per_bb: 1
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+inputs_per_class: 2
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+program_size: 32
+avg_mem_accesses: 8
+data_generator_entropy_bits: 16
+instruction_categories:
+  - BASE-BINARY
+  - BASE-LOGICAL
+  - BASE-BITBYTE
+  - BASE-DATAXFER
+  - BASE-CONVERT
+  - BASE-FLAGOP
+  - BASE-MISC
+  - BASE-NOP
+  - BASE-SETCC

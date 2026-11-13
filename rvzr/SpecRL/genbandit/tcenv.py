@@ -328,10 +328,13 @@ class CoupledActor:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--space", choices=["v4", "v1", "ssefp"], default="v4",
+    ap.add_argument("--space-yaml", default=None,
+                    help="with --space yaml: the Revizor config file (every knob fixed to it)")
+    ap.add_argument("--space", choices=["v4", "v1", "ssefp", "yaml"], default="v4",
                     help="config space: v4 = store bypass (space_v4), v1 = bounds-check bypass with "
                          "several basic blocks (spectre_v1/space_v1ctx), ssefp = SSE floating point "
-                         "(sse_fp/space_ssefp)")
+                         "(sse_fp/space_ssefp), yaml = one Revizor config, given by --space-yaml "
+                         "(tier_a/space_yaml)")
     ap.add_argument("--mode", choices=["plain", "bypass"], default="bypass")
     ap.add_argument("--minutes", type=float, default=10.0)
     ap.add_argument("--max-programs", type=int, default=0, help="also stop after this many programs (0: no cap)")
@@ -369,6 +372,12 @@ def main():
     if args.space == "v1":
         sys.path.insert(0, os.path.join(HERE, "spectre_v1"))
         import space_v1ctx as space
+        action = {**space.CONTROL, **json.loads(args.action)} if args.action else dict(space.CONTROL)
+    elif args.space == "yaml":
+        sys.path.insert(0, os.path.join(HERE, "tier_a"))
+        import space_yaml as space
+        assert args.space_yaml, "--space yaml needs --space-yaml <config.yaml>"
+        space.configure(args.space_yaml)
         action = {**space.CONTROL, **json.loads(args.action)} if args.action else dict(space.CONTROL)
     elif args.space == "ssefp":
         sys.path.insert(0, os.path.join(HERE, "sse_fp"))

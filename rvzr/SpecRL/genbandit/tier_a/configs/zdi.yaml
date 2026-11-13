@@ -1,0 +1,31 @@
+# ZDI, Zero Dividend Injection (Hide and Seek with Spectres, S&P'23, Sec. II-B; demo/detect-zdi.yaml).
+# With a slow rdx and ready rax/rcx, 64-bit DIV/IDIV transiently assumes rdx = 0 (needs a dividend
+# above 2^64). Paper: all three Intel CPUs, NOT AMD Zen 3 (no division speculation there).
+# Intel: 11 per 500k programs, ~21 min with all optimizations, never with random inputs.
+# On Zen 4 only a short novelty check.
+instruction_set: x86-64
+contract_observation_clause: ct
+contract_execution_clause:
+  - seq
+min_bb_per_function: 1
+max_bb_per_function: 1
+min_successors_per_bb: 1
+max_successors_per_bb: 1
+executor_mode: P+P
+x86_executor_enable_ssbp_patch: true
+x86_disable_div64: false
+inputs_per_class: 2
+enable_speculation_filter: true
+enable_observation_filter: true
+enable_fast_path_model: true
+logging_modes: [info]
+program_generator_seed: 0
+data_generator_seed: 0
+program_size: 64
+avg_mem_accesses: 24
+data_generator_entropy_bits: 31
+instruction_categories:
+  - BASE-BITBYTE
+  - BASE-BINARY
+  - BASE-CMOV
+  - BASE-LOGICAL
