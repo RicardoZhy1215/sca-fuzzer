@@ -1,0 +1,14 @@
+component,Revizor,RL (GRU)*,RL (Transformer)*
+Program generation,9.718,10.430,10.596
+Policy: waiting for agent,0.000,0.000,0.448
+Policy (RL),0.000,0.136,0.141
+Input generation,1.413,1.333,1.392
+Filters: hardware,62.676,63.667,62.564
+Filters: other,19.112,18.892,19.344
+Fast path: model,20.675,33.707,33.933
+Fast path: hardware,29.091,48.861,46.518
+Fast path: other,0.393,0.628,0.637
+Confirmation,323.523,650.722,595.773
+Reporting,0.034,0.070,0.065
+RL harness,0.000,3.135,3.235
+Other,0.259,0.761,0.778
