@@ -50,19 +50,20 @@ PY=<python with Revizor's deps + torch> rvzr/SpecRL/genbandit/tier_a/run_compare
   without `register_blocklist`; every knob is fixed to the yaml, the policy only writes programs).
 - Intel: give P-cores only on hybrid CPUs (E-cores are another microarchitecture). `zdi` is the
   interesting one there (expected positive); `sco`, `v1var`, `de-dh` are expected positive too.
-- Suggested sizes: `de-dh` 10k (dense enough), `v1var` and `sco` 50k (rare), `zdi` 20k on Intel
-  (both arms), Revizor-only on AMD.
+- Sizes used: `de-dh` 10k (dense enough), `v1var` and `sco` 20k (rare; if nothing shows up in 20k,
+  we leave it), `zdi` 20k (both arms on Intel, Revizor-only on AMD).
 
 ## This machine (AMD Ryzen 7 8700F, Zen 4 family 19h model 75h, microcode 0xa705208, SMT off)
 
-Queue `queue_zen4.sh` (started 2026-11-13 23:17, detached; log `queue_zen4.out`):
+Queue `queue_zen4.sh` (started 2026-11-13 23:17, restarted 23:20 from item 2 with 20k for v1var/sco;
+detached; log `queue_zen4.out`):
 
 | # | config | N | arms | expected time | status / result |
 |---|---|---|---|---|---|
 | 1 | zdi | 20000 | Revizor | ~0.3 h | running |
 | 2 | de-dh | 10000 | both | ~2-2.5 h | queued |
-| 3 | v1var | 50000 | both | ~5-6 h | queued |
-| 4 | sco | 50000 | both | ~8-10 h | queued |
+| 3 | v1var | 20000 | both | ~2-2.5 h | queued |
+| 4 | sco | 20000 | both | ~3.5-4 h | queued |
 
 ## Notes
 
