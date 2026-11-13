@@ -1,0 +1,38 @@
+{
+ "gru": {
+  "per_program_ms": {
+   "Program generation": 10.430320060501835,
+   "Policy: waiting for agent": 0.0,
+   "Policy (RL)": 0.13573488952175788,
+   "Input generation": 1.3328681674159502,
+   "Filters: hardware": 63.66696825351293,
+   "Filters: other": 18.892292957130934,
+   "Fast path: model": 33.70742063490139,
+   "Fast path: hardware": 48.86110993846521,
+   "Fast path: other": 0.6281325422018001,
+   "Confirmation": 650.7216432184505,
+   "Reporting": 0.07012899214336073,
+   "RL harness": 3.1351598242437975,
+   "Other": 0.7605665356505004
+  },
+  "wall_s": 8323.4235
+ },
+ "tf": {
+  "per_program_ms": {
+   "Program generation": 10.596468260115751,
+   "Policy: waiting for agent": 0.4476592343314266,
+   "Policy (RL)": 0.14070817206571415,
+   "Input generation": 1.3919973755708417,
+   "Filters: hardware": 62.56422798406105,
+   "Filters: other": 19.34407024025576,
+   "Fast path: model": 33.93254329836814,
+   "Fast path: hardware": 46.518164519045285,
+   "Fast path: other": 0.6365207075818836,
+   "Confirmation": 595.7726251742455,
+   "Reporting": 0.06472045715724527,
+   "RL harness": 3.2352460745127933,
+   "Other": 0.7781617388946444
+  },
+  "wall_s": 7754.2311
+ }
+}

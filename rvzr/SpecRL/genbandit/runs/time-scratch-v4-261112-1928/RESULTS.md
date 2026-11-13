@@ -59,3 +59,23 @@ KL to the prior is similar in all four runs (~0.1 by update 20; final 0.104 GRU 
 The order of GRU and TF flips between the two experiments. A single 10k run does not separate the
 architectures, and the GRU's gain over Revizor varies run to run (second half 75 here vs 108 in the
 A/B; Revizor about 54 per 5000). Repeated runs are needed for a claim about the size of the gain.
+
+## Estimate for the earlier GRU / Transformer A/B run (ctx-ab-gru-tf-default64-261107, first 10000 programs per arm)
+That run logged each program's outcome stage and measured time (tc.jsonl `s`), but not the per-stage
+split. Estimate = each program's MEASURED time, split by the share of each group for that outcome
+(spec_filter / observ_filter / fast_path / violation / fp_*) in this run's programs.jsonl. So totals
+equal the measured ones. Check: predicting totals from this run's per-outcome means is +6.6% (GRU)
+and +1.0% (TF) off; the old run was 3-6% faster per outcome (e.g. a violation 37.7 s vs 38.8 s).
+| ms/program | old GRU | old Transformer |
+|---|---|---|
+| Program generation | 10.4 (1.3%) | 10.6 (1.4%) |
+| Policy (RL), incl. waiting | 0.1 | 0.6 (0.1%) |
+| Input generation | 1.3 | 1.4 |
+| Filters | 82.6 (9.9%) | 81.9 (10.6%) |
+| Fast path | 83.2 (10.0%) | 81.1 (10.5%) |
+| Confirmation | 650.7 (78.2%) | 595.8 (76.8%) |
+| RL harness + other | 4.0 (0.5%) | 4.1 (0.5%) |
+| total (measured) | 832.3 | 775.4 |
+Directly measured in the old run: tcenv's RL overhead per program (ovh_ms, incl. waiting for the agent)
+0.76 ms on average (0.09% of time), max 1.5 s (agent start-up), even with only 2 learner cores per arm.
+Numbers: estimate-old-ab.json.
