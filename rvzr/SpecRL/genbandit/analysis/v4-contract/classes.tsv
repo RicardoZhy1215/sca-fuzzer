@@ -1,0 +1,447 @@
+tool	violation	pair	seq_equal	permissive_differs	nesting	orig_hw(of 2)	mitigated_hw(of 2)	class
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104423	#37/#87	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104503	#27/#77	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104630	#47/#97	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104716	#8/#58	True	True	1	0	0	not-reproduced
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104802	#4/#54	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104846	#4/#54	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-104927	#10/#60	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105005	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105046	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105132	#44/#94	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105215	#17/#67	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105305	#21/#71	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105346	#13/#63	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105432	#36/#86	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105510	#8/#58	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105549	#40/#90	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105627	#30/#80	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105707	#37/#87	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105754	#26/#76	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105831	#38/#88	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105906	#0/#50	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-105945	#17/#67	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110023	#13/#63	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110128	#16/#66	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110215	#19/#69	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110326	#8/#58	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110406	#38/#88	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110443	#14/#64	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110521	#5/#55	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110648	#5/#55	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110819	#28/#78	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110901	#21/#71	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-110937	#34/#84	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111024	#18/#68	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111103	#44/#94	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111137	#0/#50	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111233	#16/#66	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111319	#1/#51	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r0-revizor_default64/violation-261107-111412	#42/#92	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111455	#28/#78	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111534	#21/#71	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111611	#39/#89	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111657	#48/#98	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111826	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-111929	#19/#69	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112006	#42/#92	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112111	#35/#85	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112159	#18/#68	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112256	#24/#74	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112339	#24/#74	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112441	#27/#77	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112540	#43/#93	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112635	#29/#79	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112739	#26/#76	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112840	#33/#83	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-112930	#29/#79	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113027	#37/#87	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113106	#1/#51	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113207	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113253	#38/#88	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113333	#6/#56	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113425	#21/#71	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113505	#6/#56	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113545	#32/#82	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113629	#36/#86	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113710	#46/#96	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113808	#12/#62	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-113848	#16/#66	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114008	#2/#52	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114048	#20/#70	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114145	#39/#89	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114224	#9/#59	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114323	#23/#73	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r1-revizor_default64/violation-261107-114411	#23/#73	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114503	#35/#85	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114546	#35/#85	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114637	#5/#55	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114741	#5/#55	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114837	#8/#58	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-114929	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115009	#17/#67	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115200	#28/#78	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115241	#43/#93	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115320	#34/#84	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115400	#33/#83	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115439	#36/#86	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115531	#42/#92	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115624	#20/#70	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115713	#1/#51	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115850	#47/#97	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-115955	#46/#96	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120041	#48/#98	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120150	#46/#96	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120227	#8/#58	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120257	#0/#50	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120351	#18/#68	True	True	1	0	0	not-reproduced
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120452	#39/#89	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120547	#30/#80	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120626	#21/#71	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120717	#22/#72	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120828	#7/#57	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120919	#12/#62	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-120955	#44/#94	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121034	#30/#80	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121115	#22/#72	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121158	#33/#83	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121235	#16/#66	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121313	#3/#53	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121357	#24/#74	True	True	1	2	0	explained
+Revizor	runs/ttk-default64-261107/r2-revizor_default64/violation-261107-121435	#18/#68	True	True	1	2	0	explained
+Revizor	runs/revizor-default64-extra247-261110-1555/violation-261110-155555	#22/#72	True	True	1	2	0	explained
+Revizor	runs/revizor-default64-extra247-261110-1555/violation-261110-155633	#48/#98	True	True	1	2	0	explained
+Revizor	runs/revizor-default64-extra247-261110-1555/violation-261110-155712	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-121807	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-121926	#2/#52	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122127	#14/#64	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122206	#24/#74	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122426	#5/#55	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122531	#1/#51	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122609	#34/#84	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122649	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122728	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122808	#23/#73	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122848	#10/#60	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122930	#23/#73	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123324	#24/#74	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123456	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123533	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123837	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123953	#31/#81	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124044	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124114	#0/#50	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124151	#7/#57	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124611	#25/#75	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124927	#3/#53	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125458	#0/#50	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125537	#33/#83	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125626	#15/#65	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125742	#45/#95	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125832	#39/#89	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125910	#20/#70	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125948	#36/#86	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130211	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130305	#2/#52	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130701	#29/#79	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130743	#7/#57	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131139	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131301	#19/#69	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131723	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131908	#31/#81	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131947	#46/#96	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132119	#2/#52	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132254	#46/#96	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132420	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132616	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132705	#49/#99	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132753	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132907	#0/#50	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133038	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133228	#48/#98	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133305	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133443	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133542	#22/#72	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133707	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133924	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134003	#12/#62	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134056	#22/#72	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134136	#34/#84	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134328	#40/#90	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134458	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134557	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134915	#34/#84	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135139	#3/#53	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135547	#8/#58	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135632	#48/#98	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135917	#44/#94	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135956	#31/#81	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140132	#38/#88	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140331	#13/#63	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141035	#36/#86	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141115	#29/#79	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141300	#10/#60	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141341	#35/#85	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141428	#28/#78	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141548	#19/#69	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141840	#32/#82	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142046	#29/#79	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142213	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142329	#9/#59	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142715	#5/#55	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142812	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142852	#29/#79	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143207	#40/#90	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143304	#30/#80	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143728	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143834	#20/#70	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143928	#25/#75	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144010	#38/#88	True	True	1	0	0	not-reproduced
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144056	#45/#95	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144138	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144325	#34/#84	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144409	#9/#59	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144645	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144729	#45/#95	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144815	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145017	#47/#97	True	True	5	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145154	#40/#90	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145236	#10/#60	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145412	#22/#72	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145452	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145532	#37/#87	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145616	#28/#78	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145824	#10/#60	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150100	#1/#51	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150219	#40/#90	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150301	#49/#99	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150341	#2/#52	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150545	#23/#73	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150715	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150744	#0/#50	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150919	#35/#85	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151008	#19/#69	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151058	#6/#56	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151203	#23/#73	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151347	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151602	#45/#95	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151649	#5/#55	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151730	#41/#91	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151849	#35/#85	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151927	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152006	#27/#77	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152213	#7/#57	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152347	#26/#76	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152605	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152740	#32/#82	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152817	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152859	#28/#78	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153139	#22/#72	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153616	#26/#76	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154022	#4/#54	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154116	#8/#58	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154209	#27/#77	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154348	#8/#58	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154435	#2/#52	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154512	#33/#83	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154645	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154900	#15/#65	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155026	#4/#54	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155108	#32/#82	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155217	#32/#82	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155346	#1/#51	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155505	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155750	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155900	#8/#58	True	True	1	0	0	not-reproduced
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160318	#48/#98	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160443	#14/#64	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160520	#30/#80	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160600	#46/#96	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160734	#29/#79	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160836	#47/#97	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160932	#21/#71	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161224	#46/#96	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161359	#31/#81	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161522	#19/#69	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161632	#19/#69	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161817	#12/#62	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162203	#23/#73	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162259	#18/#68	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162338	#27/#77	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162425	#49/#99	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162554	#15/#65	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162635	#21/#71	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162728	#13/#63	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162806	#17/#67	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162846	#32/#82	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163011	#43/#93	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163132	#13/#63	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163220	#4/#54	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163441	#6/#56	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163533	#3/#53	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163616	#28/#78	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163715	#11/#61	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163929	#42/#92	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164011	#11/#61	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164054	#10/#60	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164234	#12/#62	True	True	1	2	0	explained
+RL (GRU)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164319	#2/#52	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-121641	#0/#50	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-121728	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-121844	#28/#78	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122020	#26/#76	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-122307	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123043	#7/#57	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123142	#22/#72	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123247	#40/#90	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123407	#19/#69	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123625	#4/#54	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-123716	#9/#59	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124229	#23/#73	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124319	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124414	#22/#72	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124521	#22/#72	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124740	#15/#65	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-124833	#29/#79	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125005	#45/#95	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125043	#12/#62	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125155	#48/#98	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125241	#47/#97	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125417	#38/#88	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-125705	#46/#96	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130035	#47/#97	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130501	#7/#57	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130623	#48/#98	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130820	#46/#96	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-130904	#6/#56	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131011	#12/#62	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131048	#17/#67	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131221	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131350	#17/#67	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131436	#41/#91	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131514	#24/#74	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131554	#29/#79	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131643	#38/#88	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-131817	#40/#90	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132032	#40/#90	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132157	#42/#92	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132338	#7/#57	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132519	#41/#91	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132834	#18/#68	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-132950	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133131	#16/#66	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133404	#42/#92	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133629	#39/#89	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-133824	#14/#64	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134219	#32/#82	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134249	#0/#50	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134415	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134651	#30/#80	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-134807	#24/#74	True	True	1	0	0	not-reproduced
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135013	#23/#73	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135057	#46/#96	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135236	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135328	#19/#69	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135433	#49/#99	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135510	#24/#74	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135710	#29/#79	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135756	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-135835	#32/#82	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140048	#31/#81	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140231	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140413	#42/#92	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140509	#2/#52	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140612	#36/#86	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140704	#5/#55	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140757	#9/#59	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140846	#38/#88	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-140950	#36/#86	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141158	#40/#90	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141507	#30/#80	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141625	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141758	#44/#94	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-141956	#16/#66	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142135	#1/#51	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142250	#47/#97	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142420	#49/#99	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142457	#27/#77	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142535	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142622	#46/#96	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-142935	#30/#80	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143016	#22/#72	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143117	#41/#91	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143345	#19/#69	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143436	#17/#67	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143528	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143612	#20/#70	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-143659	#20/#70	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144228	#46/#96	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144449	#45/#95	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144527	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144857	#31/#81	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-144940	#30/#80	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145115	#33/#83	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145330	#4/#54	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145739	#12/#62	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-145932	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150021	#33/#83	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150138	#8/#58	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150458	#39/#89	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150634	#7/#57	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-150828	#39/#89	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151249	#15/#65	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151442	#33/#83	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-151524	#39/#89	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152046	#16/#66	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152127	#17/#67	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152253	#39/#89	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152439	#23/#73	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152520	#16/#66	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152644	#2/#52	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-152952	#38/#88	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153032	#42/#92	True	True	5	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153220	#3/#53	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153313	#4/#54	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153351	#2/#52	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153457	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153535	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153655	#25/#75	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153754	#37/#87	True	True	5	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153905	#37/#87	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-153942	#5/#55	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154259	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154551	#13/#63	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154727	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154817	#45/#95	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-154940	#40/#90	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155253	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155428	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155550	#26/#76	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155632	#4/#54	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155712	#2/#52	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-155941	#3/#53	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160020	#44/#94	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160106	#42/#92	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160148	#36/#86	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160232	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160403	#19/#69	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-160656	#12/#62	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161008	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161058	#17/#67	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161135	#0/#50	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161315	#21/#71	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161445	#31/#81	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161736	#24/#74	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161855	#24/#74	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-161932	#1/#51	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162024	#18/#68	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162112	#13/#63	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162514	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-162935	#11/#61	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163054	#8/#58	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163304	#36/#86	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163346	#13/#63	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163809	#29/#79	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-163852	#43/#93	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164157	#10/#60	True	True	1	2	0	explained
+RL (Transformer)	runs/ctx-ab-gru-tf-default64-261107/violation-261107-164401	#32/#82	True	True	1	2	0	explained
