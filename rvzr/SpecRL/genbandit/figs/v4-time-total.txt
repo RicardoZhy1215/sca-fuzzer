@@ -1,0 +1,21 @@
+Revizor: 10000 programs, 113 confirmed violations x 37.3 s
+Revizor            Generation + policy + inputs                 1.8 min   1.9%
+Revizor            Filters                                     13.1 min  14.0%
+Revizor            Fast path                                    8.0 min   8.6%
+Revizor            Confirmation                                70.3 min  75.4%
+Revizor            Other (RL harness, logging, start-up)        0.0 min   0.1%
+Revizor            TOTAL wall                                  93.2 min (1.55 h)
+RL (GRU)           Generation + policy + inputs                 2.0 min   1.4%
+RL (GRU)           Filters                                     13.8 min   9.9%
+RL (GRU)           Fast path                                   13.9 min  10.0%
+RL (GRU)           Confirmation                               108.5 min  78.2%
+RL (GRU)           Other (RL harness, logging, start-up)        0.7 min   0.5%
+RL (GRU)           TOTAL wall                                 138.7 min (2.31 h)
+RL (GRU)           PPO updates (parallel, other cores)          0.9 min (39 updates, 1.36 s each)
+RL (Transformer)   Generation + policy + inputs                 2.1 min   1.6%
+RL (Transformer)   Filters                                     13.7 min  10.6%
+RL (Transformer)   Fast path                                   13.5 min  10.5%
+RL (Transformer)   Confirmation                                99.3 min  76.8%
+RL (Transformer)   Other (RL harness, logging, start-up)        0.7 min   0.5%
+RL (Transformer)   TOTAL wall                                 129.2 min (2.15 h)
+RL (Transformer)   PPO updates (parallel, other cores)          2.1 min (39 updates, 3.24 s each)

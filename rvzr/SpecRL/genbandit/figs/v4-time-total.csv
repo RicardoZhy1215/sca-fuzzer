@@ -1,0 +1,18 @@
+run,group,seconds,share
+Revizor,Generation + policy + inputs,106.9,0.0191
+Revizor,Filters,785.4,0.1404
+Revizor,Fast path,481.7,0.0861
+Revizor,Confirmation,4218.2,0.7539
+Revizor,Other (RL harness, logging, start-up),2.8,0.0005
+RL (GRU),Generation + policy + inputs,119.0,0.0143
+RL (GRU),Filters,825.6,0.0992
+RL (GRU),Fast path,832.0,0.1000
+RL (GRU),Confirmation,6507.2,0.7818
+RL (GRU),Other (RL harness, logging, start-up),39.7,0.0048
+RL (GRU),PPO updates (parallel),53.2,0.0064
+RL (Transformer),Generation + policy + inputs,125.8,0.0162
+RL (Transformer),Filters,819.1,0.1056
+RL (Transformer),Fast path,810.9,0.1046
+RL (Transformer),Confirmation,5957.7,0.7683
+RL (Transformer),Other (RL harness, logging, start-up),40.8,0.0053
+RL (Transformer),PPO updates (parallel),126.4,0.0163
