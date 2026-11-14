@@ -560,7 +560,7 @@ def agent_main(table, out, prog_q, res_q, opts):
                   open(os.path.join(out, "agent_header.json"), "w"))
     mode_kind = opts.get("mode", "learn")             # learn: policy's mode head; rule2: rule2_mode
     if learner is not None and opts.get("init"):
-        learner.pol.load_state_dict(torch.load(opts["init"]))    # warm start (same instruction set)
+        learner.pol.load_state_dict(torch.load(opts["init"], weights_only=True))   # warm start (same table)
     violated = set()                                   # lineages that already produced a violation
     lineage_ctr = 0
     prior = PriorPrograms(table, rng)
@@ -706,6 +706,13 @@ class CtxActor:
             list(isa.load_instruction)
         json.dump({k: v for k, v in self.table.items() if k != "slot_prior"},
                   open(os.path.join(self.out, "table.json"), "w"))
+        # warm start: the policy's outputs index this table, so it must be the one it was trained on
+        # (same base.json, config and generator); checked when the policy.pt has its table.json
+        ref = os.path.join(os.path.dirname(self.opts["init"]), "table.json") if self.opts.get("init") else ""
+        if ref and os.path.exists(ref):
+            cur = json.load(open(os.path.join(self.out, "table.json")))
+            assert json.load(open(ref)) == cur, \
+                f"--ctx-init: this instruction table differs from {ref} (other base.json / config / generator)"
         self.proc = self.mp.Process(target=agent_main, daemon=True,
                                     args=(self.table, self.out, self.prog_q, self.res_q, self.opts))
         self.proc.start()

@@ -1,0 +1,8 @@
+host ml2558-G11CD
+model name	: Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
+microcode	: 0xf0
+5.4.0-216-generic
+smt off
+BOOT_IMAGE=/boot/vmlinuz-5.4.0-216-generic root=UUID=f9323230-ea71-4191-b914-ba99c798b5bf ro quiet splash pci=nomsi vt.handoff=7
+370cdfba4b70f8b6c6fbbc6887932159d70ad5d0
+fuzzer cores 1, learner cores 2-3, python /home/hz25d/miniconda3/envs/specrl/bin/python3.10

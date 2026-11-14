@@ -1,0 +1,7 @@
+# run directories: keep only the write-ups
+runs/**
+!runs/*/
+!runs/*/RESULTS.txt
+!runs/*/RESULTS.md
+# the transferred checkpoints (*.pt is ignored in genbandit/)
+!*/policy.pt

@@ -1,0 +1,72 @@
+{
+ "mode": "bypass",
+ "test_cases": 20000,
+ "seconds": 13000.9,
+ "tc_per_min": 92.3,
+ "violations": 260,
+ "v_per_h": 72.0,
+ "overhead_ms_per_tc": 1.582,
+ "overhead_frac": 0.00243,
+ "stages": {
+  "spec_filter": 961,
+  "observ_filter": 16598,
+  "fast_path": 2137,
+  "fp_nesting": 0,
+  "fp_taint_mistakes": 33,
+  "fp_priming": 4,
+  "fp_large_sample": 7,
+  "violation": 260,
+  "other": 0
+ },
+ "iteration_s": {
+  "spec_filter": {
+   "n": 961,
+   "sum": 57.9608,
+   "sumsq": 3.565765
+  },
+  "observ_filter": {
+   "n": 16598,
+   "sum": 2462.8277,
+   "sumsq": 368.012883
+  },
+  "fast_path": {
+   "n": 2137,
+   "sum": 1736.6287,
+   "sumsq": 1426.21737
+  },
+  "fp_taint_mistakes": {
+   "n": 33,
+   "sum": 68.3978,
+   "sumsq": 142.210748
+  },
+  "fp_priming": {
+   "n": 4,
+   "sum": 10.7039,
+   "sumsq": 28.769548
+  },
+  "fp_large_sample": {
+   "n": 7,
+   "sum": 42.8994,
+   "sumsq": 421.092045
+  },
+  "violation": {
+   "n": 260,
+   "sum": 8621.472,
+   "sumsq": 288703.198906
+  }
+ },
+ "action": {
+  "program_size": 64,
+  "mem_ratio": 0.5,
+  "n_regs": 6,
+  "entropy_bits": 10,
+  "n_inputs": 50,
+  "value_mix": "default",
+  "binary": "on",
+  "flags": "on",
+  "semaphore": "on",
+  "locks": "on",
+  "spec_filter": "on"
+ },
+ "time": "2026-11-12 20:08:00"
+}

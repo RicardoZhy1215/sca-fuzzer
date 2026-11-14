@@ -1,0 +1,1 @@
+{"arch": "gru", "tf": null, "params": 416277, "opts": {"policy": "learn", "mode": "rule2", "init": "", "E": 16, "N": 8, "lr": 0.0003, "kl": 0.1, "sil": 1.0, "seed": 1, "cores": [2, 3], "threads": 2, "arch": "gru"}}
